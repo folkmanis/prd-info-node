@@ -14,7 +14,7 @@
 import { Controller, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
-import { asyncQuery, MysqlPool } from '../lib/mysql-connector';
+import { asyncQuery } from '../lib/mysql-connector';
 import { asyncWrapper } from "../lib/asyncWrapper";
 import { User } from './users-controller';
 
@@ -62,7 +62,7 @@ export class LoginController {
     }
 
     @Get('user')
-    private async user(req: Request, res: Response) {
+    private user(req: Request, res: Response) {
         if (req.session && req.session.user) {
             res.json(req.session.user);
         }

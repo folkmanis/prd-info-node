@@ -1,5 +1,5 @@
 {
-    "watch": ["src"],
+    "watch": ["src", "@types"],
     "ext": "ts",
     "ignore": ["src/public"],
     "exec": "NODE_ENV=development ts-node src/start.ts"

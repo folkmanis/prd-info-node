@@ -10,24 +10,25 @@ export interface ArchiveRecord {
 }
 
 @Controller('data/xmf-search')
-@ClassMiddleware(PrdSession.validateSession)
+// @ClassMiddleware(PrdSession.validateSession)
 @ClassWrapper(asyncWrapper)
 export class XmfSearchController {
 
-    @Get(':query')
+    @Get('search')
     private async search(req: Request, res: Response) {
-        const q = req.query.query;
+        const q = req.query.q;
+        Logger.Info('xmf search ' + q);
         if (q.length < 3) {
             Logger.Info('Search too short');
             res.json({});
             return;
         }
-        const qqq = `SELECT jobs_new.*, records_new.Location, records_new.Date, actions.Action FROM jobs_new
-        LEFT JOIN records_new ON jobs_new.id = records_new.id
-        LEFT JOIN actions ON records_new.Action = actions.id
-        WHERE (jobs_new.DescriptiveName LIKE '%${q}%')
-        OR (jobs_new.JDFJobID LIKE '%${q}%')
-        ORDER BY jobs_new.JobID, jobs_new.id DESC;`;
+        const qqq = `SELECT xmf_jobs.*, xmf_records.Location, xmf_records.Date, xmf_actions.Action FROM xmf_jobs
+        LEFT JOIN xmf_records ON xmf_jobs.id = xmf_records.id
+        LEFT JOIN xmf_actions ON xmf_records.Action = xmf_actions.id
+        WHERE (xmf_jobs.DescriptiveName LIKE '%${q}%')
+        OR (xmf_jobs.JDFJobID LIKE '%${q}%')
+        ORDER BY xmf_jobs.JobID, xmf_jobs.id DESC;`;
         
         const result = await asyncQuery(req.sqlConnection, qqq);
         res.json(result);
