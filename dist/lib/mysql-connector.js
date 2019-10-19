@@ -1,9 +1,10 @@
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -12,9 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_1 = __importDefault(require("mysql"));
+const logger_1 = require("@overnightjs/logger");
 class MysqlPool {
     constructor() {
-        this.mysqlPool = mysql_1.default.createPool({
+        logger_1.Logger.Info(`db_user: ${process.env.DB_USER}`);
+        this.pool = mysql_1.default.createPool({
             connectionLimit: 5,
             host: process.env.DB_HOST,
             user: process.env.DB_USER,
@@ -22,14 +25,19 @@ class MysqlPool {
             database: process.env.DB_BASE
         });
     }
-    getConnection(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            req.sqlConnection = yield this.asyncGetConnection();
+    poolConnect() {
+        return (req, res, next) => __awaiter(this, void 0, void 0, function* () {
+            const conn = yield this.asyncConnection();
+            res.on('close', () => conn.release());
+            res.on('close', () => logger_1.Logger.Info('conn released'));
+            req.sqlConnection = conn;
+            next();
         });
     }
-    asyncGetConnection() {
+    asyncConnection() {
         return new Promise((resolve, reject) => {
-            this.mysqlPool.getConnection((err, connection) => {
+            this.pool.getConnection((err, connection) => {
+                logger_1.Logger.Info('getConnection');
                 if (err) {
                     reject(err);
                 }
@@ -39,18 +47,13 @@ class MysqlPool {
             });
         });
     }
-    getContion() {
-        return (req, res, next) => {
-            this.mysqlPool.getConnection((err, connection) => {
-                if (err) {
-                    next(err);
-                }
-                // console.log('connection: ', connection);
-                // req.sqlConnection = connection;
-                next();
-            });
-        };
-    }
 }
 exports.MysqlPool = MysqlPool;
+exports.asyncQuery = (conn, q, params) => {
+    return new Promise((resolve, reject) => {
+        conn.query(q, params, (err, result) => {
+            err ? reject(err) : resolve(result);
+        });
+    });
+};
 //# sourceMappingURL=mysql-connector.js.map

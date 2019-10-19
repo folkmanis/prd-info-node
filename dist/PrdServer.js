@@ -8,15 +8,20 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const bodyParser = __importStar(require("body-parser"));
-const controllers = __importStar(require("./controllers/ExampleController"));
+const controllers = __importStar(require("./controllers"));
 const core_1 = require("@overnightjs/core");
 const logger_1 = require("@overnightjs/logger");
+const mysql_connector_1 = require("./lib/mysql-connector");
+const session_handler_1 = require("./lib/session-handler");
 class PrdServer extends core_1.Server {
-    constructor(mysqlPool) {
+    constructor() {
         super(true);
         this.SERVER_STARTED = 'Server started on port: ';
+        this.mysqlPool = new mysql_connector_1.MysqlPool();
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(this.mysqlPool.poolConnect());
+        this.app.use(session_handler_1.PrdSession.sessionHandler(this.mysqlPool));
         this.setupControllers();
     }
     setupControllers() {
@@ -35,9 +40,8 @@ class PrdServer extends core_1.Server {
         });
         this.app.listen(port, () => {
             logger_1.Logger.Imp(this.SERVER_STARTED + port);
-            logger_1.Logger.Info(`db_user: ${process.env.DB_USER}`);
         });
     }
 }
-exports.default = PrdServer;
+exports.PrdServer = PrdServer;
 //# sourceMappingURL=PrdServer.js.map
