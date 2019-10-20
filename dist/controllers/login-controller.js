@@ -2,14 +2,28 @@
 /**
  * /data/login
  *
- * POST login
- * req.body.username, req.body.pass
+ * POST /data/login/login
+ * {
+ * username: string;
+ * pass: string;
+ * }
  *
- * POST logout
+ * User
+ *
+ *
+ * POST /data/login/logout
  * {}
  *
- * GET user
- * User
+ * GET /data/login/user
+ * user: string
+ * export interface User {
+ *   id: number;
+ *   username: string;
+ *   name: string;
+ *   admin: boolean;
+ *   lastlogin?: Date;
+ * }
+ *
  */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;

@@ -6,6 +6,7 @@
   "scripts": {
     "test": "test",
     "tsc": "tsc",
+    "tsc-watch": "tsc -w",
     "start-dev": "nodemon --config \"./util/nodemon.json\"/"
   },
   "repository": {
