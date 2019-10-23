@@ -47,9 +47,10 @@ let XmfSearchController = class XmfSearchController {
         xmf_jobs.id AS id,
         xmf_jobs.JDFJobID AS jdfJobId,
         xmf_jobs.DescriptiveName AS descriptiveName,
+        xmf_jobs.CustomerName AS customerName,
         xmf_records.Location AS location,
         xmf_records.Date AS date,
-        xmf_actions.Action AS action
+        xmf_actions.Action AS action  
     FROM
         xmf_jobs
     LEFT JOIN
