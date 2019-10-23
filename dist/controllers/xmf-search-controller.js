@@ -9,10 +9,11 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -25,20 +26,51 @@ const session_handler_1 = require("../lib/session-handler");
 let XmfSearchController = class XmfSearchController {
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = req.query.q;
-            logger_1.Logger.Info('xmf search ' + q);
-            if (q.length < 3) {
+            logger_1.Logger.Info('xmf search ' + req.query.q);
+            if (req.query.q.length < 4) {
                 logger_1.Logger.Info('Search too short');
-                res.json({});
+                res.json({ count: -1 });
                 return;
             }
-            const qqq = `SELECT xmf_jobs.*, xmf_records.Location, xmf_records.Date, xmf_actions.Action FROM xmf_jobs
-        LEFT JOIN xmf_records ON xmf_jobs.id = xmf_records.id
-        LEFT JOIN xmf_actions ON xmf_records.Action = xmf_actions.id
-        WHERE (xmf_jobs.DescriptiveName LIKE '%${q}%')
-        OR (xmf_jobs.JDFJobID LIKE '%${q}%')
-        ORDER BY xmf_jobs.JobID, xmf_jobs.id ASC;`;
-            const result = yield mysql_connector_1.asyncQuery(req.sqlConnection, qqq);
+            const q = '%' + req.query.q.trim() + '%';
+            const result = { count: 0, data: [] };
+            const c = yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT COUNT(*) AS count FROM xmf_jobs
+            WHERE (xmf_jobs.DescriptiveName LIKE ?)
+            OR (xmf_jobs.JDFJobID LIKE ?)`, [q, q]);
+            console.log(c);
+            result.count = c[0].count;
+            if (result.count === 0) {
+                res.json(result);
+                return;
+            }
+            const qqq = `SELECT
+        xmf_jobs.id AS id,
+        xmf_jobs.JDFJobID AS jdfJobId,
+        xmf_jobs.DescriptiveName AS descriptiveName,
+        xmf_records.Location AS location,
+        xmf_records.Date AS date,
+        xmf_actions.Action AS action
+    FROM
+        xmf_jobs
+    LEFT JOIN
+        xmf_records
+    ON
+        xmf_jobs.id = xmf_records.id
+    LEFT JOIN
+        xmf_actions
+    ON
+        xmf_records.Action = xmf_actions.id
+    WHERE
+        (
+            xmf_jobs.DescriptiveName LIKE ?
+        ) OR(xmf_jobs.JDFJobID LIKE ?)
+    ORDER BY
+        xmf_jobs.JobID,
+        xmf_jobs.id
+    DESC
+    LIMIT 100`;
+            result.data = yield mysql_connector_1.asyncQuery(req.sqlConnection, qqq, [q, q]);
+            // console.log(result);
             res.json(result);
         });
     }

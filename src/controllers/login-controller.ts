@@ -14,14 +14,13 @@
  * {}
  * 
  * GET /data/login/user
- * user: string
  * export interface User {
  *   id: number;
  *   username: string;
  *   name: string;
  *   admin: boolean;
  *   lastlogin?: Date;
- * }
+ * } | {}
  *
  */
 
@@ -54,6 +53,7 @@ export class LoginController {
             res.status(401).json({});
         } else if (req.session) {
             req.session.user = result[0];
+            await asyncQuery(req.sqlConnection, `UPDATE users SET last_login=UTC_TIMESTAMP() WHERE id=?`, [result[0].id]);
             Logger.Info('Logged in. User: ' + req.session.user.username);
             res.json(req.session.user);
         }

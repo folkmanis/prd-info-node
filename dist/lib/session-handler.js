@@ -14,8 +14,8 @@ var PrdSession;
         }
         else {
             logger_1.Logger.Err('Not logged in');
-            next(new Error('Not logged in'));
-            // res.status(401).json(new Error('Not logged in'));
+            res.status(401).json(new Error('Not logged in'));
+            // next(new Error('Not logged in'))
         }
     }
     PrdSession.validateSession = validateSession;
