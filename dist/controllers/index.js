@@ -6,4 +6,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __export(require("./users-controller"));
 __export(require("./login-controller"));
 __export(require("./xmf-search-controller"));
+__export(require("./xmf-upload-controller"));
 //# sourceMappingURL=index.js.map

@@ -33,6 +33,7 @@ export namespace PrdSession {
             cookie: {
                 maxAge: (process.env.SESSION_EXPIRES ? +process.env.SESSION_EXPIRES : 259200) * 1000,
                 httpOnly: true,
+                sameSite: true,
             },
             saveUninitialized: false,
             unset: 'destroy',

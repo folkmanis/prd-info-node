@@ -26,18 +26,21 @@ const session_handler_1 = require("../lib/session-handler");
 let XmfSearchController = class XmfSearchController {
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.Info('xmf search ' + req.query.q);
+            const q = '%' + req.query.q.trim() + '%';
+            const params = [q, q];
+            let where = `WHERE ((xmf_jobs.DescriptiveName LIKE ?)
+        OR (xmf_jobs.JDFJobID LIKE ?))`;
+            if (req.query.customers) {
+                params.push(req.query.customers.split(','));
+                where += ` AND xmf_jobs.CustomerName IN (?)`;
+            }
             if (req.query.q.length < 4) {
                 logger_1.Logger.Info('Search too short');
                 res.json({ count: -1 });
                 return;
             }
-            const q = '%' + req.query.q.trim() + '%';
             const result = { count: 0, data: [] };
-            const c = yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT COUNT(*) AS count FROM xmf_jobs
-            WHERE (xmf_jobs.DescriptiveName LIKE ?)
-            OR (xmf_jobs.JDFJobID LIKE ?)`, [q, q]);
-            console.log(c);
+            const c = yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT COUNT(*) AS count FROM xmf_jobs ${where}`, params);
             result.count = c[0].count;
             if (result.count === 0) {
                 res.json(result);
@@ -61,17 +64,13 @@ let XmfSearchController = class XmfSearchController {
         xmf_actions
     ON
         xmf_records.Action = xmf_actions.id
-    WHERE
-        (
-            xmf_jobs.DescriptiveName LIKE ?
-        ) OR(xmf_jobs.JDFJobID LIKE ?)
+    ${where}
     ORDER BY
         xmf_jobs.JobID,
         xmf_jobs.id
     DESC
     LIMIT 100`;
-            result.data = yield mysql_connector_1.asyncQuery(req.sqlConnection, qqq, [q, q]);
-            // console.log(result);
+            result.data = yield mysql_connector_1.asyncQuery(req.sqlConnection, qqq, params);
             res.json(result);
         });
     }
