@@ -1,6 +1,7 @@
-import { XmfArchiveInfo, XmfArchive } from './xmf-archive-class';
+import { XmfArchiveInfo, XmfArchive, ArchiveJobSchema, ArchiveJob } from './xmf-archive-class';
 import { asyncQuery, MysqlPool } from '../lib/mysql-connector';
 import mysql, { Pool, PoolConnection } from 'mysql';
+import { Mongoose, Connection, Schema, Model } from "mongoose";
 
 class Record {
     constructor(
@@ -12,10 +13,13 @@ class Record {
 export class UploadParser {
     records: Record[] = [];
     counter = 0;
-
+    archiveJob: Model<ArchiveJob>;
     constructor(
         private connection: PoolConnection,
-    ) { }
+        private mongo: Connection,
+    ) {
+        this.archiveJob = this.mongo.model('xmfArchive', ArchiveJobSchema);
+    }
 
 
     parseLine(line: string) {
@@ -131,10 +135,18 @@ export class UploadParser {
         if ((++this.counter % 100) === 0) {
             console.log(this.counter);
         }
-        this.sqlInsert(archiveInfo);
+        const job = new this.archiveJob(archiveInfo)
+        job.save((err, result) => {
+            if (err) {
+                console.error('db save error');
+            }
+            // console.log(result);
+        })
+        // this.sqlInsert(archiveInfo);
+        // console.log(archiveInfo);
     }
 
-    async sqlInsert(archiveInfo: XmfArchiveInfo) {
+    private async sqlInsert(archiveInfo: XmfArchiveInfo) {
         const keys = Object.getOwnPropertyNames(archiveInfo);
         let qqq = mysql.format('INSERT INTO xmf_archive_temp (??) VALUES (', [keys])
         let first2 = true;

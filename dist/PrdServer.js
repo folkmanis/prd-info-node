@@ -23,8 +23,9 @@ class PrdServer extends core_1.Server {
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(this.mysqlPool.poolConnect());
-        // this.app.use(this.mongo.connect());
-        this.app.use(session_handler_1.PrdSession.sessionHandler(this.mysqlPool));
+        this.app.use(this.mongo.connect());
+        this.app.use(session_handler_1.PrdSession.sessionHandlerMongo(this.mongo.connection));
+        // this.app.use(PrdSession.sessionHandler(this.mysqlPool));
         this.setupControllers();
     }
     setupControllers() {

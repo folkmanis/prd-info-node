@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction, Handler } from 'express';
-import mongodb, { MongoClient } from 'mongodb';
+// import mongodb, { MongoClient } from 'mongodb';
+import mongoose, { Mongoose, Connection, Schema } from "mongoose";
 import { Logger } from '@overnightjs/logger';
 
 export class MongoConnector {
@@ -9,43 +10,24 @@ export class MongoConnector {
         user: "prdUser",
         password: "9N0rqxG9KFQtosgp",
     };
-    client: MongoClient;
+    readonly connection: Connection;
 
     constructor() {
-        this.client = new MongoClient(
-            this.url,
-            {
-                // auth: this.auth,
-                useUnifiedTopology: true,
-            },
-        );
-        this.clientConnect();
-    }
+        mongoose.connect(this.url, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+        });
+        this.connection = mongoose.connection;
 
-    private async clientConnect() {
-        await this.client.connect();
-        console.log('mongo connected');
+        this.connection.on('error', () => console.error('mongo connection error'));
+        this.connection.once('open', () => console.log('mongo connected'));
     }
 
     connect(): Handler {
         return (req: Request, res: Response, next: NextFunction) => {
-            MongoClient.connect(this.url,
-                {
-                    auth: this.auth,
-                    useUnifiedTopology: true,
-                    useNewUrlParser: true,
-                },
-                (err, client) => {
-                    if (err) { next(err); }
-                    req.mongo = client;
-                    console.log('mongo connected');
-                    res.on('close', () => {
-                        client.close()
-                        console.log('mongo released');
-                    });
-                    next();
-                }
-            )
+            console.log('mongo connection: ', this.connection);
+            req.mongo = this.connection;
+            next();
         }
     }
 }

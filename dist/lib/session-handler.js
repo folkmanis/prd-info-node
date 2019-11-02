@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const session = require("express-session");
 const express_mysql_session_1 = __importDefault(require("express-mysql-session"));
 const logger_1 = require("@overnightjs/logger");
+// import {MongoStore} from 'connect-mongo';
+const MongoStore = require('connect-mongo')(session);
 var PrdSession;
 (function (PrdSession) {
     function validateSession(req, res, next) {
@@ -45,5 +47,21 @@ var PrdSession;
         });
     }
     PrdSession.sessionHandler = sessionHandler;
+    function sessionHandlerMongo(conn) {
+        const sessionStore = new MongoStore({ mongooseConnection: conn });
+        return session({
+            secret: 'HGG50EtOT7',
+            store: sessionStore,
+            cookie: {
+                maxAge: (process.env.SESSION_EXPIRES ? +process.env.SESSION_EXPIRES : 259200) * 1000,
+                httpOnly: true,
+                sameSite: true,
+            },
+            saveUninitialized: false,
+            unset: 'destroy',
+            resave: false,
+        });
+    }
+    PrdSession.sessionHandlerMongo = sessionHandlerMongo;
 })(PrdSession = exports.PrdSession || (exports.PrdSession = {}));
 //# sourceMappingURL=session-handler.js.map

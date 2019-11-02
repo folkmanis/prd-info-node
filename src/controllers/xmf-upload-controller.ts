@@ -26,7 +26,7 @@ export class XmfUploadController {
         };
 
         const busboy = new Busboy({ headers: req.headers });
-        const parser = new UploadParser(req.sqlConnection);
+        const parser = new UploadParser(req.sqlConnection, req.mongo);
         busboy.on('file', async (fieldname, file, filename) => {
             res.result.filename = filename;
             res.result.fieldname = fieldname;

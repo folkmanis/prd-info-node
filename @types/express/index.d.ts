@@ -1,4 +1,6 @@
+// import mongoose, { Mongoose, Connection } from "mongoose";
 declare namespace Express {
+
     export interface Request {
         sqlConnection: any;
         mongo: any;

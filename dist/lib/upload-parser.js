@@ -12,6 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const xmf_archive_class_1 = require("./xmf-archive-class");
 const mysql_connector_1 = require("../lib/mysql-connector");
 const mysql_1 = __importDefault(require("mysql"));
 class Record {
@@ -21,10 +22,12 @@ class Record {
     }
 }
 class UploadParser {
-    constructor(connection) {
+    constructor(connection, mongo) {
         this.connection = connection;
+        this.mongo = mongo;
         this.records = [];
         this.counter = 0;
+        this.archiveJob = this.mongo.model('xmfArchive', xmf_archive_class_1.ArchiveJobSchema);
     }
     parseLine(line) {
         line = line.trim();
@@ -141,7 +144,15 @@ class UploadParser {
         if ((++this.counter % 100) === 0) {
             console.log(this.counter);
         }
-        this.sqlInsert(archiveInfo);
+        const job = new this.archiveJob(archiveInfo);
+        job.save((err, result) => {
+            if (err) {
+                console.error('db save error');
+            }
+            // console.log(result);
+        });
+        // this.sqlInsert(archiveInfo);
+        // console.log(archiveInfo);
     }
     sqlInsert(archiveInfo) {
         return __awaiter(this, void 0, void 0, function* () {
