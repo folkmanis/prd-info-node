@@ -25,7 +25,6 @@ export class MongoConnector {
 
     connect(): Handler {
         return (req: Request, res: Response, next: NextFunction) => {
-            console.log('mongo connection: ', this.connection);
             req.mongo = this.connection;
             next();
         }

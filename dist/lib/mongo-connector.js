@@ -23,7 +23,6 @@ class MongoConnector {
     }
     connect() {
         return (req, res, next) => {
-            console.log('mongo connection: ', this.connection);
             req.mongo = this.connection;
             next();
         };
