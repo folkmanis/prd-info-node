@@ -13,7 +13,6 @@ declare namespace Express {
         user: User;
     }
     export interface User {
-        id: number;
         name: string;
         username: string;
         admin: boolean;

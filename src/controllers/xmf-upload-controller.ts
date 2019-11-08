@@ -5,7 +5,6 @@
 import { Controller, ClassMiddleware, Post, ClassWrapper } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
-import { asyncQuery, MysqlPool } from '../lib/mysql-connector';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 import { UploadParser } from '../lib/upload-parser';
@@ -19,24 +18,19 @@ export class XmfUploadController {
 
     @Post('file')
     private async file(req: Request, res: Response) {
-        res.result = {
-            body: req.body,
-            method: req.method,
-            headers: req.headers,
-        };
-
         const busboy = new Busboy({ headers: req.headers });
-        const parser = new UploadParser(req.sqlConnection, req.mongo);
+        const parser = new UploadParser(req.mongo);
+        res.result = {};
         busboy.on('file', async (fieldname, file, filename) => {
             res.result.filename = filename;
             res.result.fieldname = fieldname;
             const rl = readline.createInterface({ input: file, crlfDelay: Infinity });
             for await (const line of rl) {
-                parser.parseLine(line);
+                await parser.parseLine(line);
             }
         })
         busboy.on('finish', async () => {
-            res.result.data = parser.counter;
+            res.result.data = parser.updatedCount;
             res.json(res.result);
         }
         );

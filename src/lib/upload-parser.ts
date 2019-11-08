@@ -1,48 +1,153 @@
 import { XmfArchiveInfo, XmfArchive, ArchiveJobSchema, ArchiveJob } from './xmf-archive-class';
-import { asyncQuery, MysqlPool } from '../lib/mysql-connector';
-import mysql, { Pool, PoolConnection } from 'mysql';
-import { Mongoose, Connection, Schema, Model } from "mongoose";
+import { Connection, Model } from "mongoose";
 
-class Record {
-    constructor(
-        public key: string,
-        public val?: string | number | boolean,
-    ) { }
+abstract class Data {
+    closed: boolean = false;
+    abstract add(key: string, val: any): void;
+    abstract toObject(): { [key: string]: any };
+    abstract last(): Data;
+    close() {
+        const lo = this.last();
+        if (lo === this || lo.closed) {
+            this.closed = true;
+            return;
+        }
+        lo.close();
+    }
+
+
+}
+
+class DataObject extends Data {
+    private el: Map<string, any> = new Map();
+    private lastEl: any;
+    closed = false;
+    constructor() {
+        super();
+        this.lastEl = this;
+    }
+
+    public last(): Data {
+        if (this.lastEl === this || !(this.lastEl instanceof Data) || this.lastEl.closed) {
+            return this;
+        } else {
+            return this.lastEl.last();
+        }
+    }
+
+    add(key: string, val: any) {
+        const lo = this.last();
+        if (lo !== this) {
+            lo.add(key, val);
+            return;
+        }
+        if (key === 'OBJECT') {
+            this.lastEl = new DataObject();
+        } else if (val === '[]') {
+            this.lastEl = new DataArray();
+        } else {
+            this.lastEl = val;
+        }
+        this.el.set(key, this.lastEl);
+    }
+
+    toObject(): { [key: string]: any } {
+        const obj: { [key: string]: any } = {};
+        this.el.forEach((val, key) => {
+            if (val instanceof Data) {
+                obj[key] = val.toObject();
+            } else {
+                obj[key] = val;
+            }
+        })
+        return obj;
+    }
+
+    clear() {
+        this.el.clear();
+        this.lastEl = this;
+    }
+
+}
+
+class DataArray extends Data {
+    private arr: any[];
+    closed = false;
+    constructor() {
+        super();
+        this.arr = [];
+    }
+
+    add(key: string, val: any): void {
+        if (key === 'OBJECT') { // jauns objekts
+            this.arr.push(new DataObject());
+        } else {
+            this.arr.push(val);
+        }
+    }
+
+    toObject(): any[] {
+        const obj: any[] = [];
+        for (const el of this.arr) {
+            if (el instanceof Data) {
+                obj.push(el.toObject());
+            } else {
+                obj.push(el);
+            }
+        }
+        return obj;
+    }
+
+    last(): Data {
+        const lastEl = this.arr[this.arr.length - 1];
+        if (lastEl instanceof Data && !lastEl.closed) {
+            return lastEl.last();
+        } else {
+            return this;
+        }
+    }
+
 }
 
 export class UploadParser {
-    records: Record[] = [];
+    private data = new DataObject();
+
     counter = 0;
+    isfirst = true; // kamēr nav pievienots neviens elements
+    // parsed: any[] = [];
+    updatedCount = {
+        n: 0,
+        nModified: 0
+    };
     archiveJob: Model<ArchiveJob>;
     constructor(
-        private connection: PoolConnection,
         private mongo: Connection,
     ) {
         this.archiveJob = this.mongo.model('xmfArchive', ArchiveJobSchema);
     }
 
 
-    parseLine(line: string) {
+    async parseLine(line: string) {
         line = line.trim();
-        if (line.indexOf("%%N:") !== -1) // Ar %%N: saakas katrs jauns darbs
+        if (line.startsWith("%%N:")) // Ar %%N: saakas katrs jauns darbs
         {
-            this.records = [];
-        } else if (line[0] == '{') // Atverosaa figuuriekava noraada uz datu saakumu
+            this.data.clear();
+            this.isfirst = true;
+        } else if (line.startsWith("%%E:")) { // Ar %%E: beidzas katrs darbs
+           await this.storeData();
+        } else if (line[0] === '{' && !this.isfirst) // Atverosaa figuuriekava noraada uz datu saakumu
         {
-            this.records.push({ key: '{' });
-        } else if (line[0] == '}') // Aizverošā figuuriekava noraada uz datu beigaam
-        {
-            this.records.push({ key: '}' });
-        } else if (line.indexOf("%%E:") !== -1) { // Ar %%E: beidzas katrs jauns darbs
-
-            // TODO beidz lasīt ierakstu
-            // Saglabā sql dautbāzē
-            // console.log(this.records);
-            this.appendRecords();
+            this.data.add('OBJECT', '');
+        } else if (line[0] === '}') { // Aizverošā figuuriekava noraada uz datu beigaam
+            this.data.close();
+            if (line[1] === ';') {
+                this.data.close();
+            }
         } else {
-            const value = this.lineValue(line);
+            const value = this.lineValue(line); // Jābūt key: value pārim
             if (value) {
-                this.records.push(new Record(value.key, value.val));
+                this.data.add(value.key, value.val);
+                this.isfirst = false;
             }
         }
     }
@@ -53,16 +158,18 @@ export class UploadParser {
         let k = line.indexOf(':');
         let l = line.indexOf('=');
         let m = line.lastIndexOf(';');
-        if (k === -1) {
+        if (k === -1 || l === -1) {
             return null;
         }
         const key = line.substring(0, k);
-        let val: string | number | boolean = line.substring(l + 1, m);
         const type = line.substring(k + 1, l);
-        // let val: string | number | boolean;
+        if (type.search(/OBJECT\[[0-9]+\]/) > -1) {
+            return { key: key, val: '[]' }
+        }
+        let val: string | number | boolean = line.substring(l + 1, m);
         switch (type) {
             case 'string':
-                val = val; //.substring(1, val.length - 1);
+                val = val;
                 break;
             case 'int':
                 val = +val;
@@ -79,7 +186,6 @@ export class UploadParser {
     }
     /**
      * Izņem liekās atstarpes no rindas.
-     * Pārveido \ par \\
      * Atgriež jaunu teksta rindu
      * @param text teksts
      */
@@ -93,9 +199,6 @@ export class UploadParser {
             if (text[i] == '\"') {
                 block = !block;
             }
-            // if (block && text[i] == '/') {
-            //     tn += "\\\\";
-            // }
             else {
                 tn += (text[i]);
             }
@@ -103,66 +206,16 @@ export class UploadParser {
         return tn;
     }
 
-    private appendRecords() {
-        const archiveInfo: XmfArchiveInfo = {}; // XmfArchiveInfo = new XmfArchiveInfo();
-        let archive: { [key: string]: string | boolean | number } | null = null;
-        for (const rec of this.records) {
-            if (
-                rec.key === 'DiArchive2Info' ||
-                rec.key === '{'
-            ) { continue; }
-            if (rec.key === 'Archives') {
-                // const archives: XmfArchive[] = [];
-                // this.archiveInfo.Archives = archives;
-                continue;
-            }
-            if (rec.key === 'DiArchive') {
-                archive = {};
-                archiveInfo.Archives = new Array<{ [key: string]: string | boolean | number }>();
-                archiveInfo.Archives.push(archive);
-                continue;
-            }
-            if (!rec.val) { continue; }
-            if (archive) {
-                archive[rec.key] = rec.val;
-            } else {
-                archiveInfo[rec.key] = rec.val;
-            }
-            if (rec.key === '}') {
-                archive = null;
-            }
-        }
+    private async storeData() {
+        const archiveInfo: XmfArchiveInfo = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
         if ((++this.counter % 100) === 0) {
             console.log(this.counter);
         }
-        const job = new this.archiveJob(archiveInfo)
-        job.save((err, result) => {
-            if (err) {
-                console.error('db save error');
-            }
-            // console.log(result);
-        })
-        // this.sqlInsert(archiveInfo);
-        // console.log(archiveInfo);
-    }
-
-    private async sqlInsert(archiveInfo: XmfArchiveInfo) {
-        const keys = Object.getOwnPropertyNames(archiveInfo);
-        let qqq = mysql.format('INSERT INTO xmf_archive_temp (??) VALUES (', [keys])
-        let first2 = true;
-        for (const k of keys) {
-            if (!first2) {
-                qqq += ',';
-            }
-            first2 = false;
-            if (typeof archiveInfo[k] === 'object') {
-                qqq += '\'' + JSON.stringify(archiveInfo[k]) + '\'';
-            } else {
-                qqq += mysql.escape(archiveInfo[k]);
-            }
-        }
-        qqq += ')';
-        await asyncQuery(this.connection, qqq);
+        // const job = new this.archiveJob(archiveInfo)
+        const result = await this.archiveJob.updateOne({ JDFJobID: archiveInfo.JDFJobID, JobID: archiveInfo.JobID }, archiveInfo, { upsert: true });
+        this.updatedCount.n += result.n;
+        this.updatedCount.nModified += result.nModified;
+        console.log(this.updatedCount);
     }
 
 }

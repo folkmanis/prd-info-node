@@ -4,7 +4,7 @@
  * POST /data/login/login
  * {
  * username: string;
- * pass: string;
+ * password: string;
  * }
  * 
  * User
@@ -24,12 +24,13 @@
  *
  */
 
+import crypto from 'crypto';
 import { Controller, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
-import { asyncQuery } from '../lib/mysql-connector';
 import { asyncWrapper } from "../lib/asyncWrapper";
-import { User } from './users-controller';
+import { User, UserSchema } from '../lib/user-class';
+import { Connection, Model } from "mongoose";
 
 @Controller('data/login')
 export class LoginController {
@@ -37,6 +38,10 @@ export class LoginController {
     @Post('login')
     @Wrapper(asyncWrapper)
     private async login(req: Request, res: Response) {
+        if (!req.body.username || !req.body.password) {  // Ja nepareizs pieprasījums
+            res.status(401).json({});
+            return;
+        }
         await new Promise((resolve, reject) => {  // Izdzēš sesiju
             if (!req.session) { // Ja sesijas nav, tad neko nedara
                 resolve();
@@ -46,17 +51,25 @@ export class LoginController {
                 err ? reject(err) : resolve()
             })
         })
-        const q = `SELECT id, name, username, admin FROM users WHERE username=? AND password=UNHEX(SHA(?))`;
-        const result = await asyncQuery<User[]>(req.sqlConnection, q, [req.body.username, req.body.pass]);
-        if (result.length < 1) {
+
+        const User: Model<User> = req.mongo.model('users', UserSchema);
+        const login = {
+            username: req.body.username,
+            password: crypto.createHash('sha256').update(req.body.password).digest('hex'),
+        }
+
+        let result = await User.countDocuments(login);
+        if (result !== 1) {
             Logger.Err('Login failed. User: ' + req.body.username + ' pwd: ' + req.body.pass);
             res.status(401).json({});
-        } else if (req.session) {
-            req.session.user = result[0];
-            await asyncQuery(req.sqlConnection, `UPDATE users SET last_login=UTC_TIMESTAMP() WHERE id=?`, [result[0].id]);
-            Logger.Info('Logged in. User: ' + req.session.user.username);
-            res.json(req.session.user);
+            return;
         }
+        await User.updateOne(login, { last_login: new Date() });
+        const user = await User.findOne(login, '-_id username name admin last_login');
+        if (user && req.session) {
+            req.session.user = user;
+        }
+        res.json(user);
     }
 
     @Post('logout')
@@ -66,10 +79,10 @@ export class LoginController {
         const result = await new Promise((resolve, reject) => {
             if (req.session) {
                 req.session.destroy((err) => {
-                    err ? reject(err) : resolve({ affectedRows: 1 });
+                    err ? reject(err) : resolve({ logout: 1 });
                 })
             } else {
-                resolve({ affectedRows: 0 });
+                resolve({ logout: 0 });
             }
         });
         res.json(result);

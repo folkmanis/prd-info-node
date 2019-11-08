@@ -1,0 +1,78 @@
+%%N:/Archive/Jobs/S_69324_110335
+DiArchive2Info:OBJECT DiArchive2Info
+{
+  JobID:string = "69324";
+  JDFJobID:string = "110335";
+  Comment:string = "";
+  DescriptiveName:string = "110335-Maytoni brosura";
+  CustomerName:string = "Zemgus";
+  Company:string = "Zemgus";
+  BillingCode:string = "";
+  FirstStart:string = "2019-06-07T08:59:33Z";
+  LastEnd:string = "2019-06-10T08:59:06Z";
+  Deleted:string = "";
+  Secondary:bool = true;
+  Archives:OBJECT[1] = 
+    DiArchive:OBJECT DiArchive
+    {
+      Action:int = 1;
+      Status:int = 3;
+      Location:string = "Q:/Archives/Temp/110335-110335-Maytoni brosura_07-06_69324_Zemgus/110335-110335-Maytoni brosura_2019-Jun-07_69324_Zemgus.sbak";
+      DbConvVn:string = "5.5.1.5";
+      ArchiveContent:int = 11;
+      Date:string = "2019-06-07T09:45:27Z";
+      Online:bool = true;
+      Percent:int = 100;
+      Reason:string = "";
+      Extra:string = "";
+      JobID:string = "69324";
+    };
+}
+
+%%E:
+%%N:/Archive/Jobs/S_69325_110349
+DiArchive2Info:OBJECT DiArchive2Info
+{
+  JobID:string = "69325";
+  JDFJobID:string = "110349";
+  Comment:string = "";
+  DescriptiveName:string = "110349-Uzlimes Duga";
+  CustomerName:string = "Zemgus";
+  Company:string = "Zemgus";
+  BillingCode:string = "";
+  FirstStart:string = "2019-06-07T09:50:35Z";
+  LastEnd:string = "2019-06-10T09:50:02Z";
+  Deleted:string = "";
+  Secondary:bool = true;
+  Archives:OBJECT[2] = 
+    DiArchive:OBJECT DiArchive
+    {
+      Action:int = 1;
+      Status:int = 3;
+      Location:string = "Q:/Archives/Temp/110349-110349-Uzlimes Duga_07-06_69325_Zemgus/110349-110349-Uzlimes Duga_2019-Jun-07_69325_Zemgus.sbak";
+      DbConvVn:string = "5.5.1.5";
+      ArchiveContent:int = 11;
+      Date:string = "2019-06-07T11:10:18Z";
+      Online:bool = true;
+      Percent:int = 100;
+      Reason:string = "";
+      Extra:string = "";
+      JobID:string = "69325";
+    },
+    DiArchive:OBJECT DiArchive
+    {
+      Action:int = 2;
+      Status:int = 3;
+      Location:string = "Q:/Archives/Temp/110349-110349-Uzlimes Duga_07-06_69325_Zemgus/110349-110349-Uzlimes Duga_2019-Jun-07_69325_Zemgus.sbak";
+      DbConvVn:string = "";
+      ArchiveContent:int = 1;
+      Date:string = "2019-06-07T11:20:14Z";
+      Online:bool = false;
+      Percent:int = 100;
+      Reason:string = "";
+      Extra:string = "";
+      JobID:string = "12";
+    };
+}
+
+%%E:

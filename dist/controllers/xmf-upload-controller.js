@@ -37,13 +37,9 @@ const readline_1 = __importDefault(require("readline"));
 let XmfUploadController = class XmfUploadController {
     file(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            res.result = {
-                body: req.body,
-                method: req.method,
-                headers: req.headers,
-            };
             const busboy = new busboy_1.default({ headers: req.headers });
-            const parser = new upload_parser_1.UploadParser(req.sqlConnection, req.mongo);
+            const parser = new upload_parser_1.UploadParser(req.mongo);
+            res.result = {};
             busboy.on('file', (fieldname, file, filename) => __awaiter(this, void 0, void 0, function* () {
                 var e_1, _a;
                 res.result.filename = filename;
@@ -52,7 +48,7 @@ let XmfUploadController = class XmfUploadController {
                 try {
                     for (var rl_1 = __asyncValues(rl), rl_1_1; rl_1_1 = yield rl_1.next(), !rl_1_1.done;) {
                         const line = rl_1_1.value;
-                        parser.parseLine(line);
+                        yield parser.parseLine(line);
                     }
                 }
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -64,7 +60,7 @@ let XmfUploadController = class XmfUploadController {
                 }
             }));
             busboy.on('finish', () => __awaiter(this, void 0, void 0, function* () {
-                res.result.data = parser.counter;
+                res.result.data = parser.updatedCount;
                 res.json(res.result);
             }));
             req.pipe(busboy);

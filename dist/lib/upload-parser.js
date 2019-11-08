@@ -8,69 +8,166 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const xmf_archive_class_1 = require("./xmf-archive-class");
-const mysql_connector_1 = require("../lib/mysql-connector");
-const mysql_1 = __importDefault(require("mysql"));
-class Record {
-    constructor(key, val) {
-        this.key = key;
-        this.val = val;
+class Data {
+    constructor() {
+        this.closed = false;
+    }
+    close() {
+        const lo = this.last();
+        if (lo === this || lo.closed) {
+            this.closed = true;
+            return;
+        }
+        lo.close();
+    }
+}
+class DataObject extends Data {
+    constructor() {
+        super();
+        this.el = new Map();
+        this.closed = false;
+        this.lastEl = this;
+    }
+    last() {
+        if (this.lastEl === this || !(this.lastEl instanceof Data) || this.lastEl.closed) {
+            return this;
+        }
+        else {
+            return this.lastEl.last();
+        }
+    }
+    add(key, val) {
+        const lo = this.last();
+        if (lo !== this) {
+            lo.add(key, val);
+            return;
+        }
+        if (key === 'OBJECT') {
+            this.lastEl = new DataObject();
+        }
+        else if (val === '[]') {
+            this.lastEl = new DataArray();
+        }
+        else {
+            this.lastEl = val;
+        }
+        this.el.set(key, this.lastEl);
+    }
+    toObject() {
+        const obj = {};
+        this.el.forEach((val, key) => {
+            if (val instanceof Data) {
+                obj[key] = val.toObject();
+            }
+            else {
+                obj[key] = val;
+            }
+        });
+        return obj;
+    }
+    clear() {
+        this.el.clear();
+        this.lastEl = this;
+    }
+}
+class DataArray extends Data {
+    constructor() {
+        super();
+        this.closed = false;
+        this.arr = [];
+    }
+    add(key, val) {
+        if (key === 'OBJECT') { // jauns objekts
+            this.arr.push(new DataObject());
+        }
+        else {
+            this.arr.push(val);
+        }
+    }
+    toObject() {
+        const obj = [];
+        for (const el of this.arr) {
+            if (el instanceof Data) {
+                obj.push(el.toObject());
+            }
+            else {
+                obj.push(el);
+            }
+        }
+        return obj;
+    }
+    last() {
+        const lastEl = this.arr[this.arr.length - 1];
+        if (lastEl instanceof Data && !lastEl.closed) {
+            return lastEl.last();
+        }
+        else {
+            return this;
+        }
     }
 }
 class UploadParser {
-    constructor(connection, mongo) {
-        this.connection = connection;
+    constructor(mongo) {
         this.mongo = mongo;
-        this.records = [];
+        this.data = new DataObject();
         this.counter = 0;
+        this.isfirst = true; // kamēr nav pievienots neviens elements
+        // parsed: any[] = [];
+        this.updatedCount = {
+            n: 0,
+            nModified: 0
+        };
         this.archiveJob = this.mongo.model('xmfArchive', xmf_archive_class_1.ArchiveJobSchema);
     }
     parseLine(line) {
-        line = line.trim();
-        if (line.indexOf("%%N:") !== -1) // Ar %%N: saakas katrs jauns darbs
-         {
-            this.records = [];
-        }
-        else if (line[0] == '{') // Atverosaa figuuriekava noraada uz datu saakumu
-         {
-            this.records.push({ key: '{' });
-        }
-        else if (line[0] == '}') // Aizverošā figuuriekava noraada uz datu beigaam
-         {
-            this.records.push({ key: '}' });
-        }
-        else if (line.indexOf("%%E:") !== -1) { // Ar %%E: beidzas katrs jauns darbs
-            // TODO beidz lasīt ierakstu
-            // Saglabā sql dautbāzē
-            // console.log(this.records);
-            this.appendRecords();
-        }
-        else {
-            const value = this.lineValue(line);
-            if (value) {
-                this.records.push(new Record(value.key, value.val));
+        return __awaiter(this, void 0, void 0, function* () {
+            line = line.trim();
+            if (line.startsWith("%%N:")) // Ar %%N: saakas katrs jauns darbs
+             {
+                this.data.clear();
+                this.isfirst = true;
             }
-        }
+            else if (line.startsWith("%%E:")) { // Ar %%E: beidzas katrs darbs
+                yield this.storeData();
+            }
+            else if (line[0] === '{' && !this.isfirst) // Atverosaa figuuriekava noraada uz datu saakumu
+             {
+                this.data.add('OBJECT', '');
+            }
+            else if (line[0] === '}') { // Aizverošā figuuriekava noraada uz datu beigaam
+                this.data.close();
+                if (line[1] === ';') {
+                    this.data.close();
+                }
+            }
+            else {
+                const value = this.lineValue(line); // Jābūt key: value pārim
+                if (value) {
+                    this.data.add(value.key, value.val);
+                    this.isfirst = false;
+                }
+            }
+        });
     }
     lineValue(line) {
         line = this.removeBlanks(line);
         let k = line.indexOf(':');
         let l = line.indexOf('=');
         let m = line.lastIndexOf(';');
-        if (k === -1) {
+        if (k === -1 || l === -1) {
             return null;
         }
         const key = line.substring(0, k);
-        let val = line.substring(l + 1, m);
         const type = line.substring(k + 1, l);
-        // let val: string | number | boolean;
+        if (type.search(/OBJECT\[[0-9]+\]/) > -1) {
+            return { key: key, val: '[]' };
+        }
+        let val = line.substring(l + 1, m);
         switch (type) {
             case 'string':
-                val = val; //.substring(1, val.length - 1);
+                val = val;
                 break;
             case 'int':
                 val = +val;
@@ -86,7 +183,6 @@ class UploadParser {
     }
     /**
      * Izņem liekās atstarpes no rindas.
-     * Pārveido \ par \\
      * Atgriež jaunu teksta rindu
      * @param text teksts
      */
@@ -100,79 +196,23 @@ class UploadParser {
             if (text[i] == '\"') {
                 block = !block;
             }
-            // if (block && text[i] == '/') {
-            //     tn += "\\\\";
-            // }
             else {
                 tn += (text[i]);
             }
         }
         return tn;
     }
-    appendRecords() {
-        const archiveInfo = {}; // XmfArchiveInfo = new XmfArchiveInfo();
-        let archive = null;
-        for (const rec of this.records) {
-            if (rec.key === 'DiArchive2Info' ||
-                rec.key === '{') {
-                continue;
-            }
-            if (rec.key === 'Archives') {
-                // const archives: XmfArchive[] = [];
-                // this.archiveInfo.Archives = archives;
-                continue;
-            }
-            if (rec.key === 'DiArchive') {
-                archive = {};
-                archiveInfo.Archives = new Array();
-                archiveInfo.Archives.push(archive);
-                continue;
-            }
-            if (!rec.val) {
-                continue;
-            }
-            if (archive) {
-                archive[rec.key] = rec.val;
-            }
-            else {
-                archiveInfo[rec.key] = rec.val;
-            }
-            if (rec.key === '}') {
-                archive = null;
-            }
-        }
-        if ((++this.counter % 100) === 0) {
-            console.log(this.counter);
-        }
-        const job = new this.archiveJob(archiveInfo);
-        job.save((err, result) => {
-            if (err) {
-                console.error('db save error');
-            }
-            // console.log(result);
-        });
-        // this.sqlInsert(archiveInfo);
-        // console.log(archiveInfo);
-    }
-    sqlInsert(archiveInfo) {
+    storeData() {
         return __awaiter(this, void 0, void 0, function* () {
-            const keys = Object.getOwnPropertyNames(archiveInfo);
-            let qqq = mysql_1.default.format('INSERT INTO xmf_archive_temp (??) VALUES (', [keys]);
-            let first2 = true;
-            for (const k of keys) {
-                if (!first2) {
-                    qqq += ',';
-                }
-                first2 = false;
-                if (typeof archiveInfo[k] === 'object') {
-                    qqq += '\'' + JSON.stringify(archiveInfo[k]) + '\'';
-                }
-                else {
-                    qqq += mysql_1.default.escape(archiveInfo[k]);
-                }
+            const archiveInfo = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
+            if ((++this.counter % 100) === 0) {
+                console.log(this.counter);
             }
-            qqq += ')';
-            yield mysql_connector_1.asyncQuery(this.connection, qqq);
+            // const job = new this.archiveJob(archiveInfo)
+            const result = yield this.archiveJob.updateOne({ JDFJobID: archiveInfo.JDFJobID, JobID: archiveInfo.JobID }, archiveInfo, { upsert: true });
+            this.updatedCount.n += result.n;
+            this.updatedCount.nModified += result.nModified;
+            console.log(this.updatedCount);
         });
     }
 }

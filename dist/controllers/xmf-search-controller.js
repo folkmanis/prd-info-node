@@ -19,58 +19,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@overnightjs/core");
-const logger_1 = require("@overnightjs/logger");
-const mysql_connector_1 = require("../lib/mysql-connector");
 const asyncWrapper_1 = require("../lib/asyncWrapper");
 const session_handler_1 = require("../lib/session-handler");
+const xmf_archive_class_1 = require("../lib/xmf-archive-class");
 let XmfSearchController = class XmfSearchController {
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = '%' + req.query.q.trim() + '%';
-            const params = [q, q];
-            let where = `WHERE ((xmf_jobs.DescriptiveName LIKE ?)
-        OR (xmf_jobs.JDFJobID LIKE ?))`;
-            if (req.query.customers) {
-                params.push(req.query.customers.split(','));
-                where += ` AND xmf_jobs.CustomerName IN (?)`;
-            }
-            if (req.query.q.length < 4) {
-                logger_1.Logger.Info('Search too short');
-                res.json({ count: -1 });
-                return;
-            }
             const result = { count: 0, data: [] };
-            const c = yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT COUNT(*) AS count FROM xmf_jobs ${where}`, params);
-            result.count = c[0].count;
+            const q = req.query.q.trim();
+            const filter = {
+                $or: [
+                    { DescriptiveName: { $regex: q, $options: 'i' } },
+                    { JDFJobID: { $regex: q, $options: 'i' } },
+                ]
+            };
+            if (req.query.customers) {
+                filter.CustomerName = { $in: req.query.customers.split(',') };
+            }
+            const projection = '-_id JDFJobID DescriptiveName CustomerName Archives.Location Archives.Date Archives.Action';
+            const mongo = req.mongo;
+            const ArchiveJob = mongo.model('xmfArchive', xmf_archive_class_1.ArchiveJobSchema);
+            result.count = yield ArchiveJob.countDocuments(filter);
             if (result.count === 0) {
                 res.json(result);
                 return;
             }
-            const qqq = `SELECT
-        xmf_jobs.id AS id,
-        xmf_jobs.JDFJobID AS jdfJobId,
-        xmf_jobs.DescriptiveName AS descriptiveName,
-        xmf_jobs.CustomerName AS customerName,
-        xmf_records.Location AS location,
-        xmf_records.Date AS date,
-        xmf_actions.Action AS action  
-    FROM
-        xmf_jobs
-    LEFT JOIN
-        xmf_records
-    ON
-        xmf_jobs.id = xmf_records.id
-    LEFT JOIN
-        xmf_actions
-    ON
-        xmf_records.Action = xmf_actions.id
-    ${where}
-    ORDER BY
-        xmf_jobs.JobID,
-        xmf_jobs.id
-    DESC
-    LIMIT 100`;
-            result.data = yield mysql_connector_1.asyncQuery(req.sqlConnection, qqq, params);
+            result.data = yield ArchiveJob.find(filter, projection).limit(100).sort({ JDFJobID: 1 });
             res.json(result);
         });
     }

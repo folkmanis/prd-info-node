@@ -5,21 +5,31 @@
 import { Controller, ClassMiddleware, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
-import { asyncQuery, MysqlPool } from '../lib/mysql-connector';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 import mysql from 'mysql';
+import { Connection, Model } from "mongoose";
+import { ArchiveJobSchema, ArchiveJob } from '../lib/xmf-archive-class';
 
 interface ArchiveRecord {
     count: number;
-    data?: Array<{
-        id: number,
-        jdfJobId: string,
-        descriptiveName: string,
-        location: string,
-        action: string,
-        date: string,
-    }>;
+    data?: ArchiveData[];
+}
+
+interface ArchiveData {
+    JDFJobID: string,
+    DescriptiveName: string,
+    CustomerName: string,
+    Archives: {
+        Location: string,
+        Date: string,
+        Action: number,
+    }[]
+}
+interface Filter {
+    JDFJobID?: {},
+    DescriptiveName: {},
+    CustomerName?: {},
 }
 
 
@@ -30,56 +40,30 @@ export class XmfSearchController {
 
     @Get('search')
     private async search(req: Request, res: Response) {
-        const q = '%' + req.query.q.trim() + '%';
-        const params = [q, q];
-        let where =
-            `WHERE ((xmf_jobs.DescriptiveName LIKE ?)
-        OR (xmf_jobs.JDFJobID LIKE ?))`;
-        if (req.query.customers) {
-            params.push(req.query.customers.split(','));
-            where += ` AND xmf_jobs.CustomerName IN (?)`;
-        }
-        if (req.query.q.length < 4) {
-            Logger.Info('Search too short');
-            res.json({ count: -1 });
-            return;
-        }
+
         const result: ArchiveRecord = { count: 0, data: [] };
-        const c = await asyncQuery<{ count: number }[]>(req.sqlConnection,
-            `SELECT COUNT(*) AS count FROM xmf_jobs ${where}`,
-            params);
-        result.count = c[0].count;
+        const q: string = req.query.q.trim();
+        const filter: any = {
+            $or: [
+                { DescriptiveName: { $regex: q, $options: 'i' } },
+                { JDFJobID: { $regex: q, $options: 'i' } },
+            ]
+        };
+        if (req.query.customers) {
+            filter.CustomerName = { $in: req.query.customers.split(',') };
+        }
+        const projection = '-_id JDFJobID DescriptiveName CustomerName Archives.Location Archives.Date Archives.Action';
+        const mongo: Connection = req.mongo;
+        const ArchiveJob: Model<ArchiveJob> = mongo.model('xmfArchive', ArchiveJobSchema);
+        result.count = await ArchiveJob.countDocuments(filter);
         if (result.count === 0) {
             res.json(result);
             return;
         }
-        const qqq = `SELECT
-        xmf_jobs.id AS id,
-        xmf_jobs.JDFJobID AS jdfJobId,
-        xmf_jobs.DescriptiveName AS descriptiveName,
-        xmf_jobs.CustomerName AS customerName,
-        xmf_records.Location AS location,
-        xmf_records.Date AS date,
-        xmf_actions.Action AS action  
-    FROM
-        xmf_jobs
-    LEFT JOIN
-        xmf_records
-    ON
-        xmf_jobs.id = xmf_records.id
-    LEFT JOIN
-        xmf_actions
-    ON
-        xmf_records.Action = xmf_actions.id
-    ${where}
-    ORDER BY
-        xmf_jobs.JobID,
-        xmf_jobs.id
-    DESC
-    LIMIT 100`;
 
-        result.data = await asyncQuery(req.sqlConnection, qqq, params);
+        result.data = await ArchiveJob.find(filter, projection).limit(100).sort({JDFJobID: 1});
         res.json(result);
+
     }
 
 }

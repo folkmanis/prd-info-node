@@ -6,6 +6,16 @@
  * Full list of users
  * count: number total count
  * users: {id, username, name, admin, last_login}[]
+ *
+ * POST /user
+ * Update/insert user
+ *  {
+ *   username: string,
+ *   name: string,
+ *   password: string,
+ *   admin: boolean,
+ *   last_login: Date,
+ *  }
  */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -22,27 +32,49 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
 const logger_1 = require("@overnightjs/logger");
-const mysql_connector_1 = require("../lib/mysql-connector");
 const asyncWrapper_1 = require("../lib/asyncWrapper");
+const user_class_1 = require("../lib/user-class");
+const session_handler_1 = require("../lib/session-handler");
 let UsersController = class UsersController {
     getList(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.Logger.Info('users/list');
             res.result = {};
-            res.result.count = +(yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT COUNT(*) AS count FROM users`))[0].count;
-            res.result.users = yield mysql_connector_1.asyncQuery(req.sqlConnection, `SELECT id, username, name, admin, last_login FROM users ORDER BY username`);
+            const User = req.mongo.model('users', user_class_1.UserSchema);
+            res.result.count = yield User.estimatedDocumentCount();
+            res.result.users = yield User.find({}, '-_id username name admin last_login');
             res.json(res.result);
+        });
+    }
+    postUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            logger_1.Logger.Info('users/update');
+            const user = req.body;
+            const mongo = req.mongo;
+            const userModel = mongo.model('users', user_class_1.UserSchema);
+            user.password = crypto_1.default.createHash('sha256').update(req.body.password).digest('hex');
+            const result = yield userModel.updateOne({ username: user.username }, user, { upsert: true });
+            console.log(result);
+            res.json(result);
         });
     }
 };
 __decorate([
     core_1.Get('list')
 ], UsersController.prototype, "getList", null);
+__decorate([
+    core_1.Post('user')
+], UsersController.prototype, "postUser", null);
 UsersController = __decorate([
     core_1.Controller('data/users'),
+    core_1.ClassMiddleware(session_handler_1.PrdSession.validateAdminSession),
     core_1.ClassWrapper(asyncWrapper_1.asyncWrapper)
 ], UsersController);
 exports.UsersController = UsersController;

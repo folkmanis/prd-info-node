@@ -5,7 +5,7 @@
  * POST /data/login/login
  * {
  * username: string;
- * pass: string;
+ * password: string;
  * }
  *
  * User
@@ -39,14 +39,22 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
 const logger_1 = require("@overnightjs/logger");
-const mysql_connector_1 = require("../lib/mysql-connector");
 const asyncWrapper_1 = require("../lib/asyncWrapper");
+const user_class_1 = require("../lib/user-class");
 let LoginController = class LoginController {
     login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (!req.body.username || !req.body.password) { // Ja nepareizs pieprasījums
+                res.status(401).json({});
+                return;
+            }
             yield new Promise((resolve, reject) => {
                 if (!req.session) { // Ja sesijas nav, tad neko nedara
                     resolve();
@@ -56,18 +64,23 @@ let LoginController = class LoginController {
                     err ? reject(err) : resolve();
                 });
             });
-            const q = `SELECT id, name, username, admin FROM users WHERE username=? AND password=UNHEX(SHA(?))`;
-            const result = yield mysql_connector_1.asyncQuery(req.sqlConnection, q, [req.body.username, req.body.pass]);
-            if (result.length < 1) {
+            const User = req.mongo.model('users', user_class_1.UserSchema);
+            const login = {
+                username: req.body.username,
+                password: crypto_1.default.createHash('sha256').update(req.body.password).digest('hex'),
+            };
+            let result = yield User.countDocuments(login);
+            if (result !== 1) {
                 logger_1.Logger.Err('Login failed. User: ' + req.body.username + ' pwd: ' + req.body.pass);
                 res.status(401).json({});
+                return;
             }
-            else if (req.session) {
-                req.session.user = result[0];
-                yield mysql_connector_1.asyncQuery(req.sqlConnection, `UPDATE users SET last_login=UTC_TIMESTAMP() WHERE id=?`, [result[0].id]);
-                logger_1.Logger.Info('Logged in. User: ' + req.session.user.username);
-                res.json(req.session.user);
+            yield User.updateOne(login, { last_login: new Date() });
+            const user = yield User.findOne(login, '-_id username name admin last_login');
+            if (user && req.session) {
+                req.session.user = user;
             }
+            res.json(user);
         });
     }
     logout(req, res) {
@@ -76,11 +89,11 @@ let LoginController = class LoginController {
             const result = yield new Promise((resolve, reject) => {
                 if (req.session) {
                     req.session.destroy((err) => {
-                        err ? reject(err) : resolve({ affectedRows: 1 });
+                        err ? reject(err) : resolve({ logout: 1 });
                     });
                 }
                 else {
-                    resolve({ affectedRows: 0 });
+                    resolve({ logout: 0 });
                 }
             });
             res.json(result);
