@@ -215,7 +215,6 @@ export class UploadParser {
         const result = await this.archiveJob.updateOne({ JDFJobID: archiveInfo.JDFJobID, JobID: archiveInfo.JobID }, archiveInfo, { upsert: true });
         this.updatedCount.n += result.n;
         this.updatedCount.nModified += result.nModified;
-        console.log(this.updatedCount);
     }
 
 }

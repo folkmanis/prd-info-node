@@ -7,7 +7,6 @@ import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
-import mysql from 'mysql';
 import { Connection, Model } from "mongoose";
 import { ArchiveJobSchema, ArchiveJob } from '../lib/xmf-archive-class';
 
