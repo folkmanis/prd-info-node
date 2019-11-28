@@ -8,8 +8,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const xmf_archive_class_1 = require("./xmf-archive-class");
+const xmf_searchDAO_1 = __importDefault(require("../dao/xmf-searchDAO"));
 class Data {
     constructor() {
         this.closed = false;
@@ -109,17 +112,14 @@ class DataArray extends Data {
     }
 }
 class UploadParser {
-    constructor(mongo) {
-        this.mongo = mongo;
+    constructor() {
         this.data = new DataObject();
         this.counter = 0;
         this.isfirst = true; // kamēr nav pievienots neviens elements
-        // parsed: any[] = [];
-        this.updatedCount = {
-            n: 0,
-            nModified: 0
+        this.count = {
+            modified: 0,
+            upserted: 0
         };
-        this.archiveJob = this.mongo.model('xmfArchive', xmf_archive_class_1.ArchiveJobSchema);
     }
     parseLine(line) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -204,14 +204,13 @@ class UploadParser {
     }
     storeData() {
         return __awaiter(this, void 0, void 0, function* () {
-            const archiveInfo = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
-            if ((++this.counter % 100) === 0) {
+            const archiveJob = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
+            if ((++this.counter % 1000) === 0) {
                 console.log(this.counter);
             }
-            // const job = new this.archiveJob(archiveInfo)
-            const result = yield this.archiveJob.updateOne({ JDFJobID: archiveInfo.JDFJobID, JobID: archiveInfo.JobID }, archiveInfo, { upsert: true });
-            this.updatedCount.n += result.n;
-            this.updatedCount.nModified += result.nModified;
+            const result = yield xmf_searchDAO_1.default.insertJob(archiveJob);
+            this.count.modified += result.modified;
+            this.count.upserted += result.upserted;
         });
     }
 }

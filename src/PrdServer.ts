@@ -3,23 +3,53 @@ import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 
-import {MongoConnector} from './lib/mongo-connector';
-import { PrdSession } from './lib/session-handler';
+import { MongoClient } from 'mongodb';
+import PrdSession from './lib/session-handler';
+import UsersDAO from './dao/usersDAO';
+import XmfSearchDAO from './dao/xmf-searchDAO';
 
 export class PrdServer extends Server {
 
     private readonly SERVER_STARTED = 'Server started on port: ';
-    private mongo: MongoConnector = new MongoConnector();
 
     constructor() {
         super(true);
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
-        this.app.use(this.mongo.connect());
-        this.app.use(PrdSession.sessionHandlerMongo(this.mongo.connection));
-        this.setupControllers();
     }
-    private setupControllers(): void {
+
+    async connectDB(uri: string | undefined): Promise<MongoClient> {
+        if (!uri) {
+            console.error('Mongo environment not defined');
+            return process.exit(1);
+        }
+        console.log(uri);
+        return MongoClient.connect(uri,
+            {
+                poolSize: 50,
+                authSource: "admin",
+                useUnifiedTopology: true,
+                useNewUrlParser: true,
+                connectTimeoutMS: 5000,
+                wtimeout: 2500,
+            },
+        ).catch(err => {
+            console.error(err.stack);
+            return process.exit(1);
+        }).then(async client => {
+            if (!client) {
+                console.error("No connection to mongod");
+                return process.exit(1);
+            }
+            console.log('Mongo connected');
+            UsersDAO.injectDB(client);
+            XmfSearchDAO.injectDB(client);
+            this.app.use(PrdSession.injectDB(client))
+            return client;
+        })
+    }
+
+    setupControllers(): void {
         const ctlrInstances = [];
         for (const name in controllers) {
             if (controllers.hasOwnProperty(name)) {
@@ -30,7 +60,7 @@ export class PrdServer extends Server {
         super.addControllers(ctlrInstances);
     }
 
-    public start(port: number): void {
+    start(port: number): void {
         this.app.get('*', (req, res) => {
             res.send(this.SERVER_STARTED + port);
         });

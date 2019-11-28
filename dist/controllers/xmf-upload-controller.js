@@ -29,16 +29,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@overnightjs/core");
-const asyncWrapper_1 = require("../lib/asyncWrapper");
-const session_handler_1 = require("../lib/session-handler");
+const session_handler_1 = __importDefault(require("../lib/session-handler"));
 const upload_parser_1 = require("../lib/upload-parser");
 const busboy_1 = __importDefault(require("busboy"));
 const readline_1 = __importDefault(require("readline"));
-let XmfUploadController = class XmfUploadController {
+let XmfUploadController = 
+// @ClassWrapper(asyncWrapper)
+class XmfUploadController {
     file(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const busboy = new busboy_1.default({ headers: req.headers });
-            const parser = new upload_parser_1.UploadParser(req.mongo);
+            const parser = new upload_parser_1.UploadParser();
             res.result = {};
             busboy.on('file', (fieldname, file, filename) => __awaiter(this, void 0, void 0, function* () {
                 var e_1, _a;
@@ -60,7 +61,7 @@ let XmfUploadController = class XmfUploadController {
                 }
             }));
             busboy.on('finish', () => __awaiter(this, void 0, void 0, function* () {
-                res.result.data = parser.updatedCount;
+                res.result.data = parser.count;
                 res.json(res.result);
             }));
             req.pipe(busboy);
@@ -72,8 +73,8 @@ __decorate([
 ], XmfUploadController.prototype, "file", null);
 XmfUploadController = __decorate([
     core_1.Controller('data/xmf-upload'),
-    core_1.ClassMiddleware(session_handler_1.PrdSession.validateSession),
-    core_1.ClassWrapper(asyncWrapper_1.asyncWrapper)
+    core_1.ClassMiddleware(session_handler_1.default.validateAdminSession)
+    // @ClassWrapper(asyncWrapper)
 ], XmfUploadController);
 exports.XmfUploadController = XmfUploadController;
 //# sourceMappingURL=xmf-upload-controller.js.map

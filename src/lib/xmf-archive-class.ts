@@ -1,6 +1,4 @@
-import { Schema, Document } from 'mongoose';
-
-export interface ArchiveJob extends Document {
+export interface ArchiveJob {
     JobID: string;
     JDFJobID: string;
     Comment: string;
@@ -15,7 +13,7 @@ export interface ArchiveJob extends Document {
     Archives: Archive[];
 };
 
-interface Archive extends Document {
+interface Archive {
     Action: number;
     Status: number;
     Location: string;
@@ -28,40 +26,3 @@ interface Archive extends Document {
     Extra: string;
     JobID: string;
 };
-
-export const ArchiveJobSchema = new Schema({
-    JobID: String,
-    JDFJobID: String,
-    Comment: String,
-    DescriptiveName: String,
-    CustomerName: String,
-    Company: String,
-    BillingCode: String,
-    FirstStart: String,
-    LastEnd: String,
-    Deleted: String,
-    Secondary: Boolean,
-    Archives: [{
-        Action: Number,
-        Status: Number,
-        Location: String,
-        DbConvVn: String,
-        ArchiveContent: Number,
-        Date: String,
-        Online: Boolean,
-        Percent: Number,
-        Reason: String,
-        Extra: String,
-        JobID: String,
-    }],
-})
-
-
-export class XmfArchiveInfo {
-    [key: string]: string | boolean | number | Array<XmfArchive>
-}
-
-export interface XmfArchive {
-    [key: string]: string | boolean | number
-}
-

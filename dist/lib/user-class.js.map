@@ -1,1 +1,1 @@
-{"version":3,"file":"user-class.js","sourceRoot":"","sources":["../../src/lib/user-class.ts"],"names":[],"mappings":";;AAAA,uCAA4C;AAU/B,QAAA,UAAU,GAAG,IAAI,iBAAM,CAAO;IACvC,QAAQ,EAAE,MAAM;IAChB,IAAI,EAAE,MAAM;IACZ,QAAQ,EAAE,MAAM;IAChB,KAAK,EAAE,OAAO;IACd,UAAU,EAAE,IAAI;CACnB,CAAC,CAAA"}
+{"version":3,"file":"user-class.js","sourceRoot":"","sources":["../../src/lib/user-class.ts"],"names":[],"mappings":""}

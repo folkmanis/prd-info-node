@@ -46,8 +46,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
 const logger_1 = require("@overnightjs/logger");
-const asyncWrapper_1 = require("../lib/asyncWrapper");
-const user_class_1 = require("../lib/user-class");
+const usersDAO_1 = __importDefault(require("../dao/usersDAO"));
 let LoginController = class LoginController {
     login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -57,6 +56,7 @@ let LoginController = class LoginController {
             }
             yield new Promise((resolve, reject) => {
                 if (!req.session) { // Ja sesijas nav, tad neko nedara
+                    console.log('regenerate', req.session);
                     resolve();
                     return;
                 }
@@ -64,20 +64,18 @@ let LoginController = class LoginController {
                     err ? reject(err) : resolve();
                 });
             });
-            const User = req.mongo.model('users', user_class_1.UserSchema);
+            console.log('session', req.session);
             const login = {
                 username: req.body.username,
                 password: crypto_1.default.createHash('sha256').update(req.body.password).digest('hex'),
             };
-            let result = yield User.countDocuments(login);
-            if (result !== 1) {
-                logger_1.Logger.Err('Login failed. User: ' + req.body.username + ' pwd: ' + req.body.pass);
+            let user = yield usersDAO_1.default.login(login);
+            if (!user) {
+                console.error('Login failed. User: ' + req.body.username + ' pwd: ' + req.body.pass);
                 res.status(401).json({});
                 return;
             }
-            yield User.updateOne(login, { last_login: new Date() });
-            const user = yield User.findOne(login, '-_id username name admin last_login');
-            if (user && req.session) {
+            if (req.session) {
                 req.session.user = user;
             }
             res.json(user);
@@ -109,12 +107,10 @@ let LoginController = class LoginController {
     }
 };
 __decorate([
-    core_1.Post('login'),
-    core_1.Wrapper(asyncWrapper_1.asyncWrapper)
+    core_1.Post('login')
 ], LoginController.prototype, "login", null);
 __decorate([
-    core_1.Post('logout'),
-    core_1.Wrapper(asyncWrapper_1.asyncWrapper)
+    core_1.Post('logout')
 ], LoginController.prototype, "logout", null);
 __decorate([
     core_1.Get('user')

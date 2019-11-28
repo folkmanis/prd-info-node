@@ -1,5 +1,5 @@
-import { XmfArchiveInfo, XmfArchive, ArchiveJobSchema, ArchiveJob } from './xmf-archive-class';
-import { Connection, Model } from "mongoose";
+import { ArchiveJob } from './xmf-archive-class';
+import xmfSearchDAO from '../dao/xmf-searchDAO';
 
 abstract class Data {
     closed: boolean = false;
@@ -14,8 +14,6 @@ abstract class Data {
         }
         lo.close();
     }
-
-
 }
 
 class DataObject extends Data {
@@ -114,18 +112,10 @@ export class UploadParser {
 
     counter = 0;
     isfirst = true; // kamēr nav pievienots neviens elements
-    // parsed: any[] = [];
-    updatedCount = {
-        n: 0,
-        nModified: 0
+    count = {
+        modified: 0,
+        upserted: 0
     };
-    archiveJob: Model<ArchiveJob>;
-    constructor(
-        private mongo: Connection,
-    ) {
-        this.archiveJob = this.mongo.model('xmfArchive', ArchiveJobSchema);
-    }
-
 
     async parseLine(line: string) {
         line = line.trim();
@@ -134,7 +124,7 @@ export class UploadParser {
             this.data.clear();
             this.isfirst = true;
         } else if (line.startsWith("%%E:")) { // Ar %%E: beidzas katrs darbs
-           await this.storeData();
+            await this.storeData();
         } else if (line[0] === '{' && !this.isfirst) // Atverosaa figuuriekava noraada uz datu saakumu
         {
             this.data.add('OBJECT', '');
@@ -207,14 +197,13 @@ export class UploadParser {
     }
 
     private async storeData() {
-        const archiveInfo: XmfArchiveInfo = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
-        if ((++this.counter % 100) === 0) {
+        const archiveJob: ArchiveJob = this.data.toObject() as ArchiveJob; // XmfArchiveInfo = new XmfArchiveInfo();
+        if ((++this.counter % 1000) === 0) {
             console.log(this.counter);
         }
-        // const job = new this.archiveJob(archiveInfo)
-        const result = await this.archiveJob.updateOne({ JDFJobID: archiveInfo.JDFJobID, JobID: archiveInfo.JobID }, archiveInfo, { upsert: true });
-        this.updatedCount.n += result.n;
-        this.updatedCount.nModified += result.nModified;
+        const result = await xmfSearchDAO.insertJob(archiveJob);
+        this.count.modified += result.modified;
+        this.count.upserted += result.upserted;
     }
 
 }

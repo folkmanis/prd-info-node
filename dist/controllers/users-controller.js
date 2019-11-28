@@ -39,28 +39,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
 const logger_1 = require("@overnightjs/logger");
-const asyncWrapper_1 = require("../lib/asyncWrapper");
-const user_class_1 = require("../lib/user-class");
-const session_handler_1 = require("../lib/session-handler");
+const session_handler_1 = __importDefault(require("../lib/session-handler"));
+const usersDAO_1 = __importDefault(require("../dao/usersDAO"));
 let UsersController = class UsersController {
     getList(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.Info('users/list');
-            res.result = {};
-            const User = req.mongo.model('users', user_class_1.UserSchema);
-            res.result.count = yield User.estimatedDocumentCount();
-            res.result.users = yield User.find({}, '-_id username name admin last_login');
-            res.json(res.result);
+            console.log('users/list');
+            const count = yield usersDAO_1.default.total();
+            const users = yield usersDAO_1.default.list();
+            res.json({ count, users });
         });
     }
     postUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             logger_1.Logger.Info('users/update');
             const user = req.body;
-            const mongo = req.mongo;
-            const userModel = mongo.model('users', user_class_1.UserSchema);
             user.password = crypto_1.default.createHash('sha256').update(req.body.password).digest('hex');
-            const result = yield userModel.updateOne({ username: user.username }, user, { upsert: true });
+            const result = yield usersDAO_1.default.addUser(user);
             console.log(result);
             res.json(result);
         });
@@ -70,12 +65,11 @@ __decorate([
     core_1.Get('list')
 ], UsersController.prototype, "getList", null);
 __decorate([
-    core_1.Post('user')
+    core_1.Post('adduser')
 ], UsersController.prototype, "postUser", null);
 UsersController = __decorate([
     core_1.Controller('data/users'),
-    core_1.ClassMiddleware(session_handler_1.PrdSession.validateAdminSession),
-    core_1.ClassWrapper(asyncWrapper_1.asyncWrapper)
+    core_1.ClassMiddleware(session_handler_1.default.validateAdminSession)
 ], UsersController);
 exports.UsersController = UsersController;
 //# sourceMappingURL=users-controller.js.map

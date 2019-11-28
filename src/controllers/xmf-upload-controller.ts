@@ -3,23 +3,22 @@
  */
 
 import { Controller, ClassMiddleware, Post, ClassWrapper } from '@overnightjs/core';
-import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import { PrdSession } from '../lib/session-handler';
+import PrdSession from '../lib/session-handler';
 import { UploadParser } from '../lib/upload-parser';
 import Busboy from "busboy";
 import readline from 'readline';
 
 @Controller('data/xmf-upload')
-@ClassMiddleware(PrdSession.validateSession)
-@ClassWrapper(asyncWrapper)
+@ClassMiddleware(PrdSession.validateAdminSession)
+// @ClassWrapper(asyncWrapper)
 export class XmfUploadController {
 
     @Post('file')
     private async file(req: Request, res: Response) {
         const busboy = new Busboy({ headers: req.headers });
-        const parser = new UploadParser(req.mongo);
+        const parser = new UploadParser();
         res.result = {};
         busboy.on('file', async (fieldname, file, filename) => {
             res.result.filename = filename;
@@ -30,7 +29,7 @@ export class XmfUploadController {
             }
         })
         busboy.on('finish', async () => {
-            res.result.data = parser.updatedCount;
+            res.result.data = parser.count;
             res.json(res.result);
         }
         );

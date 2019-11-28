@@ -18,39 +18,34 @@
  */
 
 import crypto from 'crypto';
-import { Connection, Model } from "mongoose";
 import { Controller, Get, Post, Wrapper, ClassWrapper, ClassMiddleware } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
-import { asyncWrapper } from "../lib/asyncWrapper";
-import { User, UserSchema } from '../lib/user-class';
-import { PrdSession } from '../lib/session-handler';
+import { User } from '../lib/user-class';
+import PrdSession from '../lib/session-handler';
+import UsersDAO from '../dao/usersDAO';
 
 
 @Controller('data/users')
 @ClassMiddleware(PrdSession.validateAdminSession)
-@ClassWrapper(asyncWrapper)
 export class UsersController {
 
     @Get('list')
     private async getList(req: Request, res: Response) {
-        Logger.Info('users/list');
-        res.result = {};
-        const User: Model<User> = req.mongo.model('users', UserSchema);
-        res.result.count = await User.estimatedDocumentCount();
-        res.result.users = await User.find({}, '-_id username name admin last_login');
-        res.json(res.result);
+        console.log('users/list');
+        const count = await UsersDAO.total();
+        const users = await UsersDAO.list();
+        res.json({ count, users });
     }
 
-    @Post('user')
+    @Post('adduser')
     private async postUser(req: Request, res: Response) {
         Logger.Info('users/update');
         const user: User = req.body;
-        const mongo: Connection = req.mongo;
-        const userModel = mongo.model('users', UserSchema);
         user.password = crypto.createHash('sha256').update(req.body.password).digest('hex');
-        
-        const result = await userModel.updateOne({username: user.username}, user, {upsert: true});
+
+        const result = await UsersDAO.addUser(user);
+
         console.log(result);
         res.json(result);
     }

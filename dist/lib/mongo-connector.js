@@ -8,7 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 class MongoConnector {
     constructor() {
         this.dbname = "prd_info";
-        this.url = "mongodb://prdUser:9N0rqxG9KFQtosgp@192.168.8.53:27017/prd_info"; // + this.dbname;
+        this.url = "mongodb://prdUser:9N0rqxG9KFQtosgp@192.168.8.53:27017"; // + this.dbname;
         this.auth = {
             user: "prdUser",
             password: "9N0rqxG9KFQtosgp",

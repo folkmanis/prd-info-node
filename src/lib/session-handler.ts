@@ -1,32 +1,31 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
-import session = require('express-session');
-import mongoose, { Mongoose, Connection, Schema } from "mongoose";
-import { Logger } from '@overnightjs/logger';
+import { MongoClient } from 'mongodb';
+import session from 'express-session';
 const MongoStore = require('connect-mongo')(session);
 
-export namespace PrdSession {
+export default class PrdSession {
 
-    export function validateSession(req: Request, res: Response, next: NextFunction) {
+    static validateSession(req: Request, res: Response, next: NextFunction) {
         if (req.session && req.session.user) {
             next();
         } else {
-            Logger.Err('Not logged in');
+            console.error('Not logged in');
             res.status(401).json(new Error('Not logged in'));
-            // next(new Error('Not logged in'))
         }
     }
 
-    export function validateAdminSession(req: Request, res: Response, next: NextFunction) {
+    static validateAdminSession(req: Request, res: Response, next: NextFunction) {
         if (req.session && req.session.user && req.session.user.admin) {
             next();
         } else {
-            Logger.Err('Admin not logged in');
+            console.error('Admin not logged in');
             res.status(401).json(new Error('Admin not logged in'));
         }
     }
 
-    export function sessionHandlerMongo(conn: Connection): RequestHandler {
-        const sessionStore = new MongoStore({mongooseConnection: conn});
+    static injectDB(conn: MongoClient): RequestHandler {
+        const sessionStore = new MongoStore({ client: conn });
+        console.log("session handler started");
         return session({
             secret: 'HGG50EtOT7',
             store: sessionStore,
