@@ -36,11 +36,15 @@ class xmfSearchDAO {
                 "Archives.Date": 1,
                 "Archives.Action": 1,
             };
+            const sort = {
+                "Archives.yearIndex": -1,
+                "Archives.monthIndex": -1,
+            };
             const result = { count: 0, data: [] };
             const filter = {
                 $or: [
                     { DescriptiveName: { $regex: text, $options: 'i' } },
-                    { JDFJobID: { $regex: text, $options: 'i' } },
+                    { JDFJobID: text },
                 ]
             };
             if (customers) {
@@ -52,6 +56,7 @@ class xmfSearchDAO {
                 .count();
             result.data = yield findRes
                 .project(projection)
+                .sort(sort)
                 .limit(100)
                 .toArray();
             return result;

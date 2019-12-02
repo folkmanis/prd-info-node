@@ -33,13 +33,18 @@ export default class xmfSearchDAO {
             "Archives.Location": 1,
             "Archives.Date": 1,
             "Archives.Action": 1,
+            // exactMatch: {$eq: ["$JDFJobID", text]},
         };
+        const sort = {
+                "Archives.yearIndex": -1,
+                "Archives.monthIndex": -1,
+        }
 
         const result: ArchiveSearchResult = { count: 0, data: [] };
         const filter: any = {
             $or: [
                 { DescriptiveName: { $regex: text, $options: 'i' } },
-                { JDFJobID: { $regex: text, $options: 'i' } },
+                { JDFJobID: text },
             ]
         };
         if (customers) {
@@ -51,6 +56,7 @@ export default class xmfSearchDAO {
             .count();
         result.data = await findRes
             .project(projection)
+            .sort(sort)
             .limit(100)
             .toArray();
         return result;
@@ -63,7 +69,7 @@ export default class xmfSearchDAO {
         }
         // TODO optimizēt
         try {
-            const updResult = await archives.updateOne(filter,{$set: job}, { upsert: true });
+            const updResult = await archives.updateOne(filter, { $set: job }, { upsert: true });
             return { modified: updResult.modifiedCount, upserted: updResult.upsertedCount };
 
         } catch (e) {

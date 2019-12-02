@@ -11,6 +11,7 @@ export interface ArchiveJob {
     Deleted: string;
     Secondary: boolean;
     Archives: Archive[];
+    exactMatch?: boolean;
 };
 
 interface Archive {
@@ -25,4 +26,6 @@ interface Archive {
     Reason: string;
     Extra: string;
     JobID: string;
+    yearIndex?: number;
+    monthIndex?: number;
 };

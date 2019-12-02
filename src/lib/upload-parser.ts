@@ -196,8 +196,18 @@ export class UploadParser {
         return tn;
     }
 
+    private indexDates(job: ArchiveJob) {
+        if (!job.Archives) { return }
+        for (const arch of job.Archives) {
+            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // GADS/MĒNESIS 2015/02  -(vārds)(skaitlis)
+            if (!index) { continue }
+            [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+        }
+    }
+
     private async storeData() {
         const archiveJob: ArchiveJob = this.data.toObject() as ArchiveJob; // XmfArchiveInfo = new XmfArchiveInfo();
+        this.indexDates(archiveJob); // uztaisa indeksu
         if ((++this.counter % 1000) === 0) {
             console.log(this.counter);
         }

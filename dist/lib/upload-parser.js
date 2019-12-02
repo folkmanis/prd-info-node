@@ -202,9 +202,22 @@ class UploadParser {
         }
         return tn;
     }
+    indexDates(job) {
+        if (!job.Archives) {
+            return;
+        }
+        for (const arch of job.Archives) {
+            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // GADS/MĒNESIS 2015/02  -(vārds)(skaitlis)
+            if (!index) {
+                continue;
+            }
+            [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+        }
+    }
     storeData() {
         return __awaiter(this, void 0, void 0, function* () {
             const archiveJob = this.data.toObject(); // XmfArchiveInfo = new XmfArchiveInfo();
+            this.indexDates(archiveJob); // uztaisa indeksu
             if ((++this.counter % 1000) === 0) {
                 console.log(this.counter);
             }
