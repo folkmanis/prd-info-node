@@ -36,9 +36,9 @@ class UsersDAO {
                 .project(UsersDAO.projection).toArray();
         });
     }
-    static getUser(user) {
+    static getUser(username) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield users.findOne(user);
+            return yield users.findOne({ username });
         });
     }
     static addUser(user) {
@@ -78,6 +78,17 @@ class UsersDAO {
         return __awaiter(this, void 0, void 0, function* () {
             const updResp = yield users.findOneAndUpdate(login, { $set: { last_login: new Date() } }, { projection: UsersDAO.projection });
             return updResp.value || null;
+        });
+    }
+    static getPreferences(username) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield UsersDAO.getUser(username);
+            if (!user) {
+                return null;
+            }
+            else {
+                return user.preferences || null;
+            }
         });
     }
 }

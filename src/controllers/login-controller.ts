@@ -41,7 +41,6 @@ export class LoginController {
         }
         await new Promise((resolve, reject) => {  // Izdzēš sesiju
             if (!req.session) { // Ja sesijas nav, tad neko nedara
-                console.log('regenerate',req.session);
                 resolve();
                 return;
             }
@@ -49,7 +48,6 @@ export class LoginController {
                 err ? reject(err) : resolve()
             })
         })
-        console.log('session',req.session);
 
         const login = {
             username: req.body.username,
@@ -66,6 +64,7 @@ export class LoginController {
         if (req.session) {
             req.session.user = user;
         }
+        console.log('session',req.session);
         res.json(user);
     }
 

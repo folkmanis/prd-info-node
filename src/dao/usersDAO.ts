@@ -1,5 +1,5 @@
 import { MongoClient, Collection } from "mongodb";
-import { User } from '../lib/user-class';
+import { User, UserPreferences } from '../lib/user-class';
 
 let users: Collection<User>;
 
@@ -35,8 +35,8 @@ export default class UsersDAO {
             .project(UsersDAO.projection).toArray();
     }
 
-    static async getUser(user: { username: string, password: string }): Promise<User | null> {
-        return await users.findOne<User>(user);
+    static async getUser(username: string): Promise<User | null> {
+        return await users.findOne<User>({ username });
     }
 
     static async addUser(user: User):
@@ -50,7 +50,6 @@ export default class UsersDAO {
     }
 
     static async updateUser(user: Partial<User>): Promise<{ success: boolean, error?: any }> {
-
         if (!user.username) { // Ja nav lietotājvārds, tad neko nedara
             const error = "User not defined";
             console.log(error)
@@ -74,5 +73,14 @@ export default class UsersDAO {
     static async login(login: { username: string, password: string }): Promise<User | null> {
         const updResp = await users.findOneAndUpdate(login, { $set: { last_login: new Date() } }, { projection: UsersDAO.projection });
         return updResp.value || null;
+    }
+
+    static async getPreferences(username: string): Promise<UserPreferences | null> {
+        const user = await UsersDAO.getUser(username);
+        if (!user) {
+            return null;
+        } else {
+            return user.preferences || null;
+        }
     }
 }

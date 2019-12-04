@@ -1,9 +1,18 @@
 import { MongoClient, Collection } from "mongodb";
-import { ArchiveJob } from '../lib/xmf-archive-class';
+import { ArchiveJob, ArchiveSearchParams } from '../lib/xmf-archive-class';
+import { UserPreferences } from "../lib/user-class";
 
 interface ArchiveSearchResult {
     count: number;
     data?: Partial<ArchiveJob>[];
+}
+
+interface Count { _id: string, count: number };
+
+export interface FacetResult {
+    customerName: Count[],
+    year: Count[],
+    month: Count[],
 }
 
 let archives: Collection<Partial<ArchiveJob>>;
@@ -22,9 +31,7 @@ export default class xmfSearchDAO {
         }
     }
 
-    static async findJob(
-        text: string, customers?: string
-    ): Promise<ArchiveSearchResult> {
+    static async findJob(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult> {
         const projection = {
             _id: 0,
             JDFJobID: 1,
@@ -33,33 +40,54 @@ export default class xmfSearchDAO {
             "Archives.Location": 1,
             "Archives.Date": 1,
             "Archives.Action": 1,
-            // exactMatch: {$eq: ["$JDFJobID", text]},
         };
         const sort = {
-                "Archives.yearIndex": -1,
-                "Archives.monthIndex": -1,
+            exactMatch: 1,
+            "Archives.yearIndex": -1,
+            "Archives.monthIndex": -1,
         }
 
         const result: ArchiveSearchResult = { count: 0, data: [] };
-        const filter: any = {
-            $or: [
-                { DescriptiveName: { $regex: text, $options: 'i' } },
-                { JDFJobID: text },
-            ]
-        };
-        if (customers) {
-            filter.CustomerName = { $in: customers.split(',') };
-        }
+        const filter = xmfSearchDAO.filter(search, userPreferences.customers);
+
         console.log(JSON.stringify(filter));
         const findRes = archives.find(filter);
         result.count = await findRes
             .count();
         result.data = await findRes
             .project(projection)
+            .map(res => ({ ...res, exactMatch: res.JDFJobID === search.q }))
             .sort(sort)
             .limit(100)
             .toArray();
         return result;
+    }
+
+    static async facet(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<any> {
+        const filter = xmfSearchDAO.filter(search, userPreferences.customers);
+        const pipeline = [
+            { $match: filter },
+            {
+                $facet:
+                {
+                    customerName: [{ $sortByCount: '$CustomerName' }],
+                    year: [
+                        { $unwind: '$Archives' },
+                        { $group: { _id: "$Archives.yearIndex", count: { $sum: 1 } } },
+                        { $sort: { _id: -1 } },
+                    ],
+                    month: [
+                        { $unwind: '$Archives' },
+                        { $group: { _id: "$Archives.monthIndex", count: { $sum: 1 } } },
+                        { $sort: { _id: 1 } },
+                    ],
+                }
+            }
+        ]
+        console.log(JSON.stringify(pipeline));
+        const findres = archives.aggregate(pipeline);
+        return (await findres.toArray())[0];
+
     }
 
     static async insertJob(job: ArchiveJob): Promise<{ modified: number, upserted: number }> {
@@ -76,6 +104,27 @@ export default class xmfSearchDAO {
             console.log('error: ', e)
             return { modified: 0, upserted: 0 };
         }
+    }
+
+    private static filter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any } {
+        const filter: { [key: string]: any } = {
+            $or: [
+                { JDFJobID: search.q },
+                { DescriptiveName: { $regex: search.q, $options: 'i' } },
+            ]
+        };
+        filter.CustomerName = {
+            $in:
+                search.customers ? JSON.parse(search.customers) : customers
+        };
+        if (search.year) {
+            filter["Archives.yearIndex"] = { $in: JSON.parse(search.year) };
+        }
+        if (search.month) {
+            filter["Archives.monthIndex"] = { $in: JSON.parse(search.month) };
+        }
+
+        return filter;
     }
 
 }

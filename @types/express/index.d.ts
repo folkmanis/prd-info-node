@@ -2,8 +2,8 @@ declare namespace Express {
 
     export interface Request {
         sqlConnection: any;
-        mongo: any;
         session?: Session;
+        userPreferences?: any;
     }
     export interface Response {
         result: { [key: string]: any };

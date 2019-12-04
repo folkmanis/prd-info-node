@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+;
 let archives;
 class xmfSearchDAO {
     static injectDB(conn) {
@@ -25,7 +26,7 @@ class xmfSearchDAO {
             }
         });
     }
-    static findJob(text, customers) {
+    static findJob(search, userPreferences) {
         return __awaiter(this, void 0, void 0, function* () {
             const projection = {
                 _id: 0,
@@ -37,29 +38,49 @@ class xmfSearchDAO {
                 "Archives.Action": 1,
             };
             const sort = {
+                exactMatch: 1,
                 "Archives.yearIndex": -1,
                 "Archives.monthIndex": -1,
             };
             const result = { count: 0, data: [] };
-            const filter = {
-                $or: [
-                    { DescriptiveName: { $regex: text, $options: 'i' } },
-                    { JDFJobID: text },
-                ]
-            };
-            if (customers) {
-                filter.CustomerName = { $in: customers.split(',') };
-            }
+            const filter = xmfSearchDAO.filter(search, userPreferences.customers);
             console.log(JSON.stringify(filter));
             const findRes = archives.find(filter);
             result.count = yield findRes
                 .count();
             result.data = yield findRes
                 .project(projection)
+                .map(res => (Object.assign(Object.assign({}, res), { exactMatch: res.JDFJobID === search.q })))
                 .sort(sort)
                 .limit(100)
                 .toArray();
             return result;
+        });
+    }
+    static facet(search, userPreferences) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const filter = xmfSearchDAO.filter(search, userPreferences.customers);
+            const pipeline = [
+                { $match: filter },
+                {
+                    $facet: {
+                        customerName: [{ $sortByCount: '$CustomerName' }],
+                        year: [
+                            { $unwind: '$Archives' },
+                            { $group: { _id: "$Archives.yearIndex", count: { $sum: 1 } } },
+                            { $sort: { _id: -1 } },
+                        ],
+                        month: [
+                            { $unwind: '$Archives' },
+                            { $group: { _id: "$Archives.monthIndex", count: { $sum: 1 } } },
+                            { $sort: { _id: 1 } },
+                        ],
+                    }
+                }
+            ];
+            console.log(JSON.stringify(pipeline));
+            const findres = archives.aggregate(pipeline);
+            return (yield findres.toArray())[0];
         });
     }
     static insertJob(job) {
@@ -78,6 +99,24 @@ class xmfSearchDAO {
                 return { modified: 0, upserted: 0 };
             }
         });
+    }
+    static filter(search, customers) {
+        const filter = {
+            $or: [
+                { JDFJobID: search.q },
+                { DescriptiveName: { $regex: search.q, $options: 'i' } },
+            ]
+        };
+        filter.CustomerName = {
+            $in: search.customers ? JSON.parse(search.customers) : customers
+        };
+        if (search.year) {
+            filter["Archives.yearIndex"] = { $in: JSON.parse(search.year) };
+        }
+        if (search.month) {
+            filter["Archives.monthIndex"] = { $in: JSON.parse(search.month) };
+        }
+        return filter;
     }
 }
 exports.default = xmfSearchDAO;

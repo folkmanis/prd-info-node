@@ -4,4 +4,9 @@ export interface User {
     password: string,
     admin: boolean,
     last_login: Date,
+    preferences: UserPreferences,
+}
+
+export interface UserPreferences {
+    customers: string[],
 }

@@ -29,3 +29,10 @@ interface Archive {
     yearIndex?: number;
     monthIndex?: number;
 };
+
+export interface ArchiveSearchParams {
+    q: string;
+    customers?: string;
+    year?: string;
+    month?: string;
+}

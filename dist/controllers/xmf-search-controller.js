@@ -1,6 +1,6 @@
 "use strict";
 /**
- * data/xmf-search/search?q=<string>&customers=<>
+ * data/xmf-search/search?q=<string>&customers=<>&year=<>&date=<>
  * { count: number, data: {
  *          JDFJobID,
             DescriptiveName,
@@ -9,6 +9,13 @@
             "Archives.Date",
             "Archives.Action",
    }[] }
+ *
+ * data/xmf-search/facet?q=<string>&customers=<>&year=<>&date=<>
+ *
+ *  customerName: Count[],
+    year: Count[],
+    month: Count[],
+
  */
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -32,24 +39,37 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@overnightjs/core");
 const asyncWrapper_1 = require("../lib/asyncWrapper");
 const session_handler_1 = __importDefault(require("../lib/session-handler"));
+const preferences_handler_1 = __importDefault(require("../lib/preferences-handler"));
 const xmf_searchDAO_1 = __importDefault(require("../dao/xmf-searchDAO"));
 let XmfSearchController = class XmfSearchController {
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            const q = req.query.q.trim() || null;
-            if (!q) { // ja nav jautājums
+            if (!req.query.q) { // ja nav jautājums
                 res.json({ count: 0 }); // skaits 0
+                return;
             }
-            res.json(yield xmf_searchDAO_1.default.findJob(q, req.query.customers || undefined));
+            res.json(yield xmf_searchDAO_1.default.findJob(req.query, req.userPreferences));
+        });
+    }
+    facet(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!req.query.q) { // ja nav jautājums
+                res.json({}); // skaits 0
+                return;
+            }
+            res.json(yield xmf_searchDAO_1.default.facet(req.query, req.userPreferences));
         });
     }
 };
 __decorate([
     core_1.Get('search')
 ], XmfSearchController.prototype, "search", null);
+__decorate([
+    core_1.Get('facet')
+], XmfSearchController.prototype, "facet", null);
 XmfSearchController = __decorate([
     core_1.Controller('data/xmf-search'),
-    core_1.ClassMiddleware(session_handler_1.default.validateSession),
+    core_1.ClassMiddleware([session_handler_1.default.validateSession, preferences_handler_1.default.getUserPreferences]),
     core_1.ClassWrapper(asyncWrapper_1.asyncWrapper)
 ], XmfSearchController);
 exports.XmfSearchController = XmfSearchController;

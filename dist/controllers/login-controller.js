@@ -56,7 +56,6 @@ let LoginController = class LoginController {
             }
             yield new Promise((resolve, reject) => {
                 if (!req.session) { // Ja sesijas nav, tad neko nedara
-                    console.log('regenerate', req.session);
                     resolve();
                     return;
                 }
@@ -64,7 +63,6 @@ let LoginController = class LoginController {
                     err ? reject(err) : resolve();
                 });
             });
-            console.log('session', req.session);
             const login = {
                 username: req.body.username,
                 password: crypto_1.default.createHash('sha256').update(req.body.password).digest('hex'),
@@ -78,6 +76,7 @@ let LoginController = class LoginController {
             if (req.session) {
                 req.session.user = user;
             }
+            console.log('session', req.session);
             res.json(user);
         });
     }
