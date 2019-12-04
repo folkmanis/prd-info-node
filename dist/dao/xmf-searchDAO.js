@@ -108,13 +108,13 @@ class xmfSearchDAO {
             ]
         };
         filter.CustomerName = {
-            $in: search.customers ? JSON.parse(search.customers) : customers
+            $in: search.customerName ? search.customerName : customers
         };
         if (search.year) {
-            filter["Archives.yearIndex"] = { $in: JSON.parse(search.year) };
+            filter["Archives.yearIndex"] = { $in: search.year };
         }
         if (search.month) {
-            filter["Archives.monthIndex"] = { $in: JSON.parse(search.month) };
+            filter["Archives.monthIndex"] = { $in: search.month };
         }
         return filter;
     }

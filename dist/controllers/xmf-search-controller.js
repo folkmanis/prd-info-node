@@ -44,20 +44,22 @@ const xmf_searchDAO_1 = __importDefault(require("../dao/xmf-searchDAO"));
 let XmfSearchController = class XmfSearchController {
     search(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!req.query.q) { // ja nav jautājums
+            console.log(JSON.parse(req.query.query));
+            if (!req.query.query) { // ja nav jautājums
                 res.json({ count: 0 }); // skaits 0
                 return;
             }
-            res.json(yield xmf_searchDAO_1.default.findJob(req.query, req.userPreferences));
+            res.json(yield xmf_searchDAO_1.default.findJob(JSON.parse(req.query.query), req.userPreferences));
         });
     }
     facet(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!req.query.q) { // ja nav jautājums
+            console.log(JSON.parse(req.query.query));
+            if (!req.query.query) { // ja nav jautājums
                 res.json({}); // skaits 0
                 return;
             }
-            res.json(yield xmf_searchDAO_1.default.facet(req.query, req.userPreferences));
+            res.json(yield xmf_searchDAO_1.default.facet(JSON.parse(req.query.query), req.userPreferences));
         });
     }
 };

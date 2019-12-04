@@ -33,22 +33,24 @@ export class XmfSearchController {
 
     @Get('search')
     private async search(req: Request, res: Response) {
-        if (!req.query.q) { // ja nav jautājums
+        console.log(JSON.parse(req.query.query));
+        if (!req.query.query) { // ja nav jautājums
             res.json({ count: 0 }); // skaits 0
             return;
         }
         res.json(
-            await xmfSearchDAO.findJob(req.query as ArchiveSearchParams, req.userPreferences as UserPreferences)
+            await xmfSearchDAO.findJob(JSON.parse(req.query.query) as ArchiveSearchParams, req.userPreferences as UserPreferences)
         );
     }
 
     @Get('facet')
     private async facet(req: Request, res: Response) {
-        if (!req.query.q) { // ja nav jautājums
+        console.log(JSON.parse(req.query.query));
+        if (!req.query.query) { // ja nav jautājums
             res.json({}); // skaits 0
             return;
         }
-        res.json(await xmfSearchDAO.facet(req.query as ArchiveSearchParams, req.userPreferences as UserPreferences));
+        res.json(await xmfSearchDAO.facet(JSON.parse(req.query.query) as ArchiveSearchParams, req.userPreferences as UserPreferences));
     }
 
 }
