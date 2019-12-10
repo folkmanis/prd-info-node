@@ -207,11 +207,15 @@ class UploadParser {
             return;
         }
         for (const arch of job.Archives) {
-            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // GADS/MĒNESIS 2015/02  -(vārds)(skaitlis)
-            if (!index) {
-                continue;
+            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // /GADS/MĒNESIS
+            if (index) {
+                [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+                continue; // Pilna sakritība
             }
-            [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+            const indexY = arch.Location.match(/\/(\d){4}\//); // /GADS/ - daļēja sakritība
+            if (indexY) {
+                arch.yearIndex = +indexY[0].split('/')[1];
+            }
         }
     }
     storeData() {

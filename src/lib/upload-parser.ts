@@ -199,9 +199,15 @@ export class UploadParser {
     private indexDates(job: ArchiveJob) {
         if (!job.Archives) { return }
         for (const arch of job.Archives) {
-            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // GADS/MĒNESIS 2015/02  -(vārds)(skaitlis)
-            if (!index) { continue }
-            [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+            const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // /GADS/MĒNESIS
+            if (index) {
+                [arch.yearIndex, arch.monthIndex] = index[0].split('/').map(v => +v);
+                continue; // Pilna sakritība
+            }
+            const indexY = arch.Location.match(/\/(\d){4}\//); // /GADS/ - daļēja sakritība
+            if (indexY) {
+                arch.yearIndex = +indexY[0].split('/')[1];
+            }
         }
     }
 
