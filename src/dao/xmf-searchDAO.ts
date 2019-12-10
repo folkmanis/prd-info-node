@@ -73,11 +73,13 @@ export default class xmfSearchDAO {
                     customerName: [{ $sortByCount: '$CustomerName' }],
                     year: [
                         { $unwind: '$Archives' },
+                        { $match: {'Archives.Action': 1}},
                         { $group: { _id: "$Archives.yearIndex", count: { $sum: 1 } } },
                         { $sort: { _id: -1 } },
                     ],
                     month: [
                         { $unwind: '$Archives' },
+                        { $match: {'Archives.Action': 1}},
                         { $group: { _id: "$Archives.monthIndex", count: { $sum: 1 } } },
                         { $sort: { _id: 1 } },
                     ],
