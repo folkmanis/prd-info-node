@@ -101,4 +101,4 @@ public
 .tern-port
 
 # Compiled js
-dist/
+# dist/
