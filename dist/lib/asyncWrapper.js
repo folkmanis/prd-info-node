@@ -9,14 +9,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const logger_1 = require("@overnightjs/logger");
 exports.asyncWrapper = (action) => {
     return (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
         try {
             return yield action(req, res, next);
         }
         catch (error) {
-            logger_1.Logger.Err(error);
+            console.error(error);
             next(error);
         }
     });

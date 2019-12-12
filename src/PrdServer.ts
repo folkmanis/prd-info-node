@@ -1,7 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
-import { Logger } from '@overnightjs/logger';
 
 import { MongoClient } from 'mongodb';
 import PrdSession from './lib/session-handler';
@@ -65,7 +64,7 @@ export class PrdServer extends Server {
             res.send(this.SERVER_STARTED + port);
         });
         this.app.listen(port, () => {
-            Logger.Imp(this.SERVER_STARTED + port);
+            console.log(this.SERVER_STARTED + port);
         });
     }
 }

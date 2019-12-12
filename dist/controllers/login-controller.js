@@ -45,7 +45,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
-const logger_1 = require("@overnightjs/logger");
 const usersDAO_1 = __importDefault(require("../dao/usersDAO"));
 let LoginController = class LoginController {
     login(req, res) {
@@ -82,7 +81,7 @@ let LoginController = class LoginController {
     }
     logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.Info('logout');
+            console.log('logout');
             const result = yield new Promise((resolve, reject) => {
                 if (req.session) {
                     req.session.destroy((err) => {

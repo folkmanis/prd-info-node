@@ -38,7 +38,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const crypto_1 = __importDefault(require("crypto"));
 const core_1 = require("@overnightjs/core");
-const logger_1 = require("@overnightjs/logger");
 const session_handler_1 = __importDefault(require("../lib/session-handler"));
 const usersDAO_1 = __importDefault(require("../dao/usersDAO"));
 let UsersController = class UsersController {
@@ -52,7 +51,7 @@ let UsersController = class UsersController {
     }
     postUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
-            logger_1.Logger.Info('users/update');
+            console.log('users/update');
             const user = req.body;
             user.password = crypto_1.default.createHash('sha256').update(req.body.password).digest('hex');
             const result = yield usersDAO_1.default.addUser(user);

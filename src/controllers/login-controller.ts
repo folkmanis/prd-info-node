@@ -26,7 +26,6 @@
 
 import crypto from 'crypto';
 import { Controller, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
-import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
 import UsersDAO from '../dao/usersDAO';
 
@@ -70,7 +69,7 @@ export class LoginController {
 
     @Post('logout')
     private async logout(req: Request, res: Response) {
-        Logger.Info('logout');
+        console.log('logout');
         const result = await new Promise((resolve, reject) => {
             if (req.session) {
                 req.session.destroy((err) => {

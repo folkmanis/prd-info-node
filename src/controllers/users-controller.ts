@@ -19,7 +19,6 @@
 
 import crypto from 'crypto';
 import { Controller, Get, Post, Wrapper, ClassWrapper, ClassMiddleware } from '@overnightjs/core';
-import { Logger } from '@overnightjs/logger';
 import { Request, Response } from 'express';
 import { User } from '../lib/user-class';
 import PrdSession from '../lib/session-handler';
@@ -40,7 +39,7 @@ export class UsersController {
 
     @Post('adduser')
     private async postUser(req: Request, res: Response) {
-        Logger.Info('users/update');
+        console.log('users/update');
         const user: User = req.body;
         user.password = crypto.createHash('sha256').update(req.body.password).digest('hex');
 

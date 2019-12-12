@@ -22,7 +22,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const bodyParser = __importStar(require("body-parser"));
 const controllers = __importStar(require("./controllers"));
 const core_1 = require("@overnightjs/core");
-const logger_1 = require("@overnightjs/logger");
 const mongodb_1 = require("mongodb");
 const session_handler_1 = __importDefault(require("./lib/session-handler"));
 const usersDAO_1 = __importDefault(require("./dao/usersDAO"));
@@ -79,7 +78,7 @@ class PrdServer extends core_1.Server {
             res.send(this.SERVER_STARTED + port);
         });
         this.app.listen(port, () => {
-            logger_1.Logger.Imp(this.SERVER_STARTED + port);
+            console.log(this.SERVER_STARTED + port);
         });
     }
 }
