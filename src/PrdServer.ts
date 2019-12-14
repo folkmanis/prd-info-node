@@ -4,6 +4,7 @@ import { Server } from '@overnightjs/core';
 
 import { MongoClient } from 'mongodb';
 import PrdSession from './lib/session-handler';
+import log from './lib/logger';
 import UsersDAO from './dao/usersDAO';
 import XmfSearchDAO from './dao/xmf-searchDAO';
 
@@ -22,7 +23,6 @@ export class PrdServer extends Server {
             console.error('Mongo environment not defined');
             return process.exit(1);
         }
-        console.log(uri);
         return MongoClient.connect(uri,
             {
                 poolSize: 50,
@@ -40,7 +40,8 @@ export class PrdServer extends Server {
                 console.error("No connection to mongod");
                 return process.exit(1);
             }
-            console.log('Mongo connected');
+            log.initLogger(client);
+            log.debug('Mongo connected');
             UsersDAO.injectDB(client);
             XmfSearchDAO.injectDB(client);
             this.app.use(PrdSession.injectDB(client))
