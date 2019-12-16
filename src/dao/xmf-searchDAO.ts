@@ -1,6 +1,7 @@
 import { MongoClient, Collection } from "mongodb";
 import { ArchiveJob, ArchiveSearchParams } from '../lib/xmf-archive-class';
 import { UserPreferences } from "../lib/user-class";
+import Logger from '../lib/logger';
 
 interface ArchiveSearchResult {
     count: number;
@@ -27,7 +28,7 @@ export default class xmfSearchDAO {
             archives = conn.db(process.env.DB_BASE as string)
                 .collection('xmfarchives');
         } catch (e) {
-            console.error(`xmfSearchDAO: unable to connect ${e}`);
+            Logger.error(`xmfSearchDAO: unable to connect`, e);
         }
     }
 
@@ -50,7 +51,7 @@ export default class xmfSearchDAO {
         const result: ArchiveSearchResult = { count: 0, data: [] };
         const filter = xmfSearchDAO.filter(search, userPreferences.customers);
 
-        console.log(JSON.stringify(filter));
+        Logger.debug(JSON.stringify(filter));
         const findRes = archives.find(filter);
         result.count = await findRes
             .count();
@@ -86,7 +87,6 @@ export default class xmfSearchDAO {
                 }
             }
         ]
-        console.log(JSON.stringify(pipeline));
         const findres = archives.aggregate(pipeline);
         return (await findres.toArray())[0];
 
@@ -103,7 +103,7 @@ export default class xmfSearchDAO {
             return { modified: updResult.modifiedCount, upserted: updResult.upsertedCount };
 
         } catch (e) {
-            console.log('error: ', e)
+            Logger.error('error: ', e)
             return { modified: 0, upserted: 0 };
         }
     }

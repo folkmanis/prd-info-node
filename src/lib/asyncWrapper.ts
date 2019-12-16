@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
+import Logger from './logger';
 
 export const asyncWrapper = (action: RequestHandler) => {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -6,7 +7,7 @@ export const asyncWrapper = (action: RequestHandler) => {
             return await action(req, res, next);
         }
         catch (error) {
-            console.error(error);
+            Logger.error(error);
             next(error);
         }
     };

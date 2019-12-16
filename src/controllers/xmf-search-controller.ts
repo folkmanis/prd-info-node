@@ -34,7 +34,6 @@ export class XmfSearchController {
     @Get('search')
     private async search(req: Request, res: Response) {
         req.log.info("query", JSON.parse(req.query.query));
-        // console.log(JSON.parse(req.query.query));
         if (!req.query.query) { // ja nav jautājums
             res.json({ count: 0 }); // skaits 0
             return;

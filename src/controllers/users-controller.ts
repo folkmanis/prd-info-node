@@ -31,7 +31,7 @@ export class UsersController {
 
     @Get('list')
     private async getList(req: Request, res: Response) {
-        console.log('users/list');
+        req.log.info('users/list');
         const count = await UsersDAO.total();
         const users = await UsersDAO.list();
         res.json({ count, users });
@@ -39,13 +39,13 @@ export class UsersController {
 
     @Post('adduser')
     private async postUser(req: Request, res: Response) {
-        console.log('users/update');
+        req.log.info('users/update');
         const user: User = req.body;
         user.password = crypto.createHash('sha256').update(req.body.password).digest('hex');
 
         const result = await UsersDAO.addUser(user);
 
-        console.log(result);
+        req.log.debug('user updated',result);
         res.json(result);
     }
 

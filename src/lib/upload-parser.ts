@@ -1,5 +1,6 @@
 import { ArchiveJob } from './xmf-archive-class';
 import xmfSearchDAO from '../dao/xmf-searchDAO';
+import Logger from './logger';
 
 abstract class Data {
     closed: boolean = false;
@@ -215,7 +216,7 @@ export class UploadParser {
         const archiveJob: ArchiveJob = this.data.toObject() as ArchiveJob; // XmfArchiveInfo = new XmfArchiveInfo();
         this.indexDates(archiveJob); // uztaisa indeksu
         if ((++this.counter % 1000) === 0) {
-            console.log(this.counter);
+            Logger.debug(this.counter.toString());
         }
         const result = await xmfSearchDAO.insertJob(archiveJob);
         this.count.modified += result.modified;

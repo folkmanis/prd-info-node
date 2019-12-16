@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
 import session from 'express-session';
+import Logger from './logger';
 const MongoStore = require('connect-mongo')(session);
 
 export default class PrdSession {
@@ -9,7 +10,7 @@ export default class PrdSession {
         if (req.session && req.session.user) {
             next();
         } else {
-            console.error('Not logged in');
+            Logger.error('Not logged in');
             res.status(401).json(new Error('Not logged in'));
         }
     }
@@ -18,14 +19,14 @@ export default class PrdSession {
         if (req.session && req.session.user && req.session.user.admin) {
             next();
         } else {
-            console.error('Admin not logged in');
+            Logger.error('Admin not logged in');
             res.status(401).json(new Error('Admin not logged in'));
         }
     }
 
     static injectDB(conn: MongoClient): RequestHandler {
         const sessionStore = new MongoStore({ client: conn });
-        console.log("session handler started");
+        Logger.debug("session handler started");
         return session({
             secret: 'HGG50EtOT7',
             store: sessionStore,

@@ -1,5 +1,6 @@
 import { MongoClient, Collection } from "mongodb";
 import { User, UserPreferences } from '../lib/user-class';
+import Logger from '../lib/logger';
 
 let users: Collection<User>;
 
@@ -16,13 +17,13 @@ export default class UsersDAO {
 
     static async injectDB(conn: MongoClient) {
         if (users) {
-            return
+            return;
         }
         try {
             users = conn.db(process.env.DB_BASE as string).collection("users");
-            console.log("users collection injected");
+            Logger.debug("users collection injected");
         } catch (e) {
-            console.error(`usersDAO: unable to connect ${e}`);
+            Logger.error(`usersDAO: unable to connect`, e);
         }
     }
 
@@ -40,7 +41,7 @@ export default class UsersDAO {
     }
 
     static async addUser(user: User):
-        Promise<{ success?: boolean } | { error: Error }> {
+        Promise<{ success?: boolean; } | { error: Error; }> {
         try {
             await users.insertOne(user, { w: 'majority' });
             return { success: true };
@@ -49,28 +50,28 @@ export default class UsersDAO {
         }
     }
 
-    static async updateUser(user: Partial<User>): Promise<{ success: boolean, error?: any }> {
+    static async updateUser(user: Partial<User>): Promise<{ success: boolean, error?: any; }> {
         if (!user.username) { // Ja nav lietotājvārds, tad neko nedara
             const error = "User not defined";
-            console.log(error)
-            return { success: false, error }
+            Logger.error(error);
+            return { success: false, error };
         }
         try {
             const updResp = await users.updateOne({ username: user.username }, { $set: user }, { w: 'majority' });
             if (updResp.matchedCount === 0) {
                 const error = "User not found";
-                console.log(error)
+                Logger.error(error);
                 return { success: false, error };
             }
             return { success: true };
 
         } catch (error) {
-            console.error("User update error ", error);
+            Logger.error("User update error ", error);
             return { success: false, error };
         }
     }
 
-    static async login(login: { username: string, password: string }): Promise<User | null> {
+    static async login(login: { username: string, password: string; }): Promise<User | null> {
         const updResp = await users.findOneAndUpdate(login, { $set: { last_login: new Date() } }, { projection: UsersDAO.projection });
         return updResp.value || null;
     }
