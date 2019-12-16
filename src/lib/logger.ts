@@ -23,13 +23,11 @@ export enum LogLevels {
 export default class Logger {
     static transports: Transport[] = []; // Izvades kanāli
     /**
-     * Statiska inicializācijas funkcija
-     * Izmanto esošo mongo savienojumu
+     * Pievieno izvades transportu
+     * @param tra Transport klases objekts
      */
-    static async initLogger(conn: MongoClient) {
-        Logger.transports.push(new Console()); // koncoles izvade
-        Logger.transports.push(new MongoLog(conn)); // mongo izvade
-        // TODO izveidot raksīšanu failā
+    static async addTransport(tra: Transport) {
+        Logger.transports.push(tra);
     }
     /**
      * Pieņem log ierakstu
@@ -82,8 +80,8 @@ export default class Logger {
 /**
  * Log transporta klase konsoles izvadam
  */
-class Console implements Transport {
-    minlevel: LogLevels = LogLevels.SILLY; // Konsolē raksta visu
+export class Console implements Transport {
+    minlevel: LogLevels = LogLevels.SILLY; // console raksta visu
     async write(rec: LogRecord): Promise<void> {
         const levStr = LogLevels[rec.level] || rec.level;
         console.log(`${levStr} | ${rec.timestamp.toLocaleString()} | ${rec.info}`);
@@ -95,7 +93,7 @@ class Console implements Transport {
 /**
  * Log transporta klases rakstīšanai mongo
  */
-class MongoLog implements Transport {
+export class MongoLog implements Transport {
     minlevel: LogLevels = LogLevels.INFO;
 
     constructor(private conn: MongoClient) {

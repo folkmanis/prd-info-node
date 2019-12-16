@@ -56,20 +56,20 @@ export class LoginController {
         let user = await UsersDAO.login(login);
 
         if (!user) {
-            console.error('Login failed. User: ' + req.body.username + ' pwd: ' + req.body.pass);
+            req.log.error('Login failed', req.body);
             res.status(401).json({});
             return;
         }
         if (req.session) {
             req.session.user = user;
         }
-        console.log('session',req.session);
+        req.log.debug('session',req.session);
         res.json(user);
     }
 
     @Post('logout')
     private async logout(req: Request, res: Response) {
-        console.log('logout');
+        req.log.info('User logged out', {user: req.session?.user});
         const result = await new Promise((resolve, reject) => {
             if (req.session) {
                 req.session.destroy((err) => {
