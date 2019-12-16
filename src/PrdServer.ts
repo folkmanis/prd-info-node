@@ -10,19 +10,19 @@ import XmfSearchDAO from './dao/xmf-searchDAO';
 
 export class PrdServer extends Server {
 
-    private readonly SERVER_STARTED = 'Server started on port: ';
+    private readonly SERVER_STARTED = 'Server started';
 
     constructor() {
         super(true);
-        Logger.addTransport(new Console());
-        this.app.use(Logger.handler);
+        Logger.addTransport(new Console());  // Pievieno konsoles izvadi Logger objektam
+        this.app.use(Logger.handler); // Logger funkcijas būs pieejamas kā req.log
         this.app.use(bodyParser.json());
         this.app.use(bodyParser.urlencoded({ extended: true }));
     }
 
     async connectDB(uri: string | undefined): Promise<MongoClient> {
         if (!uri) {
-            console.error('Mongo environment not defined');
+            Logger.error('Mongo environment not defined');  // Inicializācijas laikā lieto statisko objektu
             return process.exit(1);
         }
         return MongoClient.connect(uri,
@@ -35,14 +35,14 @@ export class PrdServer extends Server {
                 wtimeout: 2500,
             },
         ).catch(err => {
-            console.error(err.stack);
+            Logger.error('Error connecting to mongodb', err.stack);
             return process.exit(1);
         }).then(async client => {
             if (!client) {
                 Logger.error("No connection to mongod");
                 return process.exit(1);
             }
-            Logger.addTransport(new MongoLog(client));
+            Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
             UsersDAO.injectDB(client);
             XmfSearchDAO.injectDB(client);
@@ -64,10 +64,10 @@ export class PrdServer extends Server {
 
     start(port: number): void {
         this.app.get('*', (req, res) => {
-            res.send(this.SERVER_STARTED + port);
+            res.send(this.SERVER_STARTED);
         });
         this.app.listen(port, () => {
-            console.log(this.SERVER_STARTED + port);
+            Logger.info(this.SERVER_STARTED, { port });
         });
     }
 }
