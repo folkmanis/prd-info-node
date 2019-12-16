@@ -4,9 +4,14 @@ declare namespace Express {
         sqlConnection: any;
         session?: Session;
         userPreferences?: any;
+        log: {
+            debug: (message: string, metadata?: any) => void,
+            info: (message: string, metadata?: any) => void,
+            error: (message: string, metadata?: any) => void,
+        };
     }
     export interface Response {
-        result: { [key: string]: any };
+        result: { [key: string]: any; };
     }
     export interface Session {
         user: User;

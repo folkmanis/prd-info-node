@@ -4,7 +4,7 @@ import { Server } from '@overnightjs/core';
 
 import { MongoClient } from 'mongodb';
 import PrdSession from './lib/session-handler';
-import log from './lib/logger';
+import Logger from './lib/logger';
 import UsersDAO from './dao/usersDAO';
 import XmfSearchDAO from './dao/xmf-searchDAO';
 
@@ -40,13 +40,14 @@ export class PrdServer extends Server {
                 console.error("No connection to mongod");
                 return process.exit(1);
             }
-            log.initLogger(client);
-            log.debug('Mongo connected');
+            Logger.initLogger(client);
+            Logger.debug('Mongo connected');
+            this.app.use(Logger.handler);
             UsersDAO.injectDB(client);
             XmfSearchDAO.injectDB(client);
-            this.app.use(PrdSession.injectDB(client))
+            this.app.use(PrdSession.injectDB(client));
             return client;
-        })
+        });
     }
 
     setupControllers(): void {

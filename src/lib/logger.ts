@@ -1,57 +1,102 @@
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
 import mongoLoggerDAO, { LogRecord } from '../dao/loggerDAO';
 
 export { LogRecord } from '../dao/loggerDAO';
 
+/**
+ * Izvades kanāls
+ */
 interface Transport {
-    minlevel: number,
-    write: (rec: LogRecord) => void,
+    minlevel: number, // minimālais svarīguma līmenis
+    write: (rec: LogRecord) => void, // izvades funkcija
 }
-
-enum levels {
-    error = 0, warn = 10, info = 20, verbose = 30, debug = 40, silly = 50
+/**
+ * Loga līmeņi
+ */
+export enum LogLevels {
+    ERROR = 0, WARN = 10, INFO = 20, VERBOSE = 30, DEBUG = 40, SILLY = 50
 }
-
+/**
+ * Statiskā klase darbībai ar logu
+ */
 export default class Logger {
-    static transports: Transport[] = [];
+    static transports: Transport[] = []; // Izvades kanāli
+    /**
+     * Statiska inicializācijas funkcija
+     * Izmanto esošo mongo savienojumu
+     */
     static async initLogger(conn: MongoClient) {
-        Logger.transports.push(new Console());
-        Logger.transports.push(new MongoLog(conn));
+        Logger.transports.push(new Console()); // koncoles izvade
+        Logger.transports.push(new MongoLog(conn)); // mongo izvade
+        // TODO izveidot raksīšanu failā
     }
-
-    static log(level: levels, message: string, metadata?: any) {
+    /**
+     * Pieņem log ierakstu
+     * @param level svarīguma līmenis. Skaitlis no levels
+     * @param message ziņojuma teksts
+     * @param metadata papildus objekts brīvā formā
+     */
+    static log(level: LogLevels, message: string, metadata?: any) {
         const record: LogRecord = {
             level,
             timestamp: new Date(Date.now()),
             info: message,
             metadata,
+        };
+        for (const transp of Logger.transports) { // iet cauri izvades kanāliem
+            if (level > transp.minlevel) { continue; } // ja nav līmenis, tad neko nedara
+            transp.write(record); // izvada ierakstu
         }
-        for (const transp of Logger.transports) {
-            if (level > transp.minlevel) { continue; }
-            transp.write(record);
-        }
+    }
+    /**
+     * Logger.info helper funkcija info līmenim 
+     * @param message ziņojums
+     * @param metadata objekts
+     */
+    static info(message: string, metadata?: any) {
+        Logger.log(LogLevels.INFO, message, metadata);
+    }
+    /**
+     * Logger.info helper funkcija debug līmenim 
+     * @param message ziņojums
+     * @param metadata objekts
+     */
+    static debug(message: string, metadata?: any) {
+        Logger.log(LogLevels.DEBUG, message, metadata);
+    }
+    /**
+     * Logger.info helper funkcija error līmenim 
+     * @param message ziņojums
+     * @param metadata objekts
+     */
+    static error(message: string, metadata?: any) {
+        Logger.log(LogLevels.ERROR, message, metadata);
     }
 
-    static info(message: string, metadata?: any) {
-        Logger.log(levels.info, message, metadata);
-    }
-    static debug(message: string, metadata?: any) {
-        Logger.log(levels.debug, message, metadata);
+    static handler(req: Request, res: Response, next: NextFunction) {
+        req.log = Logger;
+        next();
     }
 }
-
+/**
+ * Log transporta klase konsoles izvadam
+ */
 class Console implements Transport {
-    minlevel: levels = levels.silly;
+    minlevel: LogLevels = LogLevels.SILLY; // Konsolē raksta visu
     async write(rec: LogRecord): Promise<void> {
-        console.log(`${rec.level}|${rec.timestamp.toLocaleString()} | ${rec.info}`);
+        const levStr = LogLevels[rec.level] || rec.level;
+        console.log(`${levStr} | ${rec.timestamp.toLocaleString()} | ${rec.info}`);
         if (rec.metadata) {
             console.log(rec.metadata);
         }
     }
 }
-
+/**
+ * Log transporta klases rakstīšanai mongo
+ */
 class MongoLog implements Transport {
-    minlevel: levels = levels.info;
+    minlevel: LogLevels = LogLevels.INFO;
 
     constructor(private conn: MongoClient) {
         mongoLoggerDAO.injectDB(this.conn);

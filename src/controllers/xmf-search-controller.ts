@@ -33,7 +33,8 @@ export class XmfSearchController {
 
     @Get('search')
     private async search(req: Request, res: Response) {
-        console.log(JSON.parse(req.query.query));
+        req.log.info("query", JSON.parse(req.query.query));
+        // console.log(JSON.parse(req.query.query));
         if (!req.query.query) { // ja nav jautājums
             res.json({ count: 0 }); // skaits 0
             return;
@@ -45,7 +46,7 @@ export class XmfSearchController {
 
     @Get('facet')
     private async facet(req: Request, res: Response) {
-        console.log(JSON.parse(req.query.query));
+        req.log.debug('facet', JSON.parse(req.query.query));
         if (!req.query.query) { // ja nav jautājums
             res.json({}); // skaits 0
             return;
