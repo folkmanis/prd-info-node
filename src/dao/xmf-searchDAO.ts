@@ -108,6 +108,15 @@ export default class xmfSearchDAO {
         }
     }
 
+    static async getCustomers(): Promise<string[]> {
+        const pipeline = [{$group: {
+            _id: "$CustomerName"
+          }}, {$sort: {
+            _id: 1
+          }}];
+          return (await archives.aggregate<{_id: string}>(pipeline).toArray()).map(res => res._id);
+    }
+
     private static filter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any } {
         const filter: { [key: string]: any } = {
             $or: [

@@ -37,11 +37,16 @@ export default class UsersDAO {
     }
 
     static async getUser(username: string): Promise<User | null> {
-        return await users.findOne<User>({ username });
+        const projection = {
+            _id: 0,
+            __v: 0,
+            password: 0,
+        };
+        return await users.findOne<User>({ username }, { projection });
     }
 
     static async addUser(user: User):
-        Promise<{ success?: boolean; } | { error: Error; }> {
+        Promise<{ success: boolean; } | { error: Error; }> {
         try {
             await users.insertOne(user, { w: 'majority' });
             return { success: true };

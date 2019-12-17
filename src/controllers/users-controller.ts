@@ -6,8 +6,13 @@
  * count: number total count
  * users: {id, username, name, admin, last_login}[]
  * 
- * POST /user
- * Update/insert user
+ * GET /user?username=<string>
+ * Get single user
+ * { username, name, admin, preferences: UserPreferences, last_login }
+ * 
+ * POST /add
+ * POST /update
+ * Add | Update user
  *  {
  *   username: string,
  *   name: string,
@@ -15,6 +20,10 @@
  *   admin: boolean,
  *   last_login: Date,
  *  }
+ * 
+ * POST /password
+ * Update password
+ * { password: string, }
  */
 
 import crypto from 'crypto';
@@ -37,16 +46,54 @@ export class UsersController {
         res.json({ count, users });
     }
 
-    @Post('adduser')
-    private async postUser(req: Request, res: Response) {
-        req.log.info('users/update');
+    @Get('user')
+    private async getUser(req: Request, res: Response) {
+        if (!req.query.username) {
+            res.status(404).json(new Error('Request empty'));
+        }
+        const username: string = req.query.username;
+        req.log.info('get/user', { username });
+        const result = await UsersDAO.getUser(username);
+        res.json(result);
+
+    }
+
+    @Post('add')
+    private async addUser(req: Request, res: Response) {
+        req.log.info('users add', req.body);
         const user: User = req.body;
-        user.password = crypto.createHash('sha256').update(req.body.password).digest('hex');
+        user.password = hashPassword(req.body.password);
 
         const result = await UsersDAO.addUser(user);
 
-        req.log.debug('user updated',result);
+        req.log.info('user added', result);
         res.json(result);
     }
 
+    @Post('update')
+    private async updateUser(req: Request, res: Response) {
+        req.log.info('users update', req.body);
+        const user: Partial<User> = req.body;
+        const result = await UsersDAO.updateUser(user);
+        req.log.info('user update', result);
+        res.json(result);
+    }
+
+    @Post('password')
+    private async updatePassword(req: Request, res: Response) {
+        req.log.info('password update', req.body);
+        if (!req.body.password || !req.body.username) {
+            res.status(404).json(new Error('Password not set'));
+            return;
+        }
+        const user = { username: req.body.username as string, password: hashPassword(req.body.password) };
+        const result = UsersDAO.updateUser(user);
+        req.log.info('password updated', result);
+        res.json(result);
+    }
+
+}
+
+function hashPassword(passw: string): string {
+    return crypto.createHash('sha256').update(passw).digest('hex');
 }

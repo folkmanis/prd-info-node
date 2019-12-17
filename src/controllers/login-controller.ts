@@ -69,7 +69,6 @@ export class LoginController {
     }
 
     @Post('logout')
-    @Middleware(PrdSession.validateSession)
     private async logout(req: Request, res: Response) {
         const result = await new Promise((resolve, reject) => {
             if (req.session) {
@@ -85,8 +84,8 @@ export class LoginController {
     }
 
     @Get('user')
-    @Middleware(PrdSession.validateSession)
     private user(req: Request, res: Response) {
+        req.log.debug('login/user');
         if (req.session && req.session.user) {
             res.json(req.session.user);
         }

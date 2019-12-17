@@ -53,4 +53,10 @@ export class XmfSearchController {
         res.json(await xmfSearchDAO.facet(JSON.parse(req.query.query) as ArchiveSearchParams, req.userPreferences as UserPreferences));
     }
 
+    @Get('customers')
+    private async getCustomers(req: Request, res: Response) {
+        req.log.debug('xmfserach customers');
+        res.json(await xmfSearchDAO.getCustomers());
+    }
+
 }
