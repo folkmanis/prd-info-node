@@ -25,9 +25,10 @@
  */
 
 import crypto from 'crypto';
-import { Controller, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
+import { Controller, Get, Post, Wrapper, ClassWrapper, Middleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import UsersDAO from '../dao/usersDAO';
+import PrdSession from '../lib/session-handler';
 
 @Controller('data/login')
 export class LoginController {
@@ -68,8 +69,8 @@ export class LoginController {
     }
 
     @Post('logout')
+    @Middleware(PrdSession.validateSession)
     private async logout(req: Request, res: Response) {
-        req.log.info('User logged out', {user: req.session?.user});
         const result = await new Promise((resolve, reject) => {
             if (req.session) {
                 req.session.destroy((err) => {
@@ -79,10 +80,12 @@ export class LoginController {
                 resolve({ logout: 0 });
             }
         });
+        req.log.info('User logged out', {user: req.session?.user});
         res.json(result);
     }
 
     @Get('user')
+    @Middleware(PrdSession.validateSession)
     private user(req: Request, res: Response) {
         if (req.session && req.session.user) {
             res.json(req.session.user);
