@@ -88,7 +88,7 @@ export class UsersController {
             return;
         }
         const user = { username: req.body.username as string, password: hashPassword(req.body.password) };
-        const result = UsersDAO.updateUser(user);
+        const result = await UsersDAO.updateUser(user);
         req.log.info('password updated', result);
         res.json(result);
     }
