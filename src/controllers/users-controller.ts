@@ -61,9 +61,9 @@ export class UsersController {
 
     @Post('add')
     private async addUser(req: Request, res: Response) {
-        req.log.info('users add', req.body);
         const user: User = req.body;
         user.password = hashPassword(req.body.password);
+        req.log.info('users add', req.body);
 
         const result = await UsersDAO.addUser(user);
 
@@ -82,12 +82,12 @@ export class UsersController {
 
     @Post('password')
     private async updatePassword(req: Request, res: Response) {
-        req.log.info('password update', req.body);
         if (!req.body.password || !req.body.username) {
             res.status(404).json(new Error('Password not set'));
             return;
         }
         const user = { username: req.body.username as string, password: hashPassword(req.body.password) };
+        req.log.info('password update', user);
         const result = await UsersDAO.updateUser(user);
         req.log.info('password updated', result);
         res.json(result);
