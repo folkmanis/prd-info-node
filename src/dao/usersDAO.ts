@@ -76,6 +76,23 @@ export default class UsersDAO {
         }
     }
 
+    static async deleteUser(username: string): Promise<{ success: boolean, error?: any; }> {
+        try {
+            const updResp = await users.deleteOne({ username }, { w: 'majority' });
+            Logger.debug('Delete result: ', updResp);
+            if (updResp.deletedCount === 0) {
+                const error = "User not found";
+                Logger.error(error);
+                return { success: false, error };
+            }
+            return { success: true };
+
+        } catch (error) {
+            Logger.error('User delete error', error);
+            return { success: false, error };
+        }
+    }
+
     static async login(login: { username: string, password: string; }): Promise<User | null> {
         const updResp = await users.findOneAndUpdate(login, { $set: { last_login: new Date() } }, { projection: UsersDAO.projection });
         return updResp.value || null;
