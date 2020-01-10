@@ -23,6 +23,19 @@ export default class PrdSession {
             res.status(401).json(new Error('Admin not logged in'));
         }
     }
+    /**
+     * Pārbauda, vai lietotājam ir pieeja attiecīgajam modulim
+     * @param mod Moduļa nosaukums, kuram pārbauda pieeju
+     */
+    static validateModule(mod: string): RequestHandler {
+        return (req: Request, res: Response, next: NextFunction) => {
+            if (req.userPreferences?.modules?.includes(mod)) {
+                next();
+            } else {
+                res.json({});
+            }
+        };
+    }
 
     static injectDB(conn: MongoClient): RequestHandler {
         const sessionStore = new MongoStore({ client: conn });
@@ -38,7 +51,7 @@ export default class PrdSession {
             saveUninitialized: false,
             unset: 'destroy',
             resave: false,
-        })
+        });
     }
 
 }

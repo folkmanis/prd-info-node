@@ -27,7 +27,7 @@ import { UserPreferences } from '../lib/user-class';
 import xmfSearchDAO from '../dao/xmf-searchDAO';
 
 @Controller('data/xmf-search')
-@ClassMiddleware([PrdSession.validateSession, Preferences.getUserPreferences])
+@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-search')])
 @ClassWrapper(asyncWrapper)
 export class XmfSearchController {
 

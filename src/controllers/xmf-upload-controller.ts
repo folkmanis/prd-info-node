@@ -6,12 +6,13 @@ import { Controller, ClassMiddleware, Post, ClassWrapper } from '@overnightjs/co
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import PrdSession from '../lib/session-handler';
+import Preferences from '../lib/preferences-handler';
 import { UploadParser } from '../lib/upload-parser';
 import Busboy from "busboy";
 import readline from 'readline';
 
 @Controller('data/xmf-upload')
-@ClassMiddleware(PrdSession.validateAdminSession)
+@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateModule('xmf-upload')])
 // @ClassWrapper(asyncWrapper)
 export class XmfUploadController {
 
