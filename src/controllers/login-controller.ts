@@ -27,6 +27,7 @@
 import crypto from 'crypto';
 import { Controller, Get, Post, Wrapper, ClassWrapper, Middleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { asyncWrapper } from '../lib/asyncWrapper';
 import UsersDAO from '../dao/usersDAO';
 import PrdSession from '../lib/session-handler';
 
@@ -45,14 +46,14 @@ export class LoginController {
                 return;
             }
             req.session.regenerate((err) => {  // Sesijas dzēšana
-                err ? reject(err) : resolve()
-            })
-        })
+                err ? reject(err) : resolve();
+            });
+        });
 
         const login = {
             username: req.body.username,
             password: crypto.createHash('sha256').update(req.body.password).digest('hex'),
-        }
+        };
 
         let user = await UsersDAO.login(login);
 
@@ -64,7 +65,7 @@ export class LoginController {
         if (req.session) {
             req.session.user = user;
         }
-        req.log.debug('session',req.session);
+        req.log.debug('session', req.session);
         res.json(user);
     }
 
@@ -74,12 +75,12 @@ export class LoginController {
             if (req.session) {
                 req.session.destroy((err) => {
                     err ? reject(err) : resolve({ logout: 1 });
-                })
+                });
             } else {
                 resolve({ logout: 0 });
             }
         });
-        req.log.info('User logged out', {user: req.session?.user});
+        req.log.info('User logged out', { user: req.session?.user });
         res.json(result);
     }
 

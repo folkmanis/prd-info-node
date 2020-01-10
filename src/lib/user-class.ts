@@ -9,4 +9,5 @@ export interface User {
 
 export interface UserPreferences {
     customers: string[],
+    modules: string[],
 }

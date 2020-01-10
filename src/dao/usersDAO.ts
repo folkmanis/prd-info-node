@@ -12,6 +12,7 @@ export default class UsersDAO {
         name: 1,
         admin: 1,
         last_login: 1,
+        preferences: 1,
     };
 
 
