@@ -3,7 +3,10 @@ declare namespace Express {
     export interface Request {
         sqlConnection: any;
         session?: Session;
-        userPreferences?: any;
+        userPreferences?: {
+            customers: string[],
+            modules: string[],
+        };
         log: {
             debug: (message: string, metadata?: any) => void,
             info: (message: string, metadata?: any) => void,
@@ -20,5 +23,9 @@ declare namespace Express {
         name: string;
         username: string;
         admin: boolean;
+        preferences: {
+            customers: string[],
+            modules: string[],
+        };
     }
 }
