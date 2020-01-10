@@ -12,7 +12,7 @@ import Busboy from "busboy";
 import readline from 'readline';
 
 @Controller('data/xmf-upload')
-@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateModule('xmf-upload')])
+@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-upload')])
 // @ClassWrapper(asyncWrapper)
 export class XmfUploadController {
 
