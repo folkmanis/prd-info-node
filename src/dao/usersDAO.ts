@@ -1,4 +1,4 @@
-import { MongoClient, Collection } from "mongodb";
+import { MongoClient, Collection, ObjectId } from "mongodb";
 import { User, UserPreferences } from '../lib/user-class';
 import Logger from '../lib/logger';
 
@@ -106,5 +106,35 @@ export default class UsersDAO {
         } else {
             return user.preferences || null;
         }
+    }
+    /**
+     * Iegūst lietotāja preferences noteiktam modulim
+     * @param username Lietotājvārds
+     * @param mod Modulis
+     */
+    static async getUserPreferences(username: string, mod: string): Promise<{ [key: string]: any; }> {
+        const pipeline = [{
+            $match: { username }
+        }, {
+            $unwind: { path: "$userPreferences" }
+        }, {
+            $match: { 'userPreferences.module': mod }
+        }, {
+            $replaceRoot: { newRoot: '$userPreferences.options' }
+        }];
+        return (await users.aggregate(pipeline).toArray())[0];
+    }
+    /**
+     * Nomaina lietotāja iestatījumus noteiktam modulim
+     * @param username Lietotājvārds
+     * @param mod Modulis
+     * @param val Moduļa iestatījumi
+     */
+    static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<boolean> {
+        if (val.pasutijums) {
+            val.pasutijums = new ObjectId(val.pasutijums);
+        }
+        const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
+        return !!updRes.result.ok;
     }
 }

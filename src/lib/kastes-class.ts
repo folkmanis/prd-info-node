@@ -1,18 +1,21 @@
+import { ObjectId } from 'mongodb';
+
 export interface KastesVeikals {
     kods: string,
     adrese: string,
-    pasutijums: string,
-    gatavs: boolean,
-    uzlime: boolean,
+    pasutijums: ObjectId,
     kastes: {
+        total: number,
         yellow: number,
         rose: number,
         white: number,
+        gatavs: boolean,
+        uzlime: boolean,
     }[],
 }
 
 export interface KastesPasutijums {
-    id: number,
+    _id: ObjectId,
     name: string,
     deleted: boolean,
 }

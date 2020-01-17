@@ -7,6 +7,7 @@ import PrdSession from './lib/session-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
 import UsersDAO from './dao/usersDAO';
 import XmfSearchDAO from './dao/xmf-searchDAO';
+import kastesDAO from './dao/kastesDAO';
 
 export class PrdServer extends Server {
 
@@ -46,6 +47,7 @@ export class PrdServer extends Server {
             Logger.debug('Mongo connected');
             UsersDAO.injectDB(client);
             XmfSearchDAO.injectDB(client);
+            kastesDAO.injectDB(client);
             this.app.use(PrdSession.injectDB(client));
             return client;
         });
