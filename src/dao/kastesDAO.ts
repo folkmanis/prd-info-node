@@ -73,8 +73,24 @@ export default class KastesDAO {
     }
 
     static async veikaliTotals(pas: ObjectId): Promise<any> {
-        // TODO
-        return {};
+        const pipeline: Array<any> = [{
+            $match: { pasutijums: pas }
+        }, {
+            $unwind: {
+                path: '$kastes',
+                preserveNullAndEmptyArrays: false
+            }
+        }, {
+            $group: { _id: { $sum: ["$kastes.yellow", "$kastes.rose", "$kastes.white"] } }
+        }, {
+            $sort: { _id: 1 }
+        }, {
+            $project: {
+                _id: 0,
+                total: '$_id'
+            }
+        }];
+        return await veikali.aggregate(pipeline).toArray();
     }
     /**
      * Atrod vienu ierakstu no datubāzes pēc tā ID
@@ -88,7 +104,7 @@ export default class KastesDAO {
      * @param pasutijums pasūtījuma ID
      * @param apjoms skaits vienā kastē (ja nav norādīts, meklēs visus)
      */
-    static async veikaliList(pasutijums: ObjectId, apjoms?: number): Promise<any> {
+    static async kastesList(pasutijums: ObjectId, apjoms?: number): Promise<any> {
         const pipeline: Array<any> = [{
             $match: {
                 pasutijums
@@ -119,10 +135,14 @@ export default class KastesDAO {
      * @param yesno Gatavība jā/nē
      * @param paka Pakas numurs uz veikalu
      */
-    static async setGatavs(id: ObjectId, paka: number, yesno: boolean): Promise<{ count: number; } | null> {
+    static async setGatavs(field: string, id: ObjectId, kaste: number, yesno: boolean): Promise<{ changedRows: number; } | null> {
         // TODO
+
+        const update = { $set: JSON.parse(`{ "kastes.${kaste}.${field}": ${yesno} }`) };
+        Logger.debug('set gatavs dao', update);
         try {
-            return (await veikali.updateOne({ _id: id }, {})).result.ok ? { count: 1 } : null;
+            // return { changedRows: 0 };
+            return (await veikali.updateOne({ _id: id }, update)).result.ok ? { changedRows: 1 } : null;
         } catch (e) {
             Logger.error('Veikals update failed', { id, yesno });
             return null;

@@ -24,6 +24,10 @@ POST preferences
 sesijas lietotāja moduļa 'kastes' iestatījumu iestatīšana
 body.preferences: {key: value}
 
+POST gatavs
+atzīmē kastes lauku kā gatavu
+{ field, id, kaste, yesno } = req.body
+
 */
 
 import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete } from '@overnightjs/core';
@@ -57,21 +61,40 @@ export class KastesController {
 
     @Delete('pasutijums')
     private async deletePasutijums(req: Request, res: Response) {
+        req.log.debug('Delete pasutijums', req.query);
         res.json(
             await kastesDAO.pasutijumsDelete(new ObjectId(req.query.id))
         );
     }
 
-    @Get('numbers')
-    private async getByNumbers(req: Request, res: Response) {
+    @Get('kastes')
+    private async getKastes(req: Request, res: Response) {
+        req.log.debug('get kastes', req.query);
         res.json(
-            await kastesDAO.veikaliList(new ObjectId(req.query.pasutijums), +req.query.total)
+            await kastesDAO.kastesList(new ObjectId(req.query.pasutijums), +req.query.apjoms)
+        );
+    }
+
+    @Get('totals')
+    private async getTotals(req: Request, res: Response) {
+        res.json(
+            await kastesDAO.veikaliTotals(new ObjectId(req.query.pasutijums))
+        );
+    }
+
+    @Post('gatavs')
+    private async setGatavs(req: Request, res: Response) {
+        req.log.debug('post gatavs', req.body);
+        const { field, id, kaste, yesno } = req.body;
+        res.json(
+            await kastesDAO.setGatavs(field, new ObjectId(id), kaste, yesno)
         );
     }
 
     @Post('table')
     private async table(req: Request, res: Response) {
         const veikali = req.body.veikali as KastesVeikals[];
+        req.log.debug('post table', veikali);
         const count = await kastesDAO.veikaliAdd(veikali.map(vk => ({ ...vk, pasutijums: new ObjectId(vk.pasutijums) })));
         res.json({ affectedRows: count || 0 });
     }
@@ -86,6 +109,7 @@ export class KastesController {
 
     @Post('preferences')
     private async postPreferences(req: Request, res: Response) {
+        req.log.debug('post kastes preferences', req.body);
         const username = req.session?.user.username || '';
         const preferences = req.body.preferences;
         res.json(
