@@ -38,7 +38,7 @@ import Preferences from '../lib/preferences-handler';
 import kastesDAO from '../dao/kastesDAO';
 import usersDAO from '../dao/usersDAO';
 import { ObjectId } from 'mongodb';
-import { KastesVeikals } from '../lib/kastes-class';
+import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
 
 @Controller('data/kastes')
 @ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('kastes')])
@@ -59,12 +59,22 @@ export class KastesController {
         );
     }
 
-    @Delete('pasutijums')
-    private async deletePasutijums(req: Request, res: Response) {
-        req.log.debug('Delete pasutijums', req.query);
+    @Post('updatepasutijums')
+    private async updatePasutijums(req: Request, res: Response) {
+        const id = new ObjectId(req.body.pasutijums._id);
+        const pas = req.body.pasutijums as KastesPasutijums;
+        delete pas._id;
+        if (!id || !pas) { res.json({}); }
         res.json(
-            await kastesDAO.pasutijumsDelete(new ObjectId(req.query.id))
+            await kastesDAO.pasutijumsUpdate(id, pas)
         );
+    }
+
+    @Delete('pasutijums-cleanup')
+    private async pasCleanup(req: Request, res: Response) {
+        res.json(
+            await kastesDAO.pasutijumiCleanup()
+        )
     }
 
     @Get('kastes')

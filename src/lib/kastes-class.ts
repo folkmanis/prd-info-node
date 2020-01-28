@@ -18,4 +18,5 @@ export interface KastesPasutijums {
     _id: ObjectId,
     name: string,
     deleted: boolean,
+    created: Date,
 }

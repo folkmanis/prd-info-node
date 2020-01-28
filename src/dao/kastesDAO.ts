@@ -1,6 +1,8 @@
-import { MongoClient, Collection, ObjectId } from "mongodb";
+import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject } from "mongodb";
 import Logger from '../lib/logger';
 import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
+
+interface CleanupResponse { deleted: { pasutijumi: number, veikali: number, }; }
 
 let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
 let pasutijumi: Collection<Partial<KastesPasutijums>>; // Pasūtījumi
@@ -30,8 +32,7 @@ export default class KastesDAO {
      * Saraksts ar pasūtījumiem, kas nav dzēsti
      */
     static async pasNames(): Promise<Partial<KastesPasutijums>[]> {
-        const projection = { deleted: 0 };
-        return (await pasutijumi.find({ deleted: false }, { projection }).toArray());
+        return (await pasutijumi.find({}).toArray());
     }
     /**
      * Pievieno pasūtījumu
@@ -39,7 +40,12 @@ export default class KastesDAO {
      */
     static async pasutijumsAdd(name: string): Promise<{ _id: ObjectId; } | null> {
         try {
-            const insertRes = await pasutijumi.insertOne({ name, deleted: false, });
+            const pas = {
+                name,
+                deleted: false,
+                created: new Date(Date.now()),
+            };
+            const insertRes = await pasutijumi.insertOne(pas);
             return insertRes.result.ok ? { _id: insertRes.insertedId } : null;
         } catch (e) {
             Logger.error('Pasutijums insert error', e);
@@ -47,25 +53,41 @@ export default class KastesDAO {
         }
     }
     /**
-     * Atzīmē pasūtījumu kā dzēstu
-     * @param id Pasūtījuma ObjectId
+     * Izmaina pasūtījuma ierakstu
+     * @param id Pasūtījums Id
+     * @param pas Izmaiņas
      */
-    static async pasutijumsDelete(id: ObjectId): Promise<boolean> {
+    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesPasutijums>): Promise<{ changedRows: number; } | null> {
         try {
-            return !!(await pasutijumi.updateOne({ _id: id }, { $set: { deleted: true } })).result.ok;
+            const res = await pasutijumi.updateOne({ _id: id }, { $set: pas });
+            Logger.debug('pas update res', res.result);
+            return { changedRows: res.result.nModified };
         } catch (e) {
-            Logger.error('Pasutijums delete error', e);
-            return false;
+            Logger.error('Pasutijums update failed', e);
+            return null;
         }
+    }
+    /**
+     * Izdzēš no pasūtījumiem neaktīvos un atbilstošos no pakošanas
+     */
+    static async pasutijumiCleanup(): Promise<CleanupResponse> {
+        const resp: CleanupResponse = { deleted: { veikali: 0, pasutijumi: 0 } };
+        const saraksts = (await pasutijumi.find({ deleted: true }, { projection: { _id: 1 } }).toArray()).map(pas => pas._id);
+        if (!saraksts.length) {
+            return resp;
+        }
+        resp.deleted.veikali = (await veikali.deleteMany({ pasutijums: { $in: saraksts } })).deletedCount || 0;
+        resp.deleted.pasutijumi = (await pasutijumi.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
+        return resp;
     }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(kastes: KastesVeikals[]): Promise<{ count: number; } | null> {
+    static async veikaliAdd(kastes: KastesVeikals[]): Promise<number | null> {
         try {
             const insertRes = await veikali.insertMany(kastes);
-            return insertRes.result.ok ? { count: insertRes.result.n } : null;
+            return insertRes.result.ok ? insertRes.result.n : null;
         } catch (e) {
             Logger.error('Veikali insert failed', e);
             return null;
@@ -91,14 +113,14 @@ export default class KastesDAO {
             }
         }];
         return await veikali.aggregate(pipeline).toArray();
-    }
+    };
     /**
      * Atrod vienu ierakstu no datubāzes pēc tā ID
      * @param _id Ieraksta ID
      */
     static async getVeikals(_id: ObjectId): Promise<KastesVeikals | null> {
         return await veikali.findOne({ _id });
-    }
+    };
     /**
      * Izvērsts saraksts ar pakojumu pa veikaliem
      * @param pasutijums pasūtījuma ID
@@ -128,7 +150,7 @@ export default class KastesDAO {
             });
         }
         return await veikali.aggregate(pipeline).toArray();
-    }
+    };
     /**
      * Uzstāda ierakstu kā gatavu
      * @param id Ieraksta ObjectId
