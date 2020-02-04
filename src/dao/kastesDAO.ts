@@ -15,10 +15,6 @@ export default class KastesDAO {
                 veikali = conn.db(process.env.DB_BASE as string)
                     .collection('kastes-kastes');
                 veikali.createIndex({ pasutijums: 1, kods: 1 }, { name: 'pasutijums_1' });
-                veikali.createIndex({ 'kastes.total': 1 }, { name: 'total_1' });
-                // .then(result => {
-                //     Logger.debug('kastes-kastes index created', result);
-                // });
             } catch (e) {
                 Logger.error('kastesDAO: unable to connect kastes-kastes', e);
             }
