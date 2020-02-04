@@ -14,6 +14,11 @@ export default class KastesDAO {
             try {
                 veikali = conn.db(process.env.DB_BASE as string)
                     .collection('kastes-kastes');
+                veikali.createIndex({ pasutijums: 1, kods: 1 }, { name: 'pasutijums_1' });
+                veikali.createIndex({ 'kastes.total': 1 }, { name: 'total_1' });
+                // .then(result => {
+                //     Logger.debug('kastes-kastes index created', result);
+                // });
             } catch (e) {
                 Logger.error('kastesDAO: unable to connect kastes-kastes', e);
             }
@@ -103,7 +108,7 @@ export default class KastesDAO {
                 preserveNullAndEmptyArrays: false
             }
         }, {
-            $group: { _id: { $sum: ["$kastes.yellow", "$kastes.rose", "$kastes.white"] } }
+            $group: { _id: "$kastes.total" }
         }, {
             $sort: { _id: 1 }
         }, {
