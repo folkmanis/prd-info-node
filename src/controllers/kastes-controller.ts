@@ -35,8 +35,8 @@ import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
-import kastesDAO from '../dao/kastesDAO';
-import usersDAO from '../dao/usersDAO';
+import { KastesDAO } from '../dao/kastesDAO';
+import { UsersDAO } from '../dao/usersDAO';
 import { ObjectId } from 'mongodb';
 import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
 
@@ -48,14 +48,14 @@ export class KastesController {
     @Get('pasnames')
     private async pasnames(req: Request, res: Response) {
         res.json(
-            await kastesDAO.pasNames()
+            await KastesDAO.pasNames()
         );
     }
 
     @Post('addpasutijums')
     private async addpasutijums(req: Request, res: Response) {
         res.json(
-            await kastesDAO.pasutijumsAdd(req.body.pasutijums as string)
+            await KastesDAO.pasutijumsAdd(req.body.pasutijums as string)
         );
     }
 
@@ -66,29 +66,29 @@ export class KastesController {
         delete pas._id;
         if (!id || !pas) { res.json({}); }
         res.json(
-            await kastesDAO.pasutijumsUpdate(id, pas)
+            await KastesDAO.pasutijumsUpdate(id, pas)
         );
     }
 
     @Delete('pasutijums-cleanup')
     private async pasCleanup(req: Request, res: Response) {
         res.json(
-            await kastesDAO.pasutijumiCleanup()
-        )
+            await KastesDAO.pasutijumiCleanup()
+        );
     }
 
     @Get('kastes')
     private async getKastes(req: Request, res: Response) {
         req.log.debug('get kastes', req.query);
         res.json(
-            await kastesDAO.kastesList(new ObjectId(req.query.pasutijums), +req.query.apjoms)
+            await KastesDAO.kastesList(new ObjectId(req.query.pasutijums), +req.query.apjoms)
         );
     }
 
     @Get('totals')
     private async getTotals(req: Request, res: Response) {
         res.json(
-            await kastesDAO.veikaliTotals(new ObjectId(req.query.pasutijums))
+            await KastesDAO.veikaliTotals(new ObjectId(req.query.pasutijums))
         );
     }
 
@@ -97,7 +97,7 @@ export class KastesController {
         req.log.debug('post gatavs', req.body);
         const { field, id, kaste, yesno } = req.body;
         res.json(
-            await kastesDAO.setGatavs(field, new ObjectId(id), kaste, yesno)
+            await KastesDAO.setGatavs(field, new ObjectId(id), kaste, yesno)
         );
     }
 
@@ -105,7 +105,7 @@ export class KastesController {
     private async table(req: Request, res: Response) {
         const veikali = req.body.veikali as KastesVeikals[];
         req.log.debug('post table', veikali);
-        const count = await kastesDAO.veikaliAdd(veikali.map(vk => ({ ...vk, pasutijums: new ObjectId(vk.pasutijums) })));
+        const count = await KastesDAO.veikaliAdd(veikali.map(vk => ({ ...vk, pasutijums: new ObjectId(vk.pasutijums) })));
         res.json({ affectedRows: count || 0 });
     }
 
@@ -113,7 +113,7 @@ export class KastesController {
     private async getPreferences(req: Request, res: Response) {
         const username = req.session?.user.username || '';
         res.json(
-            await usersDAO.getUserPreferences(username, 'kastes')
+            await UsersDAO.getUserPreferences(username, 'kastes')
         );
     }
 
@@ -123,7 +123,7 @@ export class KastesController {
         const username = req.session?.user.username || '';
         const preferences = req.body.preferences;
         res.json(
-            await usersDAO.updateUserPreferences(username, 'kastes', preferences)
+            await UsersDAO.updateUserPreferences(username, 'kastes', preferences)
         );
     }
 

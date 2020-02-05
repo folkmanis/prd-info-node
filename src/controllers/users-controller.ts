@@ -32,7 +32,7 @@ import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware }
 import { Request, Response } from 'express';
 import { User } from '../lib/user-class';
 import PrdSession from '../lib/session-handler';
-import UsersDAO from '../dao/usersDAO';
+import { UsersDAO } from '../dao/usersDAO';
 
 
 @Controller('data/users')

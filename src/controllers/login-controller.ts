@@ -28,7 +28,7 @@ import crypto from 'crypto';
 import { Controller, Get, Post, Wrapper, ClassWrapper, Middleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import UsersDAO from '../dao/usersDAO';
+import { UsersDAO } from '../dao/usersDAO';
 import PrdSession from '../lib/session-handler';
 
 @Controller('data/login')

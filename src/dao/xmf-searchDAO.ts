@@ -18,7 +18,7 @@ export interface FacetResult {
 
 let archives: Collection<Partial<ArchiveJob>>;
 
-export default class xmfSearchDAO {
+export class xmfSearchDAO {
 
     static async injectDB(conn: MongoClient) {
         if (archives) {

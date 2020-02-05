@@ -1,4 +1,4 @@
-import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject } from "mongodb";
+import { MongoClient, Collection, ObjectId } from "mongodb";
 import Logger from '../lib/logger';
 import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
 
@@ -7,7 +7,7 @@ interface CleanupResponse { deleted: { pasutijumi: number, veikali: number, }; }
 let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
 let pasutijumi: Collection<Partial<KastesPasutijums>>; // Pasūtījumi
 
-export default class KastesDAO {
+export class KastesDAO {
 
     static async injectDB(conn: MongoClient) {
         if (!veikali) {

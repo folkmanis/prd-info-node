@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
 import { User, UserPreferences } from './user-class';
-import UsersDAO from '../dao/usersDAO';
+import { UsersDAO } from '../dao/usersDAO';
 import Logger from './logger';
 
 export default class Preferences {
@@ -15,7 +15,7 @@ export default class Preferences {
             res.status(401).json({});
             return;
         }
-        const user = req.session.user as User
+        const user = req.session.user as User;
         const prefs = await UsersDAO.getPreferences(user.username);
         if (!prefs) {
             Logger.error('User preferences not found');

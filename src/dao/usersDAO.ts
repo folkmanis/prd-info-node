@@ -4,7 +4,7 @@ import Logger from '../lib/logger';
 
 let users: Collection<User>;
 
-export default class UsersDAO {
+export class UsersDAO {
 
     static projection = {
         _id: 0,

@@ -19,7 +19,7 @@ const indexes: IndexSpecification[] = [
 
 let log: Collection<LogRecord>;
 
-export default class LoggerDAO {
+export class LoggerDAO {
     static async injectDB(conn: MongoClient, params = {
         collection: 'log'
     }) {

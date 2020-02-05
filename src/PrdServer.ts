@@ -1,13 +1,14 @@
 import * as bodyParser from 'body-parser';
+import * as dao from './dao';
 import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 
 import { MongoClient } from 'mongodb';
 import PrdSession from './lib/session-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
-import UsersDAO from './dao/usersDAO';
-import XmfSearchDAO from './dao/xmf-searchDAO';
-import kastesDAO from './dao/kastesDAO';
+// import UsersDAO from './dao/usersDAO';
+// import XmfSearchDAO from './dao/xmf-searchDAO';
+// import kastesDAO from './dao/kastesDAO';
 
 export class PrdServer extends Server {
 
@@ -45,9 +46,10 @@ export class PrdServer extends Server {
             }
             Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
-            UsersDAO.injectDB(client);
-            XmfSearchDAO.injectDB(client);
-            kastesDAO.injectDB(client);
+            this.setupDAO(client);
+            // UsersDAO.injectDB(client);
+            // XmfSearchDAO.injectDB(client);
+            // kastesDAO.injectDB(client);
             this.app.use(PrdSession.injectDB(client));
             return client;
         });
@@ -62,6 +64,18 @@ export class PrdServer extends Server {
             }
         }
         super.addControllers(ctlrInstances);
+    }
+
+    private setupDAO(client: MongoClient): void {
+        for (const name in dao) {
+            Logger.debug('dao', name);
+            if (dao.hasOwnProperty(name)) {
+                const element = (dao as any)[name];
+                if (element.injectDB instanceof Function) {
+                    element.injectDB(client);
+                }
+            }
+        }
     }
 
     start(port: number): void {

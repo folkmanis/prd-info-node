@@ -1,11 +1,11 @@
 import { ArchiveJob } from './xmf-archive-class';
-import xmfSearchDAO from '../dao/xmf-searchDAO';
+import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 import Logger from './logger';
 
 abstract class Data {
     closed: boolean = false;
     abstract add(key: string, val: any): void;
-    abstract toObject(): { [key: string]: any };
+    abstract toObject(): { [key: string]: any; };
     abstract last(): Data;
     close() {
         const lo = this.last();
@@ -50,15 +50,15 @@ class DataObject extends Data {
         this.el.set(key, this.lastEl);
     }
 
-    toObject(): { [key: string]: any } {
-        const obj: { [key: string]: any } = {};
+    toObject(): { [key: string]: any; } {
+        const obj: { [key: string]: any; } = {};
         this.el.forEach((val, key) => {
             if (val instanceof Data) {
                 obj[key] = val.toObject();
             } else {
                 obj[key] = val;
             }
-        })
+        });
         return obj;
     }
 
@@ -143,7 +143,7 @@ export class UploadParser {
         }
     }
 
-    private lineValue(line: string): { key: string, val: string | number | boolean } | null {
+    private lineValue(line: string): { key: string, val: string | number | boolean; } | null {
         line = this.removeBlanks(line);
 
         let k = line.indexOf(':');
@@ -155,7 +155,7 @@ export class UploadParser {
         const key = line.substring(0, k);
         const type = line.substring(k + 1, l);
         if (type.search(/OBJECT\[[0-9]+\]/) > -1) {
-            return { key: key, val: '[]' }
+            return { key: key, val: '[]' };
         }
         let val: string | number | boolean = line.substring(l + 1, m);
         switch (type) {
@@ -198,7 +198,7 @@ export class UploadParser {
     }
 
     private indexDates(job: ArchiveJob) {
-        if (!job.Archives) { return }
+        if (!job.Archives) { return; }
         for (const arch of job.Archives) {
             const index = arch.Location.match(/(\d){4}\/(\d){2}(?=-(\w)+(\d)+)/); // /GADS/MĒNESIS
             if (index) {

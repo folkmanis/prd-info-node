@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
-import mongoLoggerDAO, { LogRecord } from '../dao/loggerDAO';
+import { LoggerDAO as mongoLoggerDAO, LogRecord } from '../dao/loggerDAO';
 
 export { LogRecord } from '../dao/loggerDAO';
 
