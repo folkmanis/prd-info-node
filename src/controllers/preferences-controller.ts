@@ -35,7 +35,7 @@ import { PreferencesDAO } from '../dao/preferencesDAO';
 @ClassWrapper(asyncWrapper)
 export class PreferencesController {
 
-    @Middleware(PrdSession.validateModule('admin'))
+    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai ar admin pieeju
     @Put('update')
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body.preferences;
