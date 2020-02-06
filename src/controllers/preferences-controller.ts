@@ -31,11 +31,11 @@ import { PreferencesDAO } from '../dao/preferencesDAO';
 @ClassMiddleware([
     Preferences.getUserPreferences,
     PrdSession.validateSession,
-    PrdSession.validateModule('admin')
 ])
 @ClassWrapper(asyncWrapper)
 export class PreferencesController {
 
+    @Middleware(PrdSession.validateModule('admin'))
     @Put('update')
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body.preferences;
