@@ -41,7 +41,11 @@ import { ObjectId } from 'mongodb';
 import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
 
 @Controller('data/kastes')
-@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('kastes')])
+@ClassMiddleware([
+    Preferences.getUserPreferences,
+    PrdSession.validateSession,
+    PrdSession.validateModule('kastes')
+])
 @ClassWrapper(asyncWrapper)
 export class KastesController {
 
