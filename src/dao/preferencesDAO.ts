@@ -58,6 +58,7 @@ export class PreferencesDAO {
      * Izsniedz visu moduļu preferences
      */
     static getAllPreferences(): Promise<Preferences[]> {
+        //TODO tikai preferences, kuras attiecas uz lietotāju
         return preferences.find({}, { projection: { _id: 0 } }).toArray();
     }
     /**
