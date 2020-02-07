@@ -15,6 +15,10 @@ preferences: {
     settings: {key: value}
 } []
 
+POST defaults
+atiestata vienu moduli
+{module: string}
+response {updated: 0 | 1}
 
 */
 
@@ -35,7 +39,7 @@ import { PreferencesDAO } from '../dao/preferencesDAO';
 @ClassWrapper(asyncWrapper)
 export class PreferencesController {
 
-    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai ar admin pieeju
+    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai
     @Put('update')
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body.preferences;
@@ -44,7 +48,23 @@ export class PreferencesController {
         res.json(result);
     }
 
-    @Get('')
+    @Post('defaults')
+    private async resetModule(req: Request, res: Response) {
+        const mod = req.body.module as string;
+        if (!mod) { res.json({ updated: 0 }); }
+        res.json(
+            { updated: (await PreferencesDAO.setDefaults(mod)) ? 1 : 0 }
+        );
+    }
+
+    @Get('all')
+    private async getAllPreferences(req: Request, res: Response) {
+        res.json(
+            await PreferencesDAO.getAllPreferences()
+        );
+    }
+
+    @Get('single')
     private async getPreferences(req: Request, res: Response) {
         const mod = req.query.module;
         req.log.debug('get preferences', mod);

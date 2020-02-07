@@ -17,9 +17,11 @@ const defaults: Preferences[] = [
     {
         module: 'kastes',
         settings: {
-            yellow: 'hsl(45,75%,50%)',
-            rose: 'hsl(315,75%,50%)',
-            white: 'hsl(0,0%,50%)',
+            colors: {
+                yellow: 'hsl(45,75%,50%)',
+                rose: 'hsl(315,75%,50%)',
+                white: 'hsl(0,0%,50%)',
+            }
         }
     },
 ];
@@ -53,6 +55,12 @@ export class PreferencesDAO {
         return (await preferences.findOne({ module: mod }, { projection: { _id: 0 } }));
     }
     /**
+     * Izsniedz visu moduļu preferences
+     */
+    static getAllPreferences(): Promise<Preferences[]> {
+        return preferences.find({}, { projection: { _id: 0 } }).toArray();
+    }
+    /**
      * Nomaina vienam vai vairākiem moduļiem preferences
      * Preferences objektā jābūt norādītam modulim
      * Atgriež servera atbildi 
@@ -69,7 +77,7 @@ export class PreferencesDAO {
             update.push({
                 updateOne: {
                     filter: { module: pr.module },
-                    update: { $set: flattenObject({settings: pr.settings}) }
+                    update: { $set: flattenObject({ settings: pr.settings }) }
                 }
             })
         );
@@ -81,8 +89,11 @@ export class PreferencesDAO {
      * Atiestata preferences uz noklusējuma vērtībām vienam modulim
      * @param mod Moduļa nosaukums
      */
-    static async setDefaults(mod: string) {
-        //        TODO 
+    static async setDefaults(mod: string): Promise<boolean> {
+        const def = defaults.find(obj => obj.module === mod);
+        if (!def) { return false; }
+        const result= await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
+        return !!result.result.ok;
     }
 
     private static async insertDefaults(def: Preferences[]) {
