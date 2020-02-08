@@ -37,7 +37,7 @@ export class LoginController {
     @Post('login')
     private async login(req: Request, res: Response) {
         if (!req.body.username || !req.body.password) {  // Ja nepareizs pieprasījums
-            res.status(401).json({});
+            res.json({});
             return;
         }
         await new Promise((resolve, reject) => {  // Izdzēš sesiju
@@ -59,7 +59,7 @@ export class LoginController {
 
         if (!user) {
             req.log.error('Login failed', req.body);
-            res.status(401).json({});
+            res.json({});
             return;
         }
         if (req.session) {
