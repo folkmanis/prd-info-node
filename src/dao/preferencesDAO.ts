@@ -24,6 +24,12 @@ const defaults: Preferences[] = [
             }
         }
     },
+    {
+        module: 'system',
+        settings: {
+            menuExpandedByDefault: true,
+        }
+    }
 ];
 
 let preferences: Collection<Preferences>;
@@ -93,7 +99,7 @@ export class PreferencesDAO {
     static async setDefaults(mod: string): Promise<boolean> {
         const def = defaults.find(obj => obj.module === mod);
         if (!def) { return false; }
-        const result= await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
+        const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
         return !!result.result.ok;
     }
 

@@ -1,8 +1,11 @@
 /*
 /data/preferences
-GET 
+GET single
 module: string
 {module, settings: {key: value}} | {}
+
+GET all
+{module, settings: {key: value}}[]
 
 PUT update
 viens modulis vai masīvs no vairākiem moduļiem
@@ -39,7 +42,7 @@ import { PreferencesDAO } from '../dao/preferencesDAO';
 @ClassWrapper(asyncWrapper)
 export class PreferencesController {
 
-    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai
+    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Put('update')
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body.preferences;
@@ -48,6 +51,7 @@ export class PreferencesController {
         res.json(result);
     }
 
+    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post('defaults')
     private async resetModule(req: Request, res: Response) {
         const mod = req.body.module as string;
