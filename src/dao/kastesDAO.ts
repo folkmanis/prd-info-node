@@ -153,6 +153,26 @@ export class KastesDAO {
         return await veikali.aggregate(pipeline).toArray();
     };
     /**
+     * Izsniedz vienas piegādes kastes ierakstu
+     * @param _id Piegādes ieraksta _id
+     * @param kaste Kastas kārtas numurs
+     */
+    static async getKaste(_id: ObjectId, kaste: number): Promise<any> {
+        const pipeline = [{
+            $match: { _id }
+        }, {
+            $unwind: {
+                path: '$kastes',
+                includeArrayIndex: 'kaste',
+                preserveNullAndEmptyArrays: false
+            }
+        }, {
+            $match: { kaste }
+        }];
+        const res = await veikali.aggregate(pipeline).toArray();
+        return res.length > 0 ? res[0] : {};
+    }
+    /**
      * Uzstāda ierakstu kā gatavu
      * @param id Ieraksta ObjectId
      * @param yesno Gatavība jā/nē

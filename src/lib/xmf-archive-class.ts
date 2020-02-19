@@ -36,3 +36,17 @@ export interface ArchiveSearchParams {
     year?: string;
     month?: string;
 }
+
+export interface ArchiveSearchResult {
+    count: number;
+    data: Partial<ArchiveJob>[];
+    facet: FacetResult;
+}
+
+interface Count { _id: string, count: number };
+
+export interface FacetResult {
+    customerName: Count[],
+    year: Count[],
+    month: Count[],
+}

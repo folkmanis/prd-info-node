@@ -89,10 +89,31 @@ export class KastesController {
         );
     }
 
+    @Get('kaste')
+    private async getKaste(req: Request, res: Response) {
+        const kaste = +req.query.kaste;
+        const id = req.query.id;
+        res.json(
+            await KastesDAO.getKaste(new ObjectId(id), kaste)
+        );
+    }
+
     @Get('totals')
     private async getTotals(req: Request, res: Response) {
+        const pas = new ObjectId(<string>req.query.pasutijums);
         res.json(
-            await KastesDAO.veikaliTotals(new ObjectId(req.query.pasutijums))
+            await KastesDAO.veikaliTotals(pas)
+        );
+    }
+
+    @Get('totals-kastes')
+    private async getTotalsAndKastes(req: Request, res: Response) {
+        const pas = new ObjectId(<string>req.query.pasutijums);
+        res.json(
+            {
+                totals: await KastesDAO.veikaliTotals(pas),
+                kastes: await KastesDAO.kastesList(pas)
+            }
         );
     }
 
