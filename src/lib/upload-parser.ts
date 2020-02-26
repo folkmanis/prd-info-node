@@ -173,7 +173,6 @@ export class UploadParser {
                 break;
         }
         return { key, val };
-
     }
     /**
      * Izņem liekās atstarpes no rindas.
