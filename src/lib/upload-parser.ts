@@ -1,6 +1,12 @@
-import { ArchiveJob } from './xmf-archive-class';
+import { ArchiveJob, XmfUploadProgress } from './xmf-archive-class';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 import Logger from './logger';
+import { ObjectId } from 'mongodb';
+import { file as tmpFile, FileResult } from 'tmp-promise';
+import readline, { ReadLine } from 'readline';
+import fs from 'fs';
+
+const WRITE_CHUNK_SIZE = 100;
 
 abstract class Data {
     closed: boolean = false;
@@ -108,24 +114,22 @@ class DataArray extends Data {
 
 }
 
-export class UploadParser {
+class UploadParser {
+    constructor(private tracker: UploadProgressTracker) { }
+
     private data = new DataObject();
+    private isfirst = true; // kamēr nav pievienots neviens elements
+    buffer: ArchiveJob[] = [];
 
-    counter = 0;
-    isfirst = true; // kamēr nav pievienots neviens elements
-    count = {
-        modified: 0,
-        upserted: 0
-    };
-
-    async parseLine(line: string) {
+    parseLine(line: string) {
+        this.tracker.line();
         line = line.trim();
         if (line.startsWith("%%N:")) // Ar %%N: saakas katrs jauns darbs
         {
             this.data.clear();
             this.isfirst = true;
         } else if (line.startsWith("%%E:")) { // Ar %%E: beidzas katrs darbs
-            await this.storeData();
+            this.storeData();
         } else if (line[0] === '{' && !this.isfirst) // Atverosaa figuuriekava noraada uz datu saakumu
         {
             this.data.add('OBJECT', '');
@@ -211,15 +215,134 @@ export class UploadParser {
         }
     }
 
-    private async storeData() {
+    private storeData() {
         const archiveJob: ArchiveJob = this.data.toObject() as ArchiveJob; // XmfArchiveInfo = new XmfArchiveInfo();
         this.indexDates(archiveJob); // uztaisa indeksu
-        if ((++this.counter % 1000) === 0) {
-            Logger.debug(this.counter.toString());
+        this.buffer.push(archiveJob);
+        this.tracker.processed();
+    }
+
+}
+
+interface TotalCount {
+    [key: string]: number,
+    lines: number,  // apstrādātās rindiņas
+    processed: number, // atrastie ieraksti
+    modified: number, // izmainītie ieraksti
+    upserted: number, // pievienotie ieraksti
+}
+export class UploadProgressTracker {
+    private progress: Partial<XmfUploadProgress> = {
+        count: {
+            lines: 0,
+            modified: 0,
+            upserted: 0,
+            processed: 0,
         }
-        const result = await xmfSearchDAO.insertJob(archiveJob);
-        this.count.modified += result.modified;
-        this.count.upserted += result.upserted;
+    };
+    /**
+     * Procesēta jauna rindiņa
+     */
+    line(): void {
+        this.progress.count!.lines++;
+        if (this.progress.count!.lines % 100 === 0) {
+            this.save();
+        }
+    }
+
+    set state(_st: 'uploading' | 'parsing' | 'saving' | 'finished') {
+        this.progress.state = _st;
+        this.save();
+    }
+    get state(): 'uploading' | 'parsing' | 'saving' | 'finished' {
+        return this.progress.state || 'uploading';
+    }
+    /** Apstrādāts ieraksts */
+    processed(): void {
+        this.progress.count!.processed++;
+        if (this.progress.count!.processed % 100 === 0) {
+            this.save();
+        }
+    }
+    /** Inicializācija. Izveido ierakstu datubāzē */
+    async start(inf: Partial<XmfUploadProgress>): Promise<ObjectId | undefined> {
+        if (this.progress._id) { return this.progress._id; }
+        this.progress = { ...this.progress, ...inf };
+        this.progress.started = new Date(Date.now());
+        this.progress.state = 'uploading';
+        this.progress._id = (await xmfSearchDAO.startLog(this.progress)) || undefined;
+        return this.progress._id;
+    }
+    /**
+     * Palielina skaitītājus par iesūtītajām vienībām 
+     * skaitītājs.vienība += cnt.vienība
+     * @param cnt Skaitītāja papildinājums. Iesūtītās vērtības tiks pieskaitītas esošajām.
+     */
+    updateCount(cnt: Partial<TotalCount>): void {
+        for (const key in cnt) {
+            this.progress.count![key] += cnt[key] || 0;
+        }
+        this.save();
+    }
+    /**
+     * Esošo skaitītāja stāvokli saglabā datubāzē
+     */
+    async save(): Promise<boolean> {
+        if (!this.progress._id) { return false; }
+        return await xmfSearchDAO.updateLog(this.progress);
+    }
+    /**
+     * Ieraksta skaitītāja stāvokli un papildina ar finished lauku
+     * finished = Date.now
+     */
+    async finish(): Promise<boolean> {
+        this.progress.finished = new Date(Date.now());
+        this.state = 'finished';
+        if (!this.progress._id) { return false; }
+        return await xmfSearchDAO.updateLog(this.progress);
+    }
+
+}
+
+export class FileParser {
+
+    constructor(
+        private file: FileResult,
+        private tracker: UploadProgressTracker,
+    ) { }
+
+    lineReader!: ReadLine;
+
+    start() {
+        const rl = readline.createInterface({ input: fs.createReadStream(this.file.path), crlfDelay: Infinity });
+        const parser = new UploadParser(this.tracker);
+        this.tracker.state = 'parsing';
+        rl.on('line', line => {
+            parser.parseLine(line);
+        });
+        rl.on('close', async () => {
+            this.file.cleanup();
+            await this.writeBuffer(parser.buffer);
+            await this.tracker.finish();
+        });
+        return;
+    }
+
+    private async writeBuffer(buffer: ArchiveJob[]): Promise<void> {
+        this.tracker.state = 'saving';
+        const chunks = Math.floor(buffer.length / WRITE_CHUNK_SIZE);
+        for (let n = 0; n < chunks; n++) {
+            const chunk = buffer.slice(
+                WRITE_CHUNK_SIZE * n,
+                WRITE_CHUNK_SIZE * (n + 1)
+            );
+            const resp = await xmfSearchDAO.insertJob(chunk);
+            this.tracker.updateCount(resp);
+        }
+        const resp = await xmfSearchDAO.insertJob(
+            buffer.slice(WRITE_CHUNK_SIZE * chunks)
+        );
+        this.tracker.updateCount(resp);
     }
 
 }

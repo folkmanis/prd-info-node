@@ -1,3 +1,5 @@
+import { ObjectId } from "mongodb";
+
 export interface ArchiveJob {
     JobID: string;
     JDFJobID: string;
@@ -43,10 +45,27 @@ export interface ArchiveSearchResult {
     facet: FacetResult;
 }
 
-interface Count { _id: string, count: number };
+interface Count { _id: string, count: number; };
 
 export interface FacetResult {
     customerName: Count[],
     year: Count[],
     month: Count[],
+}
+
+export interface XmfUploadProgress {
+    _id: ObjectId,
+    started: Date,
+    fileName: string,
+    fileSize: string,
+    username: string,
+    state: 'uploading' | 'parsing' | 'saving' | 'finished',
+    count: {
+        [key: string]: number,
+        processed: number,
+        modified: number,
+        upserted: number,
+        lines: number,
+    };
+    finished: Date,
 }

@@ -6,9 +6,6 @@ import { Server } from '@overnightjs/core';
 import { MongoClient } from 'mongodb';
 import PrdSession from './lib/session-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
-// import UsersDAO from './dao/usersDAO';
-// import XmfSearchDAO from './dao/xmf-searchDAO';
-// import kastesDAO from './dao/kastesDAO';
 
 export class PrdServer extends Server {
 
@@ -47,9 +44,6 @@ export class PrdServer extends Server {
             Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
             this.setupDAO(client);
-            // UsersDAO.injectDB(client);
-            // XmfSearchDAO.injectDB(client);
-            // kastesDAO.injectDB(client);
             this.app.use(PrdSession.injectDB(client));
             return client;
         });

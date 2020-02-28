@@ -1,22 +1,30 @@
-import { MongoClient, Collection } from "mongodb";
+import { MongoClient, Collection, ObjectId } from "mongodb";
 import { ArchiveJob, ArchiveSearchParams } from '../lib/xmf-archive-class';
 import { UserPreferences } from "../lib/user-class";
-import { ArchiveSearchResult, FacetResult } from '../lib/xmf-archive-class';
+import { ArchiveSearchResult, FacetResult, XmfUploadProgress } from '../lib/xmf-archive-class';
 import Logger from '../lib/logger';
 
 let archives: Collection<Partial<ArchiveJob>>;
+let xmfUploadProgress: Collection<Partial<XmfUploadProgress>>;
 
 export class xmfSearchDAO {
 
     static async injectDB(conn: MongoClient) {
-        if (archives) {
-            return;
+        if (!archives) {
+            try {
+                archives = conn.db(process.env.DB_BASE as string)
+                    .collection('xmfarchives');
+            } catch (e) {
+                Logger.error(`xmfSearchDAO: unable to connect`, e);
+            }
         }
-        try {
-            archives = conn.db(process.env.DB_BASE as string)
-                .collection('xmfarchives');
-        } catch (e) {
-            Logger.error(`xmfSearchDAO: unable to connect`, e);
+        if (!xmfUploadProgress) {
+            try {
+                xmfUploadProgress = conn.db(process.env.DB_BASE as string)
+                    .collection('xmf-upload-progress');
+            } catch (e) {
+
+            }
         }
     }
 
@@ -75,15 +83,44 @@ export class xmfSearchDAO {
 
     }
 
-    static async insertJob(job: ArchiveJob): Promise<{ modified: number, upserted: number; }> {
-        const filter = {
-            JobID: job.JobID,
-            JDFJobID: job.JDFJobID,
-        };
-        // TODO optimizēt
+    static async insertJob(jobs: ArchiveJob | ArchiveJob[]): Promise<{ modified: number, upserted: number; }> {
+        if (!(jobs instanceof Array)) { jobs = [jobs]; }
+        const update = jobs.map(job => ({
+            updateOne: {
+                filter: {
+                    JobID: job.JobID,
+                    JDFJobID: job.JDFJobID,
+                },
+                update: { $set: job },
+                upsert: true,
+            }
+        }));
         try {
-            const updResult = await archives.updateOne(filter, { $set: job }, { upsert: true });
-            return { modified: updResult.modifiedCount, upserted: updResult.upsertedCount };
+            if (update.length === 0) { return { modified: 0, upserted: 0 }; }
+            const updResult = await archives.bulkWrite(update);
+            archives.createIndexes([
+                { key: { JDFJobID: 1 }, name: 'JDFJobID' },
+                {
+                    key: {
+                        JobID: 1,
+                        JDFJobID: 1,
+                    },
+                    name: 'JobID_1_JDFJobID_1',
+                    unique: true
+                },
+                {
+                    key: {
+                        'Archives.yearIndex': 1,
+                        'Archives.monthIndex': 1,
+                    },
+                    name: 'year_month',
+                },
+                {
+                    key: { _id: 1 },
+                    name: '_id_',
+                }
+            ]);
+            return { modified: updResult.modifiedCount || 0, upserted: updResult.upsertedCount || 0 };
 
         } catch (e) {
             Logger.error('error: ', e);
@@ -102,6 +139,26 @@ export class xmfSearchDAO {
             }
         }];
         return (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id);
+    }
+
+    static async startLog(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
+        if (log._id) { return null; }
+        return (await xmfUploadProgress.insertOne(log)).insertedId;
+    }
+
+    static async updateLog(log: Partial<XmfUploadProgress>): Promise<boolean> {
+        if (!log._id) { return false; }
+        return !!(await xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { w: 0 })).result.ok;
+    }
+
+    static async getLog(): Promise<Partial<XmfUploadProgress>[]>;
+    static async getLog(_id: ObjectId): Promise<Partial<XmfUploadProgress> | null>;
+    static async getLog(_id?: ObjectId): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
+        if (!_id) {
+            return await xmfUploadProgress.find().toArray();
+        } else {
+            return await xmfUploadProgress.findOne({ _id });
+        }
     }
 
     private static filter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any; } {
