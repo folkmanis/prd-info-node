@@ -141,21 +141,24 @@ export class xmfSearchDAO {
         return (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id);
     }
 
-    static async startLog(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
+    static async startUploadProgress(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
         if (log._id) { return null; }
         return (await xmfUploadProgress.insertOne(log)).insertedId;
     }
 
-    static async updateLog(log: Partial<XmfUploadProgress>): Promise<boolean> {
+    static async updateUploadProgress(log: Partial<XmfUploadProgress>): Promise<boolean> {
         if (!log._id) { return false; }
         return !!(await xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { w: 0 })).result.ok;
     }
 
-    static async getLog(): Promise<Partial<XmfUploadProgress>[]>;
-    static async getLog(_id: ObjectId): Promise<Partial<XmfUploadProgress> | null>;
-    static async getLog(_id?: ObjectId): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
+    static async getUploadStatus(): Promise<Partial<XmfUploadProgress>[]>;
+    static async getUploadStatus(_id: ObjectId): Promise<Partial<XmfUploadProgress> | null>;
+    static async getUploadStatus(_id?: ObjectId): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
         if (!_id) {
-            return await xmfUploadProgress.find().toArray();
+            return await xmfUploadProgress.find(
+                {},
+                { sort: [['_id', -1]] }
+            ).toArray();
         } else {
             return await xmfUploadProgress.findOne({ _id });
         }

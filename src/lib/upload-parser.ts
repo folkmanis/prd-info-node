@@ -270,7 +270,7 @@ export class UploadProgressTracker {
         this.progress = { ...this.progress, ...inf };
         this.progress.started = new Date(Date.now());
         this.progress.state = 'uploading';
-        this.progress._id = (await xmfSearchDAO.startLog(this.progress)) || undefined;
+        this.progress._id = (await xmfSearchDAO.startUploadProgress(this.progress)) || undefined;
         return this.progress._id;
     }
     /**
@@ -289,7 +289,7 @@ export class UploadProgressTracker {
      */
     async save(): Promise<boolean> {
         if (!this.progress._id) { return false; }
-        return await xmfSearchDAO.updateLog(this.progress);
+        return await xmfSearchDAO.updateUploadProgress(this.progress);
     }
     /**
      * Ieraksta skaitītāja stāvokli un papildina ar finished lauku
@@ -298,8 +298,9 @@ export class UploadProgressTracker {
     async finish(): Promise<boolean> {
         this.progress.finished = new Date(Date.now());
         this.state = 'finished';
+        Logger.info('xmf-upload', this.progress);
         if (!this.progress._id) { return false; }
-        return await xmfSearchDAO.updateLog(this.progress);
+        return await xmfSearchDAO.updateUploadProgress(this.progress);
     }
 
 }

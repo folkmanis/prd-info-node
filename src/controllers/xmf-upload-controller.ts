@@ -54,7 +54,7 @@ export class XmfUploadController {
     private async status(req: Request, res: Response) {
         const id = req.query.id && new ObjectId(req.query.id) || undefined;
         res.json(
-            await xmfSearchDAO.getLog(id)
+            await xmfSearchDAO.getUploadStatus(id)
         );
     }
 }
