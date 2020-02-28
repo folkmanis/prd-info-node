@@ -36,6 +36,7 @@ export class XmfUploadController {
         busboy.on('file', async (fieldname, file, filename) => {
             result.filename = filename;
             result.size = +(req.headers['content-length'] || 0);
+            tracker.update({fileName: result.filename, fileSize: result.size})
             tempFile = await tmpFile({ prefix: 'xmf-', postfix: '.dbd' });
             file.pipe(fs.createWriteStream(tempFile.path));
             req.log.info('xmf-archive upload', result);

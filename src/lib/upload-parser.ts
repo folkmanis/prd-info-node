@@ -284,6 +284,15 @@ export class UploadProgressTracker {
         }
         this.save();
     }
+
+    update(upd: Partial<XmfUploadProgress>): void {
+        for (const key in upd) {
+            if (upd.hasOwnProperty(key)) {
+                this.progress[key] = upd[key];
+            }
+        }
+        this.save();
+    }
     /**
      * Esošo skaitītāja stāvokli saglabā datubāzē
      */
