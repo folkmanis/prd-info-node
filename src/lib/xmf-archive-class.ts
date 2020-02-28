@@ -57,7 +57,7 @@ export interface XmfUploadProgress {
     _id: ObjectId,
     started: Date,
     fileName: string,
-    fileSize: string,
+    fileSize: number,
     username: string,
     state: 'uploading' | 'parsing' | 'saving' | 'finished',
     count: {
@@ -68,4 +68,5 @@ export interface XmfUploadProgress {
         lines: number,
     };
     finished: Date,
+    [key: string]: any;
 }
