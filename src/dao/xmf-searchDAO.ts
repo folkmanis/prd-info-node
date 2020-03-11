@@ -28,7 +28,7 @@ export class xmfSearchDAO {
         }
     }
 
-    static async findJob(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult> {
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult> {
         const projection = {
             _id: 0,
             JDFJobID: 1,
@@ -48,8 +48,7 @@ export class xmfSearchDAO {
         // Parastā meklēšana
         Logger.debug(JSON.stringify(filter));
         const findRes = archives.find(filter);
-        const count = await findRes
-            .count();
+        const count = await findRes.count();
         const data = await findRes
             .project(projection)
             .map(res => ({ ...res, exactMatch: res.JDFJobID === search.q }))
@@ -78,6 +77,7 @@ export class xmfSearchDAO {
                 }
             }
         ];
+        // Logger.debug(JSON.stringify(pipeline));
         const facet = (await archives.aggregate<FacetResult>(pipeline).toArray())[0];
         return { count, data, facet };
 
@@ -85,6 +85,7 @@ export class xmfSearchDAO {
 
     static async insertJob(jobs: ArchiveJob | ArchiveJob[]): Promise<{ modified: number, upserted: number; }> {
         if (!(jobs instanceof Array)) { jobs = [jobs]; }
+        if (jobs.length === 0) { return { modified: 0, upserted: 0 }; }
         const update = jobs.map(job => ({
             updateOne: {
                 filter: {
@@ -96,7 +97,6 @@ export class xmfSearchDAO {
             }
         }));
         try {
-            if (update.length === 0) { return { modified: 0, upserted: 0 }; }
             const updResult = await archives.bulkWrite(update);
             archives.createIndexes([
                 { key: { JDFJobID: 1 }, name: 'JDFJobID' },
@@ -110,10 +110,13 @@ export class xmfSearchDAO {
                 },
                 {
                     key: {
-                        'Archives.yearIndex': 1,
-                        'Archives.monthIndex': 1,
+                        'Archives.yearIndex': -1,
                     },
-                    name: 'year_month',
+                },
+                {
+                    key: {
+                        'Archives.monthIndex': -1,
+                    }
                 },
                 {
                     key: { _id: 1 },
@@ -165,23 +168,24 @@ export class xmfSearchDAO {
     }
 
     private static filter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any; } {
-        const filter: { [key: string]: any; } = {
-            $or: [
-                { JDFJobID: search.q },
-                { DescriptiveName: { $regex: search.q, $options: 'i' } },
-            ]
-        };
+        const filter: { [key: string]: any; } = {};
         filter.CustomerName = {
             $in:
                 search.customerName ? search.customerName : customers
         };
+        if (search.q) {
+            filter['$or'] =
+                [
+                    { JDFJobID: search.q },
+                    { DescriptiveName: { $regex: search.q, $options: 'i' } },
+                ];
+        }
         if (search.year) {
             filter["Archives.yearIndex"] = { $in: search.year };
         }
         if (search.month) {
             filter["Archives.monthIndex"] = { $in: search.month };
         }
-
         return filter;
     }
 

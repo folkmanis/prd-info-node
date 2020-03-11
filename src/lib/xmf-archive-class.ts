@@ -33,7 +33,7 @@ interface Archive {
 };
 
 export interface ArchiveSearchParams {
-    q: string;
+    q?: string;
     customerName?: string;
     year?: string;
     month?: string;
