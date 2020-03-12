@@ -28,33 +28,25 @@ export class xmfSearchDAO {
         }
     }
 
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult> {
-        const projection = {
-            _id: 0,
-            JDFJobID: 1,
-            DescriptiveName: 1,
-            CustomerName: 1,
-            "Archives.Location": 1,
-            "Archives.Date": 1,
-            "Archives.Action": 1,
-        };
-        const sort = {
-            exactMatch: 1,
-            "Archives.yearIndex": -1,
-            "Archives.monthIndex": -1,
-        };
-
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult>;
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: number, lim?: number): Promise<{ data: Partial<ArchiveJob>[]; }>;
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: number, lim = 100): Promise<ArchiveSearchResult | { data: Partial<ArchiveJob>[]; }> {
+        const { projection, sort } = xmfSearchDAO.getProjection();
         const filter = xmfSearchDAO.filter(search, userPreferences.customers);
         // Parastā meklēšana
         Logger.debug(JSON.stringify(filter));
         const findRes = archives.find(filter);
-        const count = await findRes.count();
         const data = await findRes
             .project(projection)
             .map(res => ({ ...res, exactMatch: res.JDFJobID === search.q }))
             .sort(sort)
-            .limit(100)
+            .skip(+(start || 0))
+            .limit(+lim)
             .toArray();
+        if (start) {
+            return { data };
+        }
+        const count = await findRes.count();
         // Facet rezultāts
         const pipeline = [
             { $match: filter },
@@ -81,6 +73,24 @@ export class xmfSearchDAO {
         const facet = (await archives.aggregate<FacetResult>(pipeline).toArray())[0];
         return { count, data, facet };
 
+    }
+
+    private static getProjection() {
+        const projection = {
+            _id: 0,
+            JDFJobID: 1,
+            DescriptiveName: 1,
+            CustomerName: 1,
+            "Archives.Location": 1,
+            "Archives.Date": 1,
+            "Archives.Action": 1,
+        };
+        const sort = {
+            exactMatch: 1,
+            "Archives.yearIndex": -1,
+            "Archives.monthIndex": -1,
+        };
+        return { projection, sort };
     }
 
     static async insertJob(jobs: ArchiveJob | ArchiveJob[]): Promise<{ modified: number, upserted: number; }> {

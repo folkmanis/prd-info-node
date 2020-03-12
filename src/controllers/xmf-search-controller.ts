@@ -15,6 +15,8 @@
     year: Count[],
     month: Count[],
 
+    &start - sākuma numurs (0 bāze)
+    &limit - ierakstu skaits vienā porcijā
  */
 
 import { Controller, ClassMiddleware, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
@@ -36,7 +38,7 @@ export class XmfSearchController {
         const query = req.query.query ? JSON.parse(req.query.query) : {};
         req.log.info("query", query);
         res.json(
-            await xmfSearchDAO.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences)
+            await xmfSearchDAO.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start, req.query.limit)
         );
     }
 
