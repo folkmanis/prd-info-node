@@ -86,7 +86,7 @@ export class xmfSearchDAO {
             "Archives.Action": 1,
         };
         const sort = {
-            exactMatch: 1,
+            // exactMatch: 1,
             "Archives.yearIndex": -1,
             "Archives.monthIndex": -1,
         };
