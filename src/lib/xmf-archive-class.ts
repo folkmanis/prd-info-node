@@ -32,6 +32,8 @@ interface Archive {
     monthIndex?: number;
 };
 
+export type ArchiveJobSorted = Partial<ArchiveJob> & { lastUpdate: Date; };
+
 export interface ArchiveSearchParams {
     q?: string;
     customerName?: string;
