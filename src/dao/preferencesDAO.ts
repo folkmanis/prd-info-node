@@ -1,6 +1,7 @@
 import { MongoClient, Collection, ObjectId, BulkWriteOpResultObject } from "mongodb";
 import Logger from '../lib/logger';
-import { Preferences } from '../lib/preferences-class';
+import { SystemPreference, SystemPreferences, Modules } from '../lib/preferences-class';
+import { LogLevels } from '../lib/logger';
 import { flattenObject } from '../lib/flatten-object';
 
 interface BulkUpdateOne {
@@ -13,7 +14,7 @@ interface BulkUpdateOne {
     };
 }
 
-const defaults: Preferences[] = [
+const defaults: SystemPreferences = [
     {
         module: 'kastes',
         settings: {
@@ -28,11 +29,19 @@ const defaults: Preferences[] = [
         module: 'system',
         settings: {
             menuExpandedByDefault: true,
+            logLevels: [
+                [LogLevels.DEBUG, 'Debug'],
+                [LogLevels.ERROR, 'Error'],
+                [LogLevels.INFO, 'Info'],
+                [LogLevels.SILLY, 'Silly'],
+                [LogLevels.VERBOSE, 'Verbose'],
+                [LogLevels.WARN, 'Warning'],
+            ]
         }
     }
 ];
 
-let preferences: Collection<Preferences>;
+let preferences: Collection<SystemPreference>;
 
 export class PreferencesDAO {
     static async injectDB(conn: MongoClient) {
@@ -57,13 +66,13 @@ export class PreferencesDAO {
      * null, ja modulis nav atrasts
      * @param mod Moduļa nosaukums
      */
-    static async getModulePreferences(mod: string): Promise<Preferences | null> {
+    static async getModulePreferences(mod: Modules): Promise<SystemPreference | null> {
         return (await preferences.findOne({ module: mod }, { projection: { _id: 0 } }));
     }
     /**
      * Izsniedz visu moduļu preferences
      */
-    static getAllPreferences(): Promise<Preferences[]> {
+    static getAllPreferences(): Promise<SystemPreferences> {
         //TODO tikai preferences, kuras attiecas uz lietotāju
         return preferences.find({}, { projection: { _id: 0 } }).toArray();
     }
@@ -75,7 +84,7 @@ export class PreferencesDAO {
      * modifiedCount number	- Number of documents modified.
      * @param pref Preferences objekts vai objektu masīvs
      */
-    static async updatePreferences(pref: Preferences | Preferences[]): Promise<BulkWriteOpResultObject | null> {
+    static async updatePreferences(pref: SystemPreference | SystemPreference[]): Promise<BulkWriteOpResultObject | null> {
         if (!(pref instanceof Array)) {
             pref = [pref];
         }
@@ -96,14 +105,14 @@ export class PreferencesDAO {
      * Atiestata preferences uz noklusējuma vērtībām vienam modulim
      * @param mod Moduļa nosaukums
      */
-    static async setDefaults(mod: string): Promise<boolean> {
+    static async setDefaults(mod: Modules): Promise<boolean> {
         const def = defaults.find(obj => obj.module === mod);
         if (!def) { return false; }
         const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
         return !!result.result.ok;
     }
 
-    private static async insertDefaults(def: Preferences[]) {
+    private static async insertDefaults(def: SystemPreference[]) {
         const modules = await preferences.find({}, { projection: { module: 1 } }).toArray();
         const missing = def.filter(val => !modules.some(mod => mod.module === val.module));
         if (missing.length > 0) {

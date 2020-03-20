@@ -33,6 +33,7 @@ import Preferences from '../lib/preferences-handler';
 
 
 import { PreferencesDAO } from '../dao/preferencesDAO';
+import { Modules } from '../lib/preferences-class';
 
 @Controller('data/preferences')
 @ClassMiddleware([
@@ -54,7 +55,7 @@ export class PreferencesController {
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post('defaults')
     private async resetModule(req: Request, res: Response) {
-        const mod = req.body.module as string;
+        const mod = req.body.module as Modules;
         if (!mod) { res.json({ updated: 0 }); }
         res.json(
             { updated: (await PreferencesDAO.setDefaults(mod)) ? 1 : 0 }
