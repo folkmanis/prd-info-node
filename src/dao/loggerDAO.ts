@@ -4,7 +4,7 @@ export interface LogRecord {
     level: number,
     timestamp: Date,
     info: string,
-    metadata?: { [key: string]: any },
+    metadata?: { [key: string]: any; },
 }
 
 const indexes: IndexSpecification[] = [
@@ -15,7 +15,7 @@ const indexes: IndexSpecification[] = [
         },
         name: "timestamp_level",
     }
-]
+];
 
 let log: Collection<LogRecord>;
 
@@ -35,22 +35,27 @@ export class LoggerDAO {
     }
 
     static async write(record: LogRecord) {
-        const updresp = await log.insertOne(record, {w: 0});
+        const updresp = await log.insertOne(record, { w: 0 });
         return;
     }
 
     static async read(params = {
         limit: 50,
+        start: 0,
         level: undefined,
-        timestamp: Date.now(),
+        dateTo: +Infinity,
+        dateFrom: 0,
     }): Promise<LogRecord[]> {
         const filter: any = {
-            timestamp: {$lte: params.timestamp}
+            and$: [
+                { timestamp: { $lte: params.dateTo } },
+                { timestamp: { $gte: params.dateFrom } },
+            ]
         };
         if (params.level) {
-            filter.level = {$lte: params.level};
+            filter.level = { $lte: params.level };
         }
-        const findres = log.find<LogRecord>(filter).sort({timestamp: -1}).limit(params.limit);
+        const findres = log.find<LogRecord>(filter).sort({ timestamp: -1 }).limit(params.limit);
         return await findres.toArray();
     }
 
