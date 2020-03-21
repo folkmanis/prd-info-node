@@ -15,7 +15,7 @@ interface Transport {
  * Loga līmeņi
  */
 export enum LogLevels {
-    ERROR = 0, WARN = 10, INFO = 20, VERBOSE = 30, DEBUG = 40, SILLY = 50
+    ERROR = 10, WARN = 20, INFO = 30, VERBOSE = 40, DEBUG = 50, SILLY = 60
 }
 /**
  * Statiskā klase darbībai ar logu
@@ -101,6 +101,6 @@ export class MongoLog implements Transport {
     }
 
     async write(rec: LogRecord): Promise<void> {
-        return await mongoLoggerDAO.write(rec);
+        return mongoLoggerDAO.write(rec);
     }
 }
