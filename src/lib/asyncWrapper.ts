@@ -7,10 +7,12 @@ export const asyncWrapper = (action: RequestHandler) => {
             return await action(req, res, next);
         }
         catch (error) {
+            console.error(error);
+            // TODO log errors in to file
             if (req.log) {
-                req.log.error(error);
+                // Logger.error('Error', { error, req });
             } else {
-                Logger.error(error);
+                // Logger.error(error);
             }
             next(error);
         }

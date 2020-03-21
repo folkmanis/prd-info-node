@@ -7,13 +7,19 @@ export interface LogRecord {
     metadata?: { [key: string]: any; },
 }
 
+export interface LogReadResponse {
+    count: number,
+    data: LogRecord[],
+}
+
 const indexes: IndexSpecification[] = [
     {
-        key: {
-            timestamp: -1,
-            level: 1,
-        },
-        name: "timestamp_level",
+        key: { timestamp: -1 },
+        name: 'timestamp',
+    },
+    {
+        key: { level: 1 },
+        name: 'level'
     }
 ];
 
@@ -28,26 +34,26 @@ export class LoggerDAO {
         }
         try {
             log = conn.db(process.env.DB_BASE as string).collection(params.collection);
-            await LoggerDAO.createIndexes();
+            LoggerDAO.createIndexes();
         } catch (e) {
             console.error(e);
         }
     }
 
-    static async write(record: LogRecord) {
-        const updresp = await log.insertOne(record, { w: 0 });
+    static write(record: LogRecord) {
+        log.insertOne(record, { w: 0 });
         return;
     }
 
-    static async read(params = {
-        limit: 50,
-        start: 0,
-        level: undefined,
-        dateTo: +Infinity,
-        dateFrom: 0,
-    }): Promise<LogRecord[]> {
+    static async read(params: {
+        limit: number,
+        start: number,
+        level?: number,
+        dateTo: Date,
+        dateFrom: Date,
+    }): Promise<LogReadResponse> {
         const filter: any = {
-            and$: [
+            $and: [
                 { timestamp: { $lte: params.dateTo } },
                 { timestamp: { $gte: params.dateFrom } },
             ]
@@ -55,8 +61,12 @@ export class LoggerDAO {
         if (params.level) {
             filter.level = { $lte: params.level };
         }
-        const findres = log.find<LogRecord>(filter).sort({ timestamp: -1 }).limit(params.limit);
-        return await findres.toArray();
+        const findres = log.find<LogRecord>(filter).sort({ timestamp: -1 });
+        return {
+            count: await findres.count(),
+            data: await findres.limit(params.limit).toArray(),
+        };
+
     }
 
     private static async createIndexes(): Promise<boolean> {

@@ -65,6 +65,7 @@ export class LoginController {
         if (req.session) {
             req.session.user = user;
         }
+        req.log.info('User logged in', { username: user.username });
         req.log.debug('session', req.session);
         res.json(user);
     }
