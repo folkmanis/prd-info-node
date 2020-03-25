@@ -12,6 +12,10 @@ export interface LogReadResponse {
     data: LogRecord[],
 }
 
+export interface DatesGroup {
+    _id: string,
+}
+
 const indexes: IndexSpecification[] = [
     {
         key: { timestamp: -1 },
@@ -20,7 +24,8 @@ const indexes: IndexSpecification[] = [
     {
         key: { level: 1 },
         name: 'level'
-    }
+    },
+    { key: { info: 1 }, }
 ];
 
 let log: Collection<LogRecord>;
@@ -61,12 +66,51 @@ export class LoggerDAO {
         if (params.level) {
             filter.level = { $lte: params.level };
         }
-        const findres = log.find<LogRecord>(filter).sort({ timestamp: -1 });
+        const findres = log.find<LogRecord>(filter).sort({ timestamp: 1 });
         return {
             count: await findres.count(),
-            data: await findres.limit(params.limit).toArray(),
+            data: await findres.skip(params.start).limit(params.limit).toArray(),
         };
 
+    }
+
+    static async infos(): Promise<string[]> {
+        return (await log.aggregate<{ _id: string; }>([
+            {
+                $sort: { info: 1 }
+            },
+            {
+                $group: { _id: "$info" }
+            },
+        ]).toArray()).map(obj => obj._id.toString());
+    }
+
+    static async datesGroup(params: { level?: string, start?: string, end?: string; }): Promise<DatesGroup[]> {
+        const pipeline: Array<any> = [];
+        if (params.start) {
+            pipeline.push({ $match: { timestamp: { $gte: new Date(params.start), } } });
+        }
+        if (params.end) {
+            pipeline.push({ $match: { timestamp: { $lte: new Date(params.end), } } });
+        }
+        if (params.level) {
+            pipeline.push({ $match: { level: { $lte: +params.level } } });
+        }
+        pipeline.push(
+            {
+                $group: {
+                    _id: {
+                        $dateToString: {
+                            date: "$timestamp",
+                            format: "%Y-%m-%d"
+                        }
+                    }
+                }
+            }, {
+                $sort: {_id: 1},
+            }
+        );
+        return await log.aggregate<DatesGroup>(pipeline).toArray();
     }
 
     private static async createIndexes(): Promise<boolean> {
