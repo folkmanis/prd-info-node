@@ -2,7 +2,12 @@ import { ObjectId } from 'mongodb';
 
 export interface Customer {
     _id: ObjectId,
-    code: string,
+    code?: string,
     CustomerName: string,
-    disabled: boolean,
+    disabled?: boolean,
+}
+
+export interface Result {
+    "n"?: number,
+    "ok"?: number,
 }

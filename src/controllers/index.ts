@@ -5,3 +5,4 @@ export * from './xmf-upload-controller';
 export * from './kastes-controller';
 export * from './preferences-controller';
 export * from './log-controller';
+export * from './customers-controller';

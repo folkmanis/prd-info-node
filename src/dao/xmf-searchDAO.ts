@@ -143,6 +143,31 @@ export class xmfSearchDAO {
         return (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id);
     }
 
+    static async customersToCustomersDb(dbName: string) {
+        const pipeline: any[] = [{
+            $group: {
+                _id: "$CustomerName"
+            }
+        }, {
+            $addFields: {
+                CustomerName: '$_id',
+                insertedFromXmf: new Date()
+            }
+        }, {
+            $project: {
+                _id: 0
+            }
+        }, {
+            $merge: {
+                into: dbName,
+                on: 'CustomerName',
+                whenMatched: 'keepExisting',
+                whenNotMatched: 'insert'
+            }
+        }];
+        return await archives.aggregate(pipeline).toArray();
+    }
+
     static async startUploadProgress(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
         if (log._id) { return null; }
         return (await xmfUploadProgress.insertOne(log)).insertedId;
