@@ -51,6 +51,7 @@ import { Customer } from '../lib/customers-interface';
 @ClassMiddleware([
     Preferences.getUserPreferences,
     PrdSession.validateSession,
+    PrdSession.validateModule('jobs'),
 ])
 @ClassWrapper(asyncWrapper)
 export class CustomersController {
