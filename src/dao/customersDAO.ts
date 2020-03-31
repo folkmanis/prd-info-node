@@ -3,14 +3,14 @@ import Logger from '../lib/logger';
 import { Customer, Result } from '../lib/customers-interface';
 
 let customers: Collection<Customer>;
-const CUSTOMERS_DB_NAME = 'customers';
+const CUSTOMERS_COLLECTION_NAME = 'customers';
 
 export class customersDAO {
     static async injectDB(conn: MongoClient): Promise<void> {
         if (customers) { return; }
         try {
             customers = conn.db(process.env.DB_BASE as string)
-                .collection(CUSTOMERS_DB_NAME);
+                .collection(CUSTOMERS_COLLECTION_NAME);
         } catch (err) {
             Logger.error('Customers DAO', err);
         }
