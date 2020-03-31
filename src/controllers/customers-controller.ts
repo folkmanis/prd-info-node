@@ -1,15 +1,11 @@
 /*
-GET list
+GET 
 {}
-[string] - visu klientu CustomerName lauki
+customers: [Pick<Customer, '_id' & 'CustomerName', 'code'>] - visu klientu CustomerName lauki
 
-GET by-name
-CustomerName: string - lietotājvārds
-{Customer}
-
-GET by-id
+GET :id
 id: string - lietotāja _id
-{Customer}
+customer: {Customer}
 
 PUT new
 {Customer} - jaunais lietotājs
@@ -58,12 +54,13 @@ import { Customer } from '../lib/customers-interface';
 ])
 @ClassWrapper(asyncWrapper)
 export class CustomersController {
-    @Get('list')
+    @Get('')
     private async getCustomers(req: Request, res: Response) {
         req.log.debug('customers list requested');
-        res.json(
-            await customersDAO.getCustomers()
-        );
+        res.json({
+            customers: await customersDAO.getCustomers(),
+            error: null,
+        });
     }
 
     @Put('new')
@@ -73,9 +70,12 @@ export class CustomersController {
             return;
         }
         const customer: Customer = req.body;
-        res.json(
-            await customersDAO.insertCustomer(customer)
-        );
+        const result = await customersDAO.insertCustomer(customer);
+        res.json({
+            insertedId: result.insertedId || null,
+            result: result.result,
+            error: !result.result.ok,
+        });
     }
 
     @Post('update')
@@ -85,19 +85,25 @@ export class CustomersController {
             return;
         }
         const customer: Customer = { ...req.body, _id: new ObjectId(req.body._id) };
-        res.json(
-            await customersDAO.updateCustomer(customer)
-        );
+        const result = await customersDAO.updateCustomer(customer);
+        res.json({
+            result,
+            error: !result.ok,
+        });
     }
 
-    @Delete('by-id')
+    @Delete(':id')
     private async deleteUser(req: Request, res: Response) {
-        if (!req.query || !req.query.id) {
+        const id: string | undefined = req.params.id;
+        if (!id) {
             res.status(404).json();
             return;
         }
         res.json(
-            await customersDAO.deleteCustomer(req.query.id)
+            {
+                result: await customersDAO.deleteCustomer(id),
+                error: null,
+            }
         );
     }
 
@@ -105,30 +111,6 @@ export class CustomersController {
     private async updateFromXnf(req: Request, res: Response) {
         res.json(
             await xmfSearchDAO.customersToCustomersDb('customers')
-        );
-    }
-
-    @Get('by-name')
-    private async getByName(req: Request, res: Response) {
-        const customerName: string | undefined = req.query['CustomerName'];
-        if (!customerName) {
-            res.status(404).json();
-            return;
-        }
-        res.json(
-            await customersDAO.getCustomerByName(customerName)
-        );
-    }
-
-    @Get('by-id')
-    private async getById(req: Request, res: Response) {
-        const id: string | undefined = req.query['id'];
-        if (!id) {
-            res.status(404).json();
-            return;
-        }
-        res.json(
-            await customersDAO.getCustomerById(id)
         );
     }
 
@@ -149,6 +131,22 @@ export class CustomersController {
         res.json(
             !(await customersDAO.findOneCustomer(filter))
         );
-    
+
     }
+
+    @Get(':id')
+    private async getById(req: Request, res: Response) {
+        const id: string | undefined = req.params.id;
+        if (!id) {
+            res.status(404).json();
+            return;
+        }
+        res.json(
+            {
+                customer: await customersDAO.getCustomerById(id),
+                error: null
+            }
+        );
+    }
+
 }

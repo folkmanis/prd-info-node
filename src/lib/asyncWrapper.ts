@@ -8,13 +8,13 @@ export const asyncWrapper = (action: RequestHandler) => {
         }
         catch (error) {
             console.error(error);
-            // TODO log errors in to file
             if (req.log) {
                 // Logger.error('Error', { error, req });
             } else {
                 // Logger.error(error);
             }
-            next(error);
+            res.json({error})
+            // next(error);
         }
     };
 };

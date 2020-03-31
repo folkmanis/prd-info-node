@@ -151,6 +151,7 @@ export class xmfSearchDAO {
         }, {
             $addFields: {
                 CustomerName: '$_id',
+                code: '$_id',
                 insertedFromXmf: new Date()
             }
         }, {

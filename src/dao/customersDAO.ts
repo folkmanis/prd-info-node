@@ -17,29 +17,29 @@ export class customersDAO {
         customersDAO.createIndexes();
     }
 
-    static async getCustomers(): Promise<string[]> {
+    static async getCustomers(): Promise<Customer[]> {
         return await customers.find({})
+            .project({
+                _id: 1,
+                "CustomerName": 1,
+                code: 1,
+            })
             .sort({ CustomerName: 1 })
-            .map(cust => cust.CustomerName)
             .toArray();
-    }
-
-    static async getCustomerByName(name: string): Promise<Customer | null> {
-        return await customers.findOne({ 'CustomerName': name });
     }
 
     static async getCustomerById(id: string): Promise<Customer | null> {
         return await customers.findOne({ _id: new ObjectId(id) });
     }
 
-    static async insertCustomer(customer: Customer): Promise<Result> {
+    static async insertCustomer(customer: Customer): Promise<{ result: Result, insertedId?: ObjectId; }> {
         try {
             const result = await customers.insertOne(customer);
             Logger.info('Customer created', result.ops);
-            return result.result;
+            return result;
         } catch (error) {
             Logger.error('Customer insert failed', { customer, error });
-            return { n: 0, ok: 0 };
+            return { result: { n: 0, ok: 0 } };
         }
     }
 
