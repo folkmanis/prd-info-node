@@ -4,6 +4,8 @@ import session from 'express-session';
 import Logger from './logger';
 const MongoStore = require('connect-mongo')(session);
 
+type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin';
+
 export default class PrdSession {
 
     static validateSession(req: Request, res: Response, next: NextFunction) {
@@ -27,7 +29,7 @@ export default class PrdSession {
      * Pārbauda, vai lietotājam ir pieeja attiecīgajam modulim
      * @param mod Moduļa nosaukums, kuram pārbauda pieeju
      */
-    static validateModule(mod: string): RequestHandler {
+    static validateModule(mod: Modules): RequestHandler {
         return (req: Request, res: Response, next: NextFunction) => {
             if (req.userPreferences?.modules?.includes(mod)) {
                 next();
