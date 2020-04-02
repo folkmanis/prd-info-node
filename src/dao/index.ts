@@ -4,3 +4,4 @@ export * from './kastesDAO';
 export * from './usersDAO';
 export * from './xmf-searchDAO';
 export * from './customersDAO';
+export * from './productsDAO'

@@ -6,3 +6,4 @@ export * from './kastes-controller';
 export * from './preferences-controller';
 export * from './log-controller';
 export * from './customers-controller';
+export * from './products-controller';
