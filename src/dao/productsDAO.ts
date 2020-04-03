@@ -35,7 +35,7 @@ export class productsDAO {
         };
         const result = products.find(filter)
             .project(projection)
-            .sort({ category: 1, name: 1 })
+            .sort({ name: 1 })
             .toArray();
         return {
             products: await result,
@@ -67,8 +67,14 @@ export class productsDAO {
         }
     }
 
-    static async validate(prod: Partial<Product>): Promise<boolean> {
-        return !(await products.findOne(prod));
+    static async validate(property: keyof Product): Promise<ProductResult> {
+        const result = (await products.find({}).project({_id: 0, [property]: 1}).toArray())
+        .map((doc: Partial<Product>) => doc[property])
+        return {
+            [property]: result,
+            error: null,
+
+        };
     }
 
     private static async createIndexes() {

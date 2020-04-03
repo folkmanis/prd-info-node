@@ -60,10 +60,11 @@ export class ProductsController {
         res.json();
     }
 
-    @Get('validate')
+    @Get('validate/:property')
     private async validate(req: Request, res: Response) {
-        console.log(req.query)
-        res.json(await productsDAO.validate(req.query));
+        const property: keyof Product = req.params.property as keyof Product
+        console.log(property)
+        res.json(await productsDAO.validate(property));
     }
 
     @Get(':id/prices')

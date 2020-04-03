@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 export interface ProductResult {
+    [key: string]: any,
     product?: Product,
     products?: Product[],
     insertedId?: ObjectId,
