@@ -59,17 +59,75 @@ export class productsDAO {
         };
     }
 
-    static async updateProduct(id: ObjectId, prod: ProductNoPrices): Promise<ProductResult> {
+    static async updateProduct(id: ObjectId, prod: ProductNoId): Promise<ProductResult> {
         const result = await products.updateOne({ _id: id }, { $set: prod });
         return {
             modifiedCount: result.modifiedCount,
             error: !result.result.ok,
-        }
+        };
+    }
+
+    static async productPrices(id: ObjectId): Promise<ProductResult> {
+        const result = await products.findOne({ _id: id }, { projection: { prices: 1 } });
+        return {
+            error: !result,
+            prices: result ? result.prices : [],
+        };
+    }
+
+    static async updatePrice(id: ObjectId, customer: string, price: number): Promise<ProductResult> {
+        const result = await products.updateOne(
+            { _id: id, "prices.customer": customer },
+            {
+                $set: {
+                    "prices.$.price": +price
+                }
+            }
+        );
+        return {
+            modifiedCount: result.modifiedCount,
+            result: result.result,
+            error: !result.result.ok,
+        };
+    }
+
+    static async addPrice(id: ObjectId, name: string, price: number): Promise<ProductResult> {
+        const result = await products.updateOne(
+            { _id: id },
+            {
+                $addToSet: {
+                    prices: { name, price }
+                }
+            }
+        );
+        return {
+            modifiedCount: result.modifiedCount,
+            result: result.result,
+            error: !result.result.ok,
+        };
+    }
+
+    static async deletePrice(id: ObjectId, name: string): Promise<ProductResult> {
+        const result = await products.updateOne(
+            { _id: id },
+            {
+                $pull: {
+                    prices: {
+                        name,
+                    }
+                }
+            },
+        );
+        return {
+            deletedCount: result.modifiedCount,
+            result: result.result,
+            error: !result.result.ok
+        };
     }
 
     static async validate(property: keyof Product): Promise<ProductResult> {
-        const result = (await products.find({}).project({_id: 0, [property]: 1}).toArray())
-        .map((doc: Partial<Product>) => doc[property])
+        const result = (await products.find({}).project({ _id: 0, [property]: 1 }).toArray())
+            .map((doc: Partial<Product>) => doc[property]);
         return {
             [property]: result,
             error: null,

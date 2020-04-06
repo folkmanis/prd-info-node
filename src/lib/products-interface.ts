@@ -8,11 +8,13 @@ export interface ProductResult {
     deletedCount?: number,
     modifiedCount?: number,
     error: any,
+    prices?: any[],
     result?: {
         ok: number,
         n: number,
     };
 }
+
 
 export type ProductCategories = 'plates';
 export interface Product {
@@ -20,11 +22,11 @@ export interface Product {
     category: ProductCategories,
     name: string,
     description?: string,
-    prices?: [
-        [
-            string, // customer
-            number, // price
-        ]
+    prices: [
+        {
+            name: string,
+            price: number,
+        }
     ];
 }
 
