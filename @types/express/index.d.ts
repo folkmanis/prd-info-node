@@ -1,7 +1,5 @@
 declare namespace Express {
-
     export interface Request {
-        sqlConnection: any;
         session?: Session;
         userPreferences?: {
             customers: string[],
@@ -12,6 +10,7 @@ declare namespace Express {
             info: (message: string, metadata?: any) => void,
             error: (message: string, metadata?: any) => void,
         };
+        systemPreferences?: Map<string, { [key: string]: any; }>;
     }
     export interface Response {
         result: { [key: string]: any; };

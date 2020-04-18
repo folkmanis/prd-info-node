@@ -17,8 +17,12 @@ export class customersDAO {
         customersDAO.createIndexes();
     }
 
-    static async getCustomers(): Promise<Customer[]> {
-        return await customers.find({})
+    static async getCustomers(disabled?: boolean): Promise<Customer[]> {
+        const query: FilterQuery<Customer> = {};
+        if (!disabled) {
+            query.disabled = false;
+        }
+        return await customers.find(query)
             .project({
                 _id: 1,
                 "CustomerName": 1,

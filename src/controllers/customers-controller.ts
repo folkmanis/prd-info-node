@@ -59,7 +59,7 @@ export class CustomersController {
     private async getCustomers(req: Request, res: Response) {
         req.log.debug('customers list requested');
         res.json({
-            customers: await customersDAO.getCustomers(),
+            customers: await customersDAO.getCustomers(req.query.disabled),
             error: null,
         });
     }

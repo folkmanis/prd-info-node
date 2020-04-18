@@ -1,23 +1,31 @@
 import { LogLevels } from '../lib/logger';
-export type Modules = 'kastes' | 'system';
+export type Modules = 'kastes' | 'system' | 'jobs';
 
-export type SystemPreferences = Array<SystemPreference>
-export type SystemPreference = SystemPreferenceModule<Modules>
-export interface SystemPreferenceModule<T extends Modules> {
-    module: T;
-    settings: { [key: string]: any; };
+export type SystemPreferences = Array<SystemPreferenceModule>;
+export type SystemPreferencesMap = Map<Modules, KastesSystemPreference | SystemSystemPreference | JobsSystemPreference>;
+
+// export type SystemPreference<T> = SystemPreferenceModule<Modules>;
+
+export interface SystemPreferenceModule {
+    module: Modules;
+    settings: KastesSystemPreference | SystemSystemPreference | JobsSystemPreference;
 }
 
-export interface KastesSystemPreference extends SystemPreferenceModule<'kastes'> {
-    settings: {
-        colors: { [key: string]: string; },
-    };
-
+export interface KastesSystemPreference {
+    colors: { [key: string]: string; },
 }
 
-export interface SystemSystemPreference extends SystemPreferenceModule<'system'> {
-    settings: {
-        menuExpandedByDefault: true;
-        logLevels: Array<LogLevels | string>[];
-    };
+export interface SystemSystemPreference {
+    menuExpandedByDefault: true;
+    logLevels: Array<LogLevels | string>[];
 }
+
+export interface JobsSystemPreference {
+    productCategories:
+    {
+        category: string,
+        description: string,
+    }[];
+    lastJobId: number;
+}
+

@@ -7,3 +7,4 @@ export * from './preferences-controller';
 export * from './log-controller';
 export * from './customers-controller';
 export * from './products-controller';
+export * from './jobs-controller';

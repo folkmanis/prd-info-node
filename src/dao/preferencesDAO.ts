@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, BulkWriteOpResultObject } from "mongodb";
 import Logger from '../lib/logger';
-import { SystemPreference, SystemPreferences, Modules } from '../lib/preferences-class';
+import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference } from '../lib/preferences-class';
 import { LogLevels } from '../lib/logger';
 import { flattenObject } from '../lib/flatten-object';
 
@@ -38,10 +38,25 @@ const defaults: SystemPreferences = [
                 [LogLevels.WARN, 'Warning'],
             ]
         }
+    },
+    {
+        module: 'jobs',
+        settings: {
+            productCategories: [
+                {
+                    category: 'plates',
+                    description: 'Iespiedformas',
+                }, {
+                    category: 'perforated paper',
+                    description: 'Perforētais papīrs',
+                }
+            ],
+            lastJobId: 5001,
+        }
     }
 ];
 
-let preferences: Collection<SystemPreference>;
+let preferences: Collection<SystemPreferenceModule>;
 
 export class PreferencesDAO {
     static async injectDB(conn: MongoClient) {
@@ -66,7 +81,7 @@ export class PreferencesDAO {
      * null, ja modulis nav atrasts
      * @param mod Moduļa nosaukums
      */
-    static async getModulePreferences(mod: Modules): Promise<SystemPreference | null> {
+    static async getModulePreferences(mod: Modules): Promise<SystemPreferenceModule | null> {
         return (await preferences.findOne({ module: mod }, { projection: { _id: 0 } }));
     }
     /**
@@ -84,7 +99,7 @@ export class PreferencesDAO {
      * modifiedCount number	- Number of documents modified.
      * @param pref Preferences objekts vai objektu masīvs
      */
-    static async updatePreferences(pref: SystemPreference | SystemPreference[]): Promise<BulkWriteOpResultObject | null> {
+    static async updatePreferences(pref: SystemPreferenceModule | SystemPreferenceModule[]): Promise<BulkWriteOpResultObject | null> {
         if (!(pref instanceof Array)) {
             pref = [pref];
         }
@@ -112,11 +127,22 @@ export class PreferencesDAO {
         return !!result.result.ok;
     }
 
-    private static async insertDefaults(def: SystemPreference[]) {
+    private static async insertDefaults(def: SystemPreferenceModule[]) {
         const modules = await preferences.find({}, { projection: { module: 1 } }).toArray();
         const missing = def.filter(val => !modules.some(mod => mod.module === val.module));
         if (missing.length > 0) {
             await preferences.insertMany(missing);
         }
+    }
+
+    static async getNextJobId(): Promise<number> {
+        const result = (await preferences.findOneAndUpdate({
+            module: 'jobs',
+        }, {
+            $inc: { 'settings.lastJobId': 1 }
+        }, {
+            returnOriginal: false,
+        })).value as any;
+        return result.settings?.lastJobId;
     }
 }
