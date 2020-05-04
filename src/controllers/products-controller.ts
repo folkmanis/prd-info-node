@@ -42,6 +42,13 @@ import { omit } from 'lodash';
 @ClassWrapper(asyncWrapper)
 
 export class ProductsController {
+    @Get('prices/customer/:customer')
+    private async getCustomerPrices(req: Request, res: Response) {
+        res.json(
+            await productsDAO.getCustomerProducts(req.params.customer)
+        );
+    }
+
     @Get('category/:name')
     private async getByCategory(req: Request, res: Response) {
         const category = <ProductCategories | undefined>req.params.name;

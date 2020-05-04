@@ -51,6 +51,36 @@ export class productsDAO {
         };
     }
 
+    static async getCustomerProducts(customerName: string): Promise<ProductResult> {
+        const pipeline = [{
+            $unwind: {
+                path: "$prices"
+            }
+        }, {
+            $match: {
+                "prices.customerName": customerName
+            }
+        }, {
+            $sort: {
+                name: 1
+            }
+        }, {
+            $project: {
+                _id: 0,
+                productName: "$name",
+                category: 1,
+                description: 1,
+                customerName: "$prices.customerName",
+                price: "$prices.price"
+            }
+        }];
+        const result = await products.aggregate(pipeline).toArray();
+        return {
+            customerProducts: result,
+            error: false,
+        };
+    }
+
     static async deleteProduct(id: ObjectId): Promise<ProductResult> {
         const result = await products.deleteOne({ _id: id });
         return {
@@ -91,12 +121,12 @@ export class productsDAO {
         };
     }
 
-    static async addPrice(id: ObjectId, name: string, price: number): Promise<ProductResult> {
+    static async addPrice(id: ObjectId, customerName: string, price: number): Promise<ProductResult> {
         const result = await products.updateOne(
             { _id: id },
             {
                 $addToSet: {
-                    prices: { name, price }
+                    prices: { customerName, price }
                 }
             }
         );
@@ -107,13 +137,13 @@ export class productsDAO {
         };
     }
 
-    static async deletePrice(id: ObjectId, name: string): Promise<ProductResult> {
+    static async deletePrice(id: ObjectId, customerName: string): Promise<ProductResult> {
         const result = await products.updateOne(
             { _id: id },
             {
                 $pull: {
                     prices: {
-                        name,
+                        customerName,
                     }
                 }
             },

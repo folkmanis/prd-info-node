@@ -4,6 +4,7 @@ import { ResponseBase } from './response-base.interface';
 export interface ProductResult extends ResponseBase {
     product?: Product,
     products?: Product[],
+    customerProducts?: any[],
     prices?: any[],
 }
 
@@ -16,7 +17,7 @@ export interface Product {
     description?: string,
     prices: [
         {
-            name: string,
+            customerName: string,
             price: number,
         }
     ];

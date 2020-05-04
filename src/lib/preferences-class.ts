@@ -27,5 +27,6 @@ export interface JobsSystemPreference {
         description: string,
     }[];
     lastJobId: number;
+    lastInvoiceId: number;
 }
 

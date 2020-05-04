@@ -52,6 +52,7 @@ const defaults: SystemPreferences = [
                 }
             ],
             lastJobId: 5001,
+            lastInvoiceId: 1,
         }
     }
 ];
@@ -144,5 +145,16 @@ export class PreferencesDAO {
             returnOriginal: false,
         })).value as any;
         return result.settings?.lastJobId;
+    }
+
+    static async getNextInvoiceId(): Promise<string> {
+        const result = (await preferences.findOneAndUpdate({
+            module: 'jobs',
+        }, {
+            $inc: {'settings.lastInvoiceId':1}
+        }, {
+            returnOriginal: false,
+        })).value as any;
+        return result.settings?.lastInvoiceId.toString();
     }
 }

@@ -6,3 +6,4 @@ export * from './xmf-searchDAO';
 export * from './customersDAO';
 export * from './productsDAO';
 export * from './jobsDAO';
+export * from './invoicesDAO';

@@ -2,6 +2,12 @@ import { ObjectId } from 'mongodb';
 import { Product } from '../lib/products-interface';
 import { ResponseBase } from '../lib/response-base.interface';
 
+export type JobProduct = Pick<Product, 'name'> & {
+    price: number;
+    count: number;
+    comment: string;
+};
+
 export interface Job {
     _id: ObjectId;
     jobId: number;
@@ -10,14 +16,8 @@ export interface Job {
     customerJobId?: string;
     receivedDate: Date;
     comment?: string,
-    invoice?: {
-        id: ObjectId;
-        date: Date;
-    };
-    products?: Pick<Product, 'name'> & {
-        price: number;
-        comment: string;
-    }[];
+    invoiceId?: string;
+    products?: JobProduct[];
 }
 
 export interface JobResponse extends ResponseBase {
@@ -29,6 +29,7 @@ export interface JobQueryFilter {
     fromDate?: Date;
     customer?: string;
     name?: string;
+    invoice?: boolean;
 };
 
 export type JobUpdate = Pick<Job, 'jobId'> & Partial<Job>;
@@ -48,6 +49,9 @@ export const JOBS_SCHEMA: { [key: string]: any; } = {
         },
         name: {
             bsonType: 'string',
-        }
+        },
+        invoiceId: {
+            bsonType: 'string',
+        },
     }
 };

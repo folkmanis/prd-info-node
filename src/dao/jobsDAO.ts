@@ -1,6 +1,7 @@
-import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
+import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery } from "mongodb";
 import Logger from '../lib/logger';
 import { Job, JobResponse, JobQueryFilter, JOBS_SCHEMA } from '../lib/job.class';
+import { Invoice, InvoiceProduct } from '../lib/invoice.class';
 
 let jobs: Collection<Job>;
 const JOBS_COLLECTION_NAME = 'jobs';
@@ -14,9 +15,7 @@ export class jobsDAO {
         } catch (err) {
             Logger.error('Customers DAO', err);
         }
-        if ((await jobs.estimatedDocumentCount()) === 0) {
-            await this.createCollection(conn);
-        }
+        await this.createCollection(conn);
         jobsDAO.createIndexes();
     }
 
@@ -28,20 +27,27 @@ export class jobsDAO {
         if (query.customer) {
             filter.customer = query.customer;
         }
+        if (query.invoice !== undefined) {
+            filter.invoiceId = {
+                $exists: Boolean(+query.invoice),
+            };
+        }
         if (query.name) {
             filter.name = { $regex: query.name, $options: 'i' };
         }
         const result = jobs.find(filter, {
             projection: {
+                _id: 0,
                 jobId: 1,
                 customer: 1,
                 name: 1,
                 customerJobId: 1,
                 receivedDate: 1,
-                'invoice.number': 1,
+                products: 1,
+                invoiceId: 1,
             },
             sort: {
-                jobId: 1,
+                jobId: -1,
             }
         });
 
@@ -52,11 +58,11 @@ export class jobsDAO {
     }
 
     static async getJob(jobId: number): Promise<JobResponse> {
-        const resp = await jobs.findOne({jobId});
+        const resp = await jobs.findOne({ jobId });
         return {
             job: resp || undefined,
             error: null,
-        }
+        };
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
@@ -71,12 +77,76 @@ export class jobsDAO {
 
     static async updateJob(jobId: number, job: Partial<Job>): Promise<JobResponse> {
         job = jobsDAO.validateJob(job);
-        const result = await jobs.updateOne({ jobId }, { $set: job });
+        const result = await jobs.updateOne(
+            {
+                jobId,
+                invoiceId: { $exists: false }
+            },
+            { $set: job }
+        );
         return {
             error: !result.result.ok,
             result: result.result,
             modifiedCount: result.modifiedCount,
         };
+    }
+    /**
+     * Uzliek darbiem aprēķina numurus. 
+     * Atgriež sarakstu ar darbiem, kuriem ir invoiceId numurs
+     * (var atšķirties no sākotnējā)
+     * @param jobIds Darbu numuri
+     * @param invoiceId Aprēķina numurs
+     */
+    static async setInvoice(
+        jobIds: number[],
+        customerId: string,
+        invoiceId: string
+    ): Promise<number[]> {
+        const filter: FilterQuery<Job> = {
+            jobId: { $in: jobIds },
+            invoiceId: { $exists: false },
+            customer: customerId,
+        };
+        const update: UpdateQuery<Job> = {
+            $set: { invoiceId },
+        };
+        return jobs
+            .updateMany(filter, update)
+            .then(() => {
+                return jobs.find(
+                    { invoiceId },
+                    {
+                        projection: { jobId: 1, _id: 0 },
+                        sort: { jobId: 1 },
+                    }
+                )
+                    .map(job => job.jobId)
+                    .toArray();
+            });
+    }
+
+    static async getInvoiceTotals(invoiceId: string): Promise<InvoiceProduct[]> {
+        const aggr = [
+            {
+                $match: { 'invoiceId': invoiceId, }
+            }, {
+                $unwind: { 'path': '$products', }
+            }, {
+                $addFields: {
+                    'products.total': {
+                        '$multiply': ['$products.price', '$products.count']
+                    }
+                }
+            }, {
+                $group: {
+                    '_id': '$products.name',
+                    'total': { '$sum': '$products.total' },
+                    'jobsCount': { '$sum': 1 },
+                    'count': { '$sum': '$products.count' }
+                }
+            }
+        ];
+        return jobs.aggregate<InvoiceProduct>(aggr).toArray();
     }
 
     static createIndexes(): void {
@@ -90,12 +160,14 @@ export class jobsDAO {
             },
             {
                 key: { receivedDate: -1 },
+            },
+            {
+                key: { invoiceId: 1 },
             }
         ]);
     }
 
     static async createCollection(conn: MongoClient): Promise<void> {
-        // await conn.db(process.env.DB_BASE as string).dropCollection(JOBS_COLLECTION_NAME);
         await conn.db(process.env.DB_BASE as string)
             .createCollection(JOBS_COLLECTION_NAME, {
                 validator: {
