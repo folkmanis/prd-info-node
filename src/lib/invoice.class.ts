@@ -7,7 +7,7 @@ export interface Invoice {
     invoiceId: string;
     customer: string;
     createdDate: Date;
-    jobs: number[];
+    jobsId: number[];
     products: InvoiceProduct[];
 }
 
@@ -47,7 +47,7 @@ export const INVOICE_SCHEMA: { [key: string]: any; } = {
         createdDate: {
             bsonType: 'date',
         },
-        jobs: {
+        jobsId: {
             bsonType: 'array',
             items: {
                 bsonType: 'number',

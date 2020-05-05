@@ -24,7 +24,7 @@ export class InvoicesController {
         const jobIds: number[] = req.body.selectedJobs;
         const customerId: string = req.body.customerId;
         const invoiceId = await PreferencesDAO.getNextInvoiceId();
-        const jobs = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
+        const jobsId = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
         const products = await jobsDAO.getInvoiceTotals(invoiceId);
         res.json(
             await invoicesDAO.insertInvoice(
@@ -32,7 +32,7 @@ export class InvoicesController {
                     invoiceId,
                     customer: customerId,
                     createdDate: new Date(Date.now()),
-                    jobs,
+                    jobsId,
                     products,
                 }
             )
@@ -41,9 +41,9 @@ export class InvoicesController {
 
     @Get('totals')
     private async getTotals(req: Request, res: Response) {
-        const jobs: number[] = (req.query.jobsId as string).split(',').map(val => +val);
+        const jobsId: number[] = (req.query.jobsId as string).split(',').map(val => +val);
         res.json(
-            await jobsDAO.getJobsTotals(jobs)
+            await jobsDAO.getJobsTotals(jobsId)
         );
     }
 
