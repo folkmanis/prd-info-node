@@ -25,6 +25,13 @@ export interface InvoiceProduct {
 export interface InvoiceResponse extends ResponseBase {
     invoices?: Invoice[];
     invoice?: Invoice;
+    totals?: ProductTotals[];
+}
+
+export interface ProductTotals {
+    _id: string;
+    count: number;
+    total: number;
 }
 
 export const INVOICE_SCHEMA: { [key: string]: any; } = {

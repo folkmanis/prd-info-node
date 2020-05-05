@@ -1,7 +1,7 @@
 import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery } from "mongodb";
 import Logger from '../lib/logger';
 import { Job, JobResponse, JobQueryFilter, JOBS_SCHEMA } from '../lib/job.class';
-import { Invoice, InvoiceProduct } from '../lib/invoice.class';
+import { Invoice, InvoiceProduct, InvoiceResponse, ProductTotals } from '../lib/invoice.class';
 
 let jobs: Collection<Job>;
 const JOBS_COLLECTION_NAME = 'jobs';
@@ -164,6 +164,32 @@ export class jobsDAO {
             }
         ];
         return jobs.aggregate<InvoiceProduct>(aggr).toArray();
+    }
+
+    static async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {
+        const aggr = [
+            {
+                '$match': { 'jobId': { '$in': jobsId } }
+            }, {
+                '$unwind': { 'path': '$products' }
+            }, {
+                '$addFields': {
+                    'products.total': {
+                        '$multiply': ['$products.price', '$products.count']
+                    }
+                }
+            }, {
+                '$group': {
+                    '_id': '$products.name',
+                    'count': { '$sum': '$products.count' },
+                    'total': { '$sum': '$products.total' }
+                }
+            }
+        ];
+        return {
+            totals: await jobs.aggregate<ProductTotals>(aggr).toArray(),
+            error: null,
+        };
     }
 
     static createIndexes(): void {
