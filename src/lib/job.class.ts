@@ -17,7 +17,8 @@ export interface Job {
     receivedDate: Date;
     comment?: string,
     invoiceId?: string;
-    products?: JobProduct[];
+    products?: JobProduct[] | JobProduct;
+    productsIdx?: number;
 }
 
 export interface JobResponse extends ResponseBase {
@@ -30,6 +31,7 @@ export interface JobQueryFilter {
     customer?: string;
     name?: string;
     invoice?: boolean;
+    unwindProducts?: 0 | 1;
 };
 
 export type JobUpdate = Pick<Job, 'jobId'> & Partial<Job>;

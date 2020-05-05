@@ -35,21 +35,38 @@ export class jobsDAO {
         if (query.name) {
             filter.name = { $regex: query.name, $options: 'i' };
         }
-        const result = jobs.find(filter, {
-            projection: {
-                _id: 0,
-                jobId: 1,
-                customer: 1,
-                name: 1,
-                customerJobId: 1,
-                receivedDate: 1,
-                products: 1,
-                invoiceId: 1,
+        const aggr: object[] = [
+            {
+                $match: filter
             },
-            sort: {
-                jobId: -1,
+            {
+                $project: {
+                    _id: 0,
+                    jobId: 1,
+                    customer: 1,
+                    name: 1,
+                    customerJobId: 1,
+                    receivedDate: 1,
+                    products: 1,
+                    invoiceId: 1,
+                }
+            },
+            {
+                $sort: {
+                    jobId: -1,
+                }
             }
-        });
+        ];
+        if (query.unwindProducts) {
+            aggr.push({
+                '$unwind': {
+                    'path': '$products',
+                    'includeArrayIndex': 'productsIdx',
+                    'preserveNullAndEmptyArrays': false
+                }
+            });
+        }
+        const result = jobs.aggregate(aggr);
 
         return {
             jobs: await result.toArray(),

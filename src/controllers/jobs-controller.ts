@@ -18,26 +18,6 @@ import { invoicesDAO, PreferencesDAO, jobsDAO } from '../dao';
 ])
 @ClassWrapper(asyncWrapper)
 export class JobsController {
-    @Post('invoice')
-    private async newInvoice(req: Request, res: Response) {
-        const jobIds: number[] = (req.body.selectedJobs as Job[])
-            .map(jobs => jobs.jobId);
-        const customerId: string = req.body.customerId;
-        const invoiceId = await PreferencesDAO.getNextInvoiceId();
-        const jobs = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
-        const products = await jobsDAO.getInvoiceTotals(invoiceId);
-        res.json(
-            await invoicesDAO.insertInvoice(
-                {
-                    invoiceId,
-                    customer: customerId,
-                    createdDate: new Date(Date.now()),
-                    jobs,
-                    products,
-                }
-            )
-        );
-    }
 
     @Post(':jobId')
     private async updateJob(req: Request, res: Response) {
@@ -58,23 +38,6 @@ export class JobsController {
         job.jobId = await PreferencesDAO.getNextJobId();
         res.json(
             await jobsDAO.insertJob(req.body)
-        );
-    }
-
-    @Get('invoices')
-    private async getInvoices(req: Request, res: Response) {
-        const filter: InvoicesFilter = {
-            customer: req.query.customer
-        };
-        res.json(
-            await invoicesDAO.getInvoices(filter)
-        );
-    }
-
-    @Get('invoice/:invoiceId')
-    private async getInvoice(req: Request, res: Response) {
-        res.json(
-            await invoicesDAO.getInvoice(req.params.invoiceId as string)
         );
     }
 
