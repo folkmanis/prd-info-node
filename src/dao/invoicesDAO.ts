@@ -37,10 +37,34 @@ export class invoicesDAO {
     }
 
     static async getInvoice(invoiceId: string): Promise<InvoiceResponse> {
-        const result = await invoices.findOne({ invoiceId });
+        const aggr = [
+            {
+                $match: { invoiceId }
+            }, {
+                $lookup: {
+                    'from': 'jobs',
+                    'let': { 'jobsId': '$jobsId' },
+                    'pipeline': [
+                        {
+                            $match: { '$expr': { '$in': ['$jobId', '$$jobsId'] } }
+                        }, {
+                            $unwind: { 'path': '$products' }
+                        }, {
+                            $project: { _id: 0 },
+                        }
+                    ],
+                    'as': 'jobs'
+                }
+            }, {
+                $sort: { 'jobsId': 1 }
+            }, {
+                $project: { '_id': 0 }
+            }
+        ];
+        const result = await invoices.aggregate(aggr).toArray();
         return {
             error: !result,
-            invoice: result || undefined,
+            invoice: result[0] || undefined,
         };
     }
 

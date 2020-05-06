@@ -35,6 +35,9 @@ export class jobsDAO {
         if (query.name) {
             filter.name = { $regex: query.name, $options: 'i' };
         }
+        if (query.jobsId) {
+            filter.jobId = { $in: query.jobsId.split(',').map(id => +id) };
+        }
         const aggr: object[] = [
             {
                 $match: filter
@@ -150,9 +153,7 @@ export class jobsDAO {
                 $unwind: { 'path': '$products', }
             }, {
                 $addFields: {
-                    'products.total': {
-                        '$multiply': ['$products.price', '$products.count']
-                    }
+                    'products.total': { $multiply: ['$products.price', '$products.count'] },
                 }
             }, {
                 $group: {
@@ -160,6 +161,10 @@ export class jobsDAO {
                     'total': { '$sum': '$products.total' },
                     'jobsCount': { '$sum': 1 },
                     'count': { '$sum': '$products.count' }
+                }
+            }, {
+                '$addFields': {
+                    'price': { '$divide': ['$total', '$count'] }
                 }
             }
         ];

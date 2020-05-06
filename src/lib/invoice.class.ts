@@ -20,6 +20,7 @@ export interface InvoiceProduct {
     total: number;
     jobsCount: number;
     count: number;
+    price: number;
 };
 
 export interface InvoiceResponse extends ResponseBase {

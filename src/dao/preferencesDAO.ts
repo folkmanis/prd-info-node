@@ -154,7 +154,7 @@ export class PreferencesDAO {
             $inc: {'settings.lastInvoiceId':1}
         }, {
             returnOriginal: false,
-        })).value as any;
-        return result.settings?.lastInvoiceId.toString();
+        })).value?.settings as JobsSystemPreference;
+        return result.lastInvoiceId.toString().padStart(5, '0');
     }
 }
