@@ -42,8 +42,8 @@ export class xmfSearchDAO {
     }
 
     static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: number, lim?: number): Promise<{ data: Partial<ArchiveJob>[]; }>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: number, lim = 100): Promise<ArchiveSearchResult | { data: Partial<ArchiveJob>[]; }> {
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: string, lim?: string): Promise<{ data: Partial<ArchiveJob>[]; }>;
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: string, lim = '100'): Promise<ArchiveSearchResult | { data: Partial<ArchiveJob>[]; }> {
         await xmfSearchDAO.sortedDb();
         const filter = xmfSearchDAO.getFilter(search, userPreferences.customers);
         Logger.debug(JSON.stringify(filter));
@@ -181,8 +181,8 @@ export class xmfSearchDAO {
     }
 
     static async getUploadStatus(): Promise<Partial<XmfUploadProgress>[]>;
-    static async getUploadStatus(_id: ObjectId): Promise<Partial<XmfUploadProgress> | null>;
-    static async getUploadStatus(_id?: ObjectId): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
+    static async getUploadStatus(_id: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | null>;
+    static async getUploadStatus(_id?: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
         if (!_id) {
             return await xmfUploadProgress.find(
                 {},

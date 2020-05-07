@@ -35,10 +35,10 @@ export class XmfSearchController {
 
     @Get('search')
     private async search(req: Request, res: Response) {
-        const query = req.query.query ? JSON.parse(req.query.query) : {};
+        const query = req.query.query ? JSON.parse(req.query.query as string) : {};
         query.q && query.q.length > 0 && req.log.info("query", query);
         res.json(
-            await xmfSearchDAO.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start, req.query.limit)
+            await xmfSearchDAO.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start as string, req.query.limit as string | undefined)
         );
     }
 

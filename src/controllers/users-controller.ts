@@ -52,7 +52,7 @@ export class UsersController {
         if (!req.query.username) {
             res.status(404).json(new Error('Request empty'));
         }
-        const username: string = req.query.username;
+        const username: string = req.query.username as string;
         req.log.info('get/user', { username });
         const result = await UsersDAO.getUser(username);
         res.json(result);
@@ -95,12 +95,13 @@ export class UsersController {
 
     @Delete('user')
     private async deleteUser(req: Request, res: Response) {
-        if (!req.query.username) {
+        const username = req.query.username as string | undefined;
+        if (!username) {
             const error = new Error('User not set');
             req.log.error('User delete error', error);
             res.status(404).json({ success: false, error });
+            return
         }
-        const username = req.query.username;
         req.log.debug('delete request', username);
         const result = await UsersDAO.deleteUser(username);
         req.log.info('user delete', result);

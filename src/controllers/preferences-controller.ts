@@ -71,9 +71,9 @@ export class PreferencesController {
 
     @Get('single')
     private async getPreferences(req: Request, res: Response) {
-        const mod = req.query.module;
+        const mod = req.query.module as Modules | undefined;
         req.log.debug('get preferences', mod);
-        if (!mod) {
+        if (mod === undefined) {
             res.json({});
             return;
         }

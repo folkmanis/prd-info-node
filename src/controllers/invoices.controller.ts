@@ -57,7 +57,7 @@ export class InvoicesController {
     @Get('')
     private async getInvoices(req: Request, res: Response) {
         const filter: InvoicesFilter = {
-            customer: req.query.customer
+            customer: req.query.customer as string
         };
         res.json(
             await invoicesDAO.getInvoices(filter)

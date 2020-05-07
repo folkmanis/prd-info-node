@@ -85,7 +85,7 @@ export class KastesController {
     private async getKastes(req: Request, res: Response) {
         req.log.debug('get kastes', req.query);
         res.json(
-            await KastesDAO.kastesList(new ObjectId(req.query.pasutijums), +req.query.apjoms)
+            await KastesDAO.kastesList(new ObjectId(req.query.pasutijums as string), +req.query.apjoms)
         );
     }
 
@@ -94,7 +94,7 @@ export class KastesController {
         const kaste = +req.query.kaste;
         const id = req.query.id;
         res.json(
-            await KastesDAO.getKaste(new ObjectId(id), kaste)
+            await KastesDAO.getKaste(new ObjectId(id as string), kaste)
         );
     }
 

@@ -27,7 +27,7 @@ export class LogController {
 
     @Get('entries')
     private async getEntries(req: Request, res: Response) {
-        const query = req.query;
+        const query = req.query as {[key: string]: string};
         const params = {
             limit: +query.limit || 1000,
             start: +query.start || 0,
