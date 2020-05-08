@@ -8,12 +8,4 @@ export interface Customer {
     disabled?: boolean,
 }
 
-
-export interface CustomerResult extends ResponseBase {
-    data?: Customer | Partial<Customer>[],
-}
-
-export interface Result {
-    "n"?: number,
-    "ok"?: number,
-}
+export type CustomerResult = ResponseBase<Customer>

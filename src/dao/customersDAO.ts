@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Customer, Result, CustomerResult } from '../lib/customers-interface';
+import { Customer, CustomerResult } from '../lib/customers-interface';
 
 let customers: Collection<Customer>;
 const CUSTOMERS_COLLECTION_NAME = 'customers';
@@ -52,15 +52,18 @@ export class customersDAO {
         }
     }
 
-    static async deleteCustomer(id: string): Promise<Result> {
+    static async deleteCustomer(id: string): Promise<CustomerResult> {
         try {
             const result = await customers.deleteOne({ _id: new ObjectId(id) });
             Logger.info(`Customer ${id} delete request`, result.result);
-            return result.result;
+            return {
+                error: !result.result.ok,
+                deletedCount: result.deletedCount,
+            }
 
         } catch (error) {
             Logger.error('Customer delete failed', { id, error });
-            return { n: 0, ok: 0 };
+            return { error };
         }
     }
 
@@ -85,9 +88,12 @@ export class customersDAO {
         return await customers.findOne(filter);
     }
 
-    static async validate(property: keyof Customer): Promise<CustomerResult> {
-        const result = (await customers.find({}).project({ _id: 0, [property]: 1 }).toArray())
-            .map((doc: Partial<Customer>) => doc[property]);
+    static async validate<K extends keyof Customer>(property: K): Promise<CustomerResult> {
+        const result = await customers.find({})
+            .project({ _id: 0, [property]: 1 })
+            .map(data => data[property])
+            .toArray();
+        // .map((doc: Partial<Customer>) => doc[property]);
         return {
             validatorData: result,
             error: null,

@@ -1,12 +1,12 @@
 import { ObjectId } from 'mongodb';
 
-export interface ResponseBase {
+export interface ResponseBase<T = any> {
     [key: string]: any,
     insertedId?: ObjectId,
     deletedCount?: number,
     modifiedCount?: number,
-    validatorData?: any[],
-    data?: any | any[],
+    validatorData?: T[keyof T][],
+    data?: T | Partial<T>[],
     error: any,
     result?: {
         ok: number,
