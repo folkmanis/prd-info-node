@@ -161,7 +161,6 @@ export class productsDAO {
         return {
             [property]: result,
             error: null,
-
         };
     }
 

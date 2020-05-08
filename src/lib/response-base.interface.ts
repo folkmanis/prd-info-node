@@ -5,6 +5,8 @@ export interface ResponseBase {
     insertedId?: ObjectId,
     deletedCount?: number,
     modifiedCount?: number,
+    validatorData?: any[],
+    data?: any | any[],
     error: any,
     result?: {
         ok: number,

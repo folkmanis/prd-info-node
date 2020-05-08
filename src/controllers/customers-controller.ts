@@ -59,12 +59,12 @@ export class CustomersController {
     private async getCustomers(req: Request, res: Response) {
         req.log.debug('customers list requested');
         res.json({
-            customers: await customersDAO.getCustomers(Boolean(req.query.disabled)),
+            data: await customersDAO.getCustomers(Boolean(req.query.disabled)),
             error: null,
         });
     }
 
-    @Put('new')
+    @Put()
     private async newUser(req: Request, res: Response) {
         if (!req.body || !req.body['CustomerName']) {
             res.status(404).json();
@@ -72,25 +72,15 @@ export class CustomersController {
         }
         const customer: Customer = req.body;
         const result = await customersDAO.insertCustomer(customer);
-        res.json({
-            insertedId: result.insertedId || null,
-            result: result.result,
-            error: !result.result.ok,
-        });
+        res.json(result);
     }
 
-    @Post('update')
+    @Post(':id')
     private async updateUser(req: Request, res: Response) {
-        if (!req.body || (!req.body._id && !req.body['CustomerName'])) {
-            res.status(404).json();
-            return;
-        }
-        const customer: Customer = { ...req.body, _id: new ObjectId(req.body._id) };
-        const result = await customersDAO.updateCustomer(customer);
-        res.json({
-            result,
-            error: !result.ok,
-        });
+        const _id = new ObjectId(req.params.id);
+        delete req.body._id;
+        const result = await customersDAO.updateCustomer(_id, req.body as Partial<Customer>);
+        res.json(result);
     }
 
     @Delete(':id')
@@ -115,24 +105,10 @@ export class CustomersController {
         );
     }
 
-    @Get('validate')
+    @Get('validate/:property')
     private async validate(req: Request, res: Response) {
-        const keys = Object.keys(req.query);
-        if (keys.length === 0) {
-            res.json(false);
-            return;
-        }
-        if (keys.length === 1) {
-            res.json(
-                !(await customersDAO.findOneCustomer(req.query))
-            );
-            return;
-        }
-        const filter = { $or: keys.map(key => ({ [key]: req.query[key] })) };
-        res.json(
-            !(await customersDAO.findOneCustomer(filter))
-        );
-
+        const property: keyof Customer = req.params.property as keyof Customer;
+        res.json(await customersDAO.validate(property));
     }
 
     @Get(':id')
@@ -144,7 +120,7 @@ export class CustomersController {
         }
         res.json(
             {
-                customer: await customersDAO.getCustomerById(id),
+                data: await customersDAO.getCustomerById(id),
                 error: null
             }
         );

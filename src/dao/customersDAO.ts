@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Customer, Result } from '../lib/customers-interface';
+import { Customer, Result, CustomerResult } from '../lib/customers-interface';
 
 let customers: Collection<Customer>;
 const CUSTOMERS_COLLECTION_NAME = 'customers';
@@ -36,14 +36,19 @@ export class customersDAO {
         return await customers.findOne({ _id: new ObjectId(id) });
     }
 
-    static async insertCustomer(customer: Customer): Promise<{ result: Result, insertedId?: ObjectId; }> {
+    static async insertCustomer(customer: Customer): Promise<CustomerResult> {
         try {
-            const result = await customers.insertOne(customer);
-            Logger.info('Customer created', result.ops);
-            return result;
+            if (!customer.CustomerName) { throw new Error('CustomerName not provided'); }
+            const insertResult = await customers.findOneAndDelete({ CustomerName: customer.CustomerName })
+                .then(() => customers.insertOne(customer));
+            Logger.info('Customer created', insertResult.insertedId);
+            return {
+                error: !insertResult.result.ok,
+                insertedId: insertResult.insertedId,
+            };
         } catch (error) {
             Logger.error('Customer insert failed', { customer, error });
-            return { result: { n: 0, ok: 0 } };
+            return { error };
         }
     }
 
@@ -59,25 +64,34 @@ export class customersDAO {
         }
     }
 
-    static async updateCustomer(customer: Customer): Promise<Result> {
-        const filter = customer._id ? { _id: customer._id } : { 'CustomerName': customer.CustomerName };
-        Logger.debug('filter', filter);
+    static async updateCustomer(_id: ObjectId, customer: Partial<Customer>): Promise<CustomerResult> {
         try {
             const result = await customers.updateOne(
-                filter,
+                { _id },
                 { $set: customer },
                 { upsert: false }
             );
-            Logger.info('Customer updated', { customer, result: result.result });
-            return result.result;
+            Logger.info('Customer update', { _id, customer, result: JSON.stringify(result) });
+            return {
+                error: !result.result.ok,
+                modifiedCount: result.modifiedCount,
+            };
         } catch (error) {
-            Logger.error('Customer update failed', { customer, error });
-            return { n: 0, ok: 0 };
+            return { error };
         }
     }
 
     static async findOneCustomer(filter: FilterQuery<Customer>): Promise<Customer | null> {
         return await customers.findOne(filter);
+    }
+
+    static async validate(property: keyof Customer): Promise<CustomerResult> {
+        const result = (await customers.find({}).project({ _id: 0, [property]: 1 }).toArray())
+            .map((doc: Partial<Customer>) => doc[property]);
+        return {
+            validatorData: result,
+            error: null,
+        };
     }
 
     private static createIndexes() {
