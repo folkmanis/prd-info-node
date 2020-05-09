@@ -23,9 +23,7 @@ export interface InvoiceProduct {
     price: number;
 };
 
-export interface InvoiceResponse extends ResponseBase {
-    invoices?: Invoice[];
-    invoice?: Invoice;
+export interface InvoiceResponse extends ResponseBase<Invoice> {
     totals?: ProductTotals[];
 }
 

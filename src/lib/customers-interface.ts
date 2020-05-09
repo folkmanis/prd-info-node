@@ -8,4 +8,5 @@ export interface Customer {
     disabled?: boolean,
 }
 
-export type CustomerResult = ResponseBase<Customer>
+export interface CustomerResult extends ResponseBase<Customer> {
+}

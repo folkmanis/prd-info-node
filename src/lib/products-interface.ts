@@ -1,18 +1,22 @@
 import { ObjectId } from 'mongodb';
 import { ResponseBase } from './response-base.interface';
 
-export interface ProductResult extends ResponseBase {
-    product?: Product,
-    products?: Product[],
-    customerProducts?: any[],
+export interface ProductResult extends ResponseBase<Product> {
+    customerProducts?: CustomerProduct[];
     prices?: any[],
 }
 
-export type ProductCategories = 'plates';
+export interface CustomerProduct {
+    category: string;
+    description: string;
+    productName: string;
+    customerName: string;
+    price: number;
+}
 
 export interface Product {
     _id: ObjectId,
-    category: ProductCategories,
+    category: string,
     name: string,
     description?: string,
     prices: [

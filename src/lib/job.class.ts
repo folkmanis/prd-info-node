@@ -22,8 +22,6 @@ export interface Job {
 }
 
 export interface JobResponse extends ResponseBase {
-    jobs?: Job[];
-    job?: Job;
 }
 
 export interface JobQueryFilter {

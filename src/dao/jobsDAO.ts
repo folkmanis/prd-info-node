@@ -72,7 +72,7 @@ export class jobsDAO {
         const result = jobs.aggregate(aggr);
 
         return {
-            jobs: await result.toArray(),
+            data: await result.toArray(),
             error: null,
         };
     }
@@ -80,19 +80,29 @@ export class jobsDAO {
     static async getJob(jobId: number): Promise<JobResponse> {
         const resp = await jobs.findOne({ jobId });
         return {
-            job: resp || undefined,
+            data: resp || undefined,
             error: null,
         };
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
-        const result = await jobs.insertOne(job);
-        return {
-            result: result.result,
-            error: !result.result.ok,
-            insertedId: result.insertedId,
-            job: result.ops.pop(),
-        };
+        try {
+            const result = await jobs.insertOne(job).then(
+                result => jobs.findOne(
+                    { _id: result.insertedId },
+                    { projection: { jobId: 1 } }
+                )
+            );
+            return {
+                error: !result,
+                insertedId: result?.jobId || 0,
+            };
+
+        } catch (error) {
+            return {
+                error
+            };
+        }
     }
 
     static async updateJob(jobId: number, job: Partial<Job>): Promise<JobResponse> {

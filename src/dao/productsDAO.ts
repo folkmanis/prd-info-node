@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Double } from "mongodb";
 import Logger from '../lib/logger';
-import { Product, ProductResult, ProductNoId, ProductNoPrices, ProductCategories } from '../lib/products-interface';
+import { Product, ProductResult, ProductNoId, CustomerProduct } from '../lib/products-interface';
 
 let products: Collection<Product>;
 let PRODUCTS_COLLECTION_NAME = 'products';
@@ -23,7 +23,8 @@ export class productsDAO {
         return { insertedId: result.insertedId, result: result.result, error: !result.result.ok };
     }
 
-    static async getProducts(category?: ProductCategories): Promise<ProductResult> {
+    // Done!
+    static async getProducts(category?: string): Promise<ProductResult> {
         const filter: Partial<Product> = {};
         if (category) {
             filter.category = category;
@@ -38,15 +39,16 @@ export class productsDAO {
             .sort({ name: 1 })
             .toArray();
         return {
-            products: await result,
+            data: await result,
             error: false,
         };
     }
 
+    // Done!
     static async getProduct(id: ObjectId): Promise<ProductResult> {
         const product = await products.findOne({ _id: id });
         return {
-            product: product || undefined,
+            data: product || undefined,
             error: !product
         };
     }
@@ -74,7 +76,7 @@ export class productsDAO {
                 price: "$prices.price"
             }
         }];
-        const result = await products.aggregate(pipeline).toArray();
+        const result = await products.aggregate<CustomerProduct>(pipeline).toArray();
         return {
             customerProducts: result,
             error: false,
@@ -155,11 +157,12 @@ export class productsDAO {
         };
     }
 
+    // Done!
     static async validate(property: keyof Product): Promise<ProductResult> {
         const result = (await products.find({}).project({ _id: 0, [property]: 1 }).toArray())
             .map((doc: Partial<Product>) => doc[property]);
         return {
-            [property]: result,
+            validatorData: result,
             error: null,
         };
     }

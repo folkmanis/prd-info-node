@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb';
 
 export interface ResponseBase<T = any> {
-    [key: string]: any,
-    insertedId?: ObjectId,
+    // [key: string]: any,
+    insertedId?: ObjectId | number,
     deletedCount?: number,
     modifiedCount?: number,
     validatorData?: T[keyof T][],

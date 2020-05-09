@@ -30,7 +30,7 @@ export class JobsController {
         );
     }
 
-    @Post('')
+    @Put('')
     private async newJob(req: Request, res: Response) {
         const job = req.body as Job;
         delete job.jobId;

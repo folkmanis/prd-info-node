@@ -32,7 +32,7 @@ export class invoicesDAO {
         ).toArray();
         return {
             error: null,
-            invoices: result,
+            data: result,
         };
     }
 
@@ -64,7 +64,7 @@ export class invoicesDAO {
         const result = await invoices.aggregate(aggr).toArray();
         return {
             error: !result,
-            invoice: result[0] || undefined,
+            data: result[0] || undefined,
         };
     }
 
@@ -74,7 +74,7 @@ export class invoicesDAO {
             error: !result.result.ok,
             result: result.result,
             insertedId: result.insertedId,
-            invoice: result.ops.pop(),
+            data: result.ops.pop(),
         };
     }
 

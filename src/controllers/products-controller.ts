@@ -28,7 +28,7 @@ import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
 import { productsDAO } from '../dao/productsDAO';
-import { Product, ProductNoId, ProductCategories, ProductNoPrices } from '../lib/products-interface';
+import { Product, ProductNoId } from '../lib/products-interface';
 import { omit } from 'lodash';
 
 
@@ -51,7 +51,7 @@ export class ProductsController {
 
     @Get('category/:name')
     private async getByCategory(req: Request, res: Response) {
-        const category = <ProductCategories | undefined>req.params.name;
+        const category = <string | undefined>req.params.name;
         if (!category) {
             res.status(404).json({ error: 'invalid request' });
         } else {
