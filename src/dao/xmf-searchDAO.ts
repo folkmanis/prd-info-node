@@ -264,7 +264,6 @@ export class xmfSearchDAO {
         if (!sortedDbDate) {
             sortedDbDate = (await archSorted.findOne({}))?.lastUpdate || new Date(0);
         }
-        console.log(lastUpdate, sortedDbDate);
         return sortedDbDate.getTime() > lastUpdate.getTime();
     }
 

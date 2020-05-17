@@ -19,7 +19,7 @@ export interface Product {
     category: string,
     name: string,
     description?: string,
-    prices: [
+    prices?: [
         {
             customerName: string,
             price: number,
@@ -30,3 +30,10 @@ export interface Product {
 export type ProductNoId = Omit<Product, '_id'>;
 
 export type ProductNoPrices = Omit<ProductNoId, 'prices'>;
+
+export interface ProductPriceImport {
+    product: string;
+    customerName: string;
+    price: number;
+  }
+  

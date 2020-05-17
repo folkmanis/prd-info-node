@@ -105,6 +105,18 @@ export class jobsDAO {
         }
     }
 
+    static async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
+        if (!(insertJobs && insertJobs.length > 0)) { return { error: null, insertedCount: 0 }; }
+        insertJobs.forEach(job => job = jobsDAO.validateJob(job));
+        try {
+            const result = await jobs.insertMany(insertJobs);
+            return {
+                error: !result.result.ok,
+                insertedCount: result.insertedCount,
+            };
+        } catch (error) { return { error }; }
+    }
+
     static async updateJob(jobId: number, job: Partial<Job>): Promise<JobResponse> {
         job = jobsDAO.validateJob(job);
         const result = await jobs.updateOne(

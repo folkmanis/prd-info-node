@@ -20,7 +20,10 @@ export class customersDAO {
     static async getCustomers(disabled?: boolean): Promise<Customer[]> {
         const query: FilterQuery<Customer> = {};
         if (!disabled) {
-            query.disabled = false;
+            query.$or = [
+                { disabled: { $exists: false } },
+                { disabled: false },
+            ];
         }
         return await customers.find(query)
             .project({
@@ -52,6 +55,17 @@ export class customersDAO {
         }
     }
 
+    static async insertCustomers(cust: Customer[]): Promise<CustomerResult> {
+        if (!(cust && cust.length)) { return { error: null, insertedCount: 0 }; }
+        return customers.insertMany(cust)
+            .then(
+                resp => ({
+                    error: !resp.result.ok,
+                    insertedCount: resp.insertedCount,
+                })
+            ).catch(error => ({ error }));
+    }
+
     static async deleteCustomer(id: string): Promise<CustomerResult> {
         try {
             const result = await customers.deleteOne({ _id: new ObjectId(id) });
@@ -59,7 +73,7 @@ export class customersDAO {
             return {
                 error: !result.result.ok,
                 deletedCount: result.deletedCount,
-            }
+            };
 
         } catch (error) {
             Logger.error('Customer delete failed', { id, error });

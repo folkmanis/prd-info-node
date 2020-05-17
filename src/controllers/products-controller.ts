@@ -61,10 +61,14 @@ export class ProductsController {
         }
     }
 
-    @Get('categories')
-    private async getCategories(req: Request, res: Response) {
-        // TODO
-        res.json();
+
+    @Get('prices/customers')
+    private async getPricesCustomers(req: Request, res: Response) {
+        const filter = JSON.parse(req.query.filter as string) as {
+            customerName: string;
+            product: string;
+        }[];
+        res.json(await productsDAO.getCustomersProducts(filter));
     }
 
     @Get('validate/:property')

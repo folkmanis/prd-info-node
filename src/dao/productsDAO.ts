@@ -1,6 +1,6 @@
-import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Double } from "mongodb";
+import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Double, BulkWriteOperation } from "mongodb";
 import Logger from '../lib/logger';
-import { Product, ProductResult, ProductNoId, CustomerProduct } from '../lib/products-interface';
+import { Product, ProductResult, ProductNoId, CustomerProduct, ProductNoPrices, ProductPriceImport } from '../lib/products-interface';
 
 let products: Collection<Product>;
 let PRODUCTS_COLLECTION_NAME = 'products';
@@ -21,6 +21,16 @@ export class productsDAO {
     static async insertNewProduct(prod: ProductNoId): Promise<ProductResult> {
         const result = await products.insertOne(prod);
         return { insertedId: result.insertedId, result: result.result, error: !result.result.ok };
+    }
+
+    static async insertNewProducts(prod: ProductNoPrices[]): Promise<ProductResult> {
+        if (!(prod && prod.length)) { return { error: null, insertedCount: 0 }; }
+        return products.insertMany(prod)
+            .then(result => ({
+                insertedCount: result.insertedCount,
+                error: !result.result.ok,
+            }))
+            .catch(error => ({ error }));
     }
 
     // Done!
@@ -139,6 +149,31 @@ export class productsDAO {
         };
     }
 
+    static async addPrices(prices: ProductPriceImport[]): Promise<ProductResult> {
+        if (!(prices && prices.length > 0)) { return { error: null, insertedCount: 0 }; }
+        const update: BulkWriteOperation<Product>[] = [];
+        for (const { price, product, customerName } of prices) {
+            update.push({
+                updateOne: {
+                    filter: {
+                        name: product,
+                    },
+                    update: {
+                        $addToSet: {
+                            prices: { customerName, price },
+                        }
+                    }
+                }
+            });
+        }
+        return products.bulkWrite(update)
+            .then(result => ({
+                error: !result.result,
+                insertedCount: result.modifiedCount,
+            }))
+            .catch(error => ({ error }));
+    }
+
     static async deletePrice(id: ObjectId, customerName: string): Promise<ProductResult> {
         const result = await products.updateOne(
             { _id: id },
@@ -165,6 +200,44 @@ export class productsDAO {
             validatorData: result,
             error: null,
         };
+    }
+
+    static async getCustomersProducts(
+        customerProducts: {
+            customerName: string;
+            product: string;
+        }[]
+    ): Promise<ProductResult> {
+        const aggr = [
+            {
+                '$unwind': { 'path': '$prices' }
+            }, {
+                '$addFields': {
+                    'custPrice.customerName': '$prices.customerName',
+                    'custPrice.product': '$name'
+                }
+            }, {
+                '$match': {
+                    'custPrice': {
+                        '$in': customerProducts
+                    }
+                }
+            }, {
+                '$project': {
+                    '_id': 0,
+                    'product': '$name',
+                    'customerName': '$custPrice.customerName',
+                    'price': '$prices.price'
+                }
+            }
+        ];
+        try {
+            const result = await products.aggregate(aggr).toArray();
+            return {
+                data: result,
+                error: null,
+            };
+        } catch (error) { return { error }; }
     }
 
     private static async createIndexes() {
