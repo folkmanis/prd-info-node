@@ -25,12 +25,12 @@
  */
 
 import crypto from 'crypto';
-import { Controller, Get, Post, Wrapper, ClassWrapper, Middleware } from '@overnightjs/core';
+import { Controller, Get, Post, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { asyncWrapper } from '../lib/asyncWrapper';
+import { logError } from '../lib/errorMiddleware';
 import { UsersDAO } from '../dao/usersDAO';
-import PrdSession from '../lib/session-handler';
 
+@ClassErrorMiddleware(logError)
 @Controller('data/login')
 export class LoginController {
 
