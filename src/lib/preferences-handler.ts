@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { PreferencesDAO } from '../dao/preferencesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { User } from '../interfaces';
+import { User,SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
 
 export default class Preferences {
@@ -36,7 +36,7 @@ export default class Preferences {
             res.status(401).json({});
             return;
         }
-        const sysPref = await PreferencesDAO.getAllPreferences();
+        const sysPref = (await PreferencesDAO.getAllPreferences()).data as SystemPreferenceModule[] | undefined;
         if (!sysPref) {
             Logger.error('System preferences not found');
             res.status(501).json('Server error');

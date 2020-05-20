@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, BulkWriteOpResultObject } from "mongodb";
 import Logger from '../lib/logger';
-import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference } from '../interfaces';
+import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference, PreferencesResponse } from '../interfaces';
 import { LogLevels } from '../lib/logger';
 import { flattenObject } from '../lib/flatten-object';
 
@@ -82,15 +82,28 @@ export class PreferencesDAO {
      * null, ja modulis nav atrasts
      * @param mod Moduļa nosaukums
      */
-    static async getModulePreferences(mod: Modules): Promise<SystemPreferenceModule | null> {
-        return (await preferences.findOne({ module: mod }, { projection: { _id: 0 } }));
+    static async getModulePreferences(mod: Modules): Promise<PreferencesResponse> {
+        try {
+            const resp = await preferences.findOne({ module: mod }, { projection: { _id: 0 } });
+            return {
+                error: !!resp ? false : 'Not found',
+                data: resp || undefined,
+            };
+
+        } catch (error) { return { error }; }
     }
     /**
      * Izsniedz visu moduļu preferences
      */
-    static getAllPreferences(): Promise<SystemPreferences> {
+    static async getAllPreferences(): Promise<PreferencesResponse> {
         //TODO tikai preferences, kuras attiecas uz lietotāju
-        return preferences.find({}, { projection: { _id: 0 } }).toArray();
+        try {
+            return {
+                error: null,
+                data: await preferences.find({}, { projection: { _id: 0 } }).toArray()
+            };
+
+        } catch (error) { return { error }; }
     }
     /**
      * Nomaina vienam vai vairākiem moduļiem preferences
@@ -100,10 +113,7 @@ export class PreferencesDAO {
      * modifiedCount number	- Number of documents modified.
      * @param pref Preferences objekts vai objektu masīvs
      */
-    static async updatePreferences(pref: SystemPreferenceModule | SystemPreferenceModule[]): Promise<BulkWriteOpResultObject | null> {
-        if (!(pref instanceof Array)) {
-            pref = [pref];
-        }
+    static async updatePreferences(...pref: SystemPreferenceModule[]): Promise<PreferencesResponse> {
         const update: BulkUpdateOne[] = [];
         pref.forEach(pr =>
             update.push({
@@ -114,18 +124,30 @@ export class PreferencesDAO {
             })
         );
         Logger.debug('update preferences DAO', JSON.stringify(update));
-        const updResult = await preferences.bulkWrite(update, { ordered: false });
-        return updResult;
+        try {
+            const updResult = await preferences.bulkWrite(update, { ordered: false });
+            return {
+                error: false,
+                modifiedCount: updResult.modifiedCount,
+            };
+        } catch (error) { return { error }; }
     }
     /**
      * Atiestata preferences uz noklusējuma vērtībām vienam modulim
      * @param mod Moduļa nosaukums
      */
-    static async setDefaults(mod: Modules): Promise<boolean> {
+    static async setDefaults(mod: Modules): Promise<PreferencesResponse> {
         const def = defaults.find(obj => obj.module === mod);
-        if (!def) { return false; }
-        const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
-        return !!result.result.ok;
+        if (!def) { return { error: 'Module not found' }; }
+        try {
+            const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
+            return {
+                error: !result.result.ok,
+                modifiedCount: result.modifiedCount,
+            };
+        } catch (error) {
+            return { error };
+        }
     }
 
     private static async insertDefaults(def: SystemPreferenceModule[]) {
@@ -151,7 +173,7 @@ export class PreferencesDAO {
         const result = (await preferences.findOneAndUpdate({
             module: 'jobs',
         }, {
-            $inc: {'settings.lastInvoiceId':1}
+            $inc: { 'settings.lastInvoiceId': 1 }
         }, {
             returnOriginal: false,
         })).value?.settings as JobsSystemPreference;

@@ -33,7 +33,7 @@ import Preferences from '../lib/preferences-handler';
 
 
 import { PreferencesDAO } from '../dao/preferencesDAO';
-import { Modules } from '../interfaces';
+import { Modules, SystemPreferenceModule, SystemPreferences } from '../interfaces';
 
 @Controller('data/preferences')
 @ClassMiddleware([
@@ -44,7 +44,27 @@ import { Modules } from '../interfaces';
 export class PreferencesController {
 
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
-    @Put('update')
+    @Post(':module')
+    private async resetModule(req: Request, res: Response) {
+        console.log(req.body);
+        const module = req.params.module as Modules;
+        if (req.body.settings) {
+            const pref: SystemPreferenceModule = {
+                module,
+                settings: req.body.settings,
+            };
+            res.json(
+                await PreferencesDAO.updatePreferences(pref)
+            );
+        } else {
+            res.json(
+                await PreferencesDAO.setDefaults(module)
+            );
+        }
+    }
+
+    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
+    @Post('')
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body.preferences;
         req.log.debug('put preferences update', pref);
@@ -52,33 +72,20 @@ export class PreferencesController {
         res.json(result);
     }
 
-    @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
-    @Post('defaults')
-    private async resetModule(req: Request, res: Response) {
-        const mod = req.body.module as Modules;
-        if (!mod) { res.json({ updated: 0 }); }
+    @Get(':module')
+    private async getPreferences(req: Request, res: Response) {
+        const mod = req.params.module as Modules;
+        req.log.debug('get preferences', mod);
         res.json(
-            { updated: (await PreferencesDAO.setDefaults(mod)) ? 1 : 0 }
+            await PreferencesDAO.getModulePreferences(mod)
         );
     }
 
-    @Get('all')
+    @Get('')
     private async getAllPreferences(req: Request, res: Response) {
         res.json(
             await PreferencesDAO.getAllPreferences()
         );
     }
 
-    @Get('single')
-    private async getPreferences(req: Request, res: Response) {
-        const mod = req.query.module as Modules | undefined;
-        req.log.debug('get preferences', mod);
-        if (mod === undefined) {
-            res.json({});
-            return;
-        }
-        res.json(
-            await PreferencesDAO.getModulePreferences(mod)
-        );
-    }
 }

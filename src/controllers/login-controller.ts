@@ -46,7 +46,7 @@ export class LoginController {
                     await this.logout(req.session)
                 );
             } else {
-                res.json({ error: 'Invalid username' });
+                res.json({ error: undefined });
             }
             return;
         }

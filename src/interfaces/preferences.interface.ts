@@ -1,4 +1,6 @@
 import { LogLevels } from '../lib/logger';
+import { ResponseBase } from './response-base.interface';
+
 export type Modules = 'kastes' | 'system' | 'jobs';
 
 export type SystemPreferences = Array<SystemPreferenceModule>;
@@ -30,3 +32,6 @@ export interface JobsSystemPreference {
     lastInvoiceId: number;
 }
 
+export interface PreferencesResponse extends ResponseBase<SystemPreferenceModule> {
+
+}
