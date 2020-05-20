@@ -26,73 +26,84 @@
 
 import crypto from 'crypto';
 import { Controller, Get, Post, ClassErrorMiddleware } from '@overnightjs/core';
-import { Request, Response } from 'express';
+import { Request, Response, Express } from 'express';
 import { logError } from '../lib/errorMiddleware';
 import { UsersDAO } from '../dao/usersDAO';
+import { Login, LoginResponse } from '../interfaces';
+
+type Session = Express.Session;
 
 @ClassErrorMiddleware(logError)
 @Controller('data/login')
 export class LoginController {
 
-    @Post('login')
+    @Post('')
     private async login(req: Request, res: Response) {
-        if (!req.body.username || !req.body.password) {  // Ja nepareizs pieprasījums
-            res.json({});
+        if (!req.body.username || !req.body.password) {  // Ja tukšs pieprasījums
+            if (req.session && req.session.user) {
+                req.log.info('User logged out', { user: req.session.user });
+                res.json(
+                    await this.logout(req.session)
+                );
+            } else {
+                res.json({ error: 'Invalid username' });
+            }
             return;
         }
-        await new Promise((resolve, reject) => {  // Izdzēš sesiju
-            if (!req.session) { // Ja sesijas nav, tad neko nedara
-                resolve();
-                return;
-            }
-            req.session.regenerate((err) => {  // Sesijas dzēšana
-                err ? reject(err) : resolve();
+        if (req.session) { // Ja ir sesija, tad izdzēš
+            await new Promise((resolve, reject) => {
+                req.session?.regenerate((err) => {  // Sesijas dzēšana
+                    err ? reject(err) : resolve();
+                });
             });
-        });
+        }
 
-        const login = {
+        const login: Login = {
             username: req.body.username,
             password: crypto.createHash('sha256').update(req.body.password).digest('hex'),
         };
 
-        let user = await UsersDAO.login(login);
+        const loginResponse = await UsersDAO.login(login);
 
-        if (!user) {
+        if (loginResponse.data) {
+            req.log.info('User logged in', { user: loginResponse.data });
+        } else {
             req.log.error('Login failed', req.body);
-            res.json({});
-            return;
         }
-        if (req.session) {
-            req.session.user = user;
+        if (req.session && loginResponse.data) {
+            req.session.user = loginResponse.data;
         }
-        req.log.info('User logged in', { username: user.username });
-        req.log.debug('session', req.session);
-        res.json(user);
+        res.json(loginResponse);
     }
 
-    @Post('logout')
-    private async logout(req: Request, res: Response) {
-        const result = await new Promise((resolve, reject) => {
-            if (req.session) {
-                req.session.destroy((err) => {
-                    err ? reject(err) : resolve({ logout: 1 });
-                });
-            } else {
-                resolve({ logout: 0 });
-            }
+    private async logout(session: Session): Promise<LoginResponse> {
+        return new Promise<LoginResponse>((resolve, reject) => {
+            session.destroy((err) => {
+                if (err) {
+                    reject({ error: err });
+                } else {
+                    resolve({
+                        error: null,
+                        modifiedCount: 1,
+                        data: undefined,
+                    });
+                }
+            });
         });
-        req.log.info('User logged out', { user: req.session?.user });
-        res.json(result);
     }
 
-    @Get('user')
+    @Get('')
     private user(req: Request, res: Response) {
-        req.log.debug('login/user');
         if (req.session && req.session.user) {
-            res.json(req.session.user);
+            res.json({
+                error: null,
+                data: req.session.user
+            });
         }
         else {
-            res.json({});
+            res.json({
+                error: 'Not logged in'
+            });
         }
     }
 

@@ -8,3 +8,4 @@ export * from './user.interface';
 export * from './xmf-archive.interface';
 export * from './log.interface';
 export * from './kastes.interface';
+export * from './login.interface'

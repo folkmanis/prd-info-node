@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
-import { User, UserPreferences } from '../interfaces';
+import { User, UserPreferences, Login, LoginResponse } from '../interfaces';
 import Logger from '../lib/logger';
 
 let users: Collection<User>;
@@ -94,9 +94,16 @@ export class UsersDAO {
         }
     }
 
-    static async login(login: { username: string, password: string; }): Promise<User | null> {
-        const updResp = await users.findOneAndUpdate(login, { $set: { last_login: new Date() } }, { projection: UsersDAO.projection });
-        return updResp.value || null;
+    static async login(login: Login): Promise<LoginResponse> {
+        const updResp = await users.findOneAndUpdate(
+            login,
+            { $set: { last_login: new Date() } },
+            { projection: UsersDAO.projection }
+        );
+        return {
+            error: !updResp.ok,
+            data: updResp.value,
+        }
     }
 
     static async getPreferences(username: string): Promise<UserPreferences | null> {
