@@ -1,20 +1,5 @@
 import { MongoClient, Collection, IndexSpecification } from 'mongodb';
-
-export interface LogRecord {
-    level: number,
-    timestamp: Date,
-    info: string,
-    metadata?: { [key: string]: any; },
-}
-
-export interface LogReadResponse {
-    count: number,
-    data: LogRecord[],
-}
-
-export interface DatesGroup {
-    _id: string,
-}
+import { LogRecord, LogReadResponse, DatesGroup } from '../interfaces';
 
 const indexes: IndexSpecification[] = [
     {
@@ -107,8 +92,8 @@ export class LoggerDAO {
                     }
                 }
             }, {
-                $sort: {_id: 1},
-            }
+            $sort: { _id: 1 },
+        }
         );
         return await log.aggregate<DatesGroup>(pipeline).toArray();
     }

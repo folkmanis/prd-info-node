@@ -1,4 +1,4 @@
-import { ArchiveJob, XmfUploadProgress } from './xmf-archive-class';
+import { ArchiveJob, XmfUploadProgress } from '../interfaces/xmf-archive.interface';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 import Logger from './logger';
 import { ObjectId } from 'mongodb';

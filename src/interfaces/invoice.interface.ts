@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
-import { Job } from './job.class';
-import { Product } from './products-interface';
-import { ResponseBase } from '../lib/response-base.interface';
+import { Job } from './job.interface';
+import { Product } from './products.interface';
+import { ResponseBase } from './response-base.interface';
 
 export interface Invoice {
     invoiceId: string;

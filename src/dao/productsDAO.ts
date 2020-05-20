@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Double, BulkWriteOperation } from "mongodb";
 import Logger from '../lib/logger';
-import { Product, ProductResult, ProductNoId, CustomerProduct, ProductNoPrices, ProductPriceImport } from '../lib/products-interface';
+import { Product, ProductResult, ProductNoId, CustomerProduct, ProductNoPrices, ProductPriceImport } from '../interfaces';
 
 let products: Collection<Product>;
 let PRODUCTS_COLLECTION_NAME = 'products';

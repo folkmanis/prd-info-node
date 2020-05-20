@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, BulkWriteOpResultObject } from "mongodb";
 import Logger from '../lib/logger';
-import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference } from '../lib/preferences-class';
+import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference } from '../interfaces';
 import { LogLevels } from '../lib/logger';
 import { flattenObject } from '../lib/flatten-object';
 

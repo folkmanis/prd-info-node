@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { Product } from '../lib/products-interface';
-import { ResponseBase } from '../lib/response-base.interface';
+import { Product } from './products.interface';
+import { ResponseBase } from './response-base.interface';
 
 export type JobProduct = Pick<Product, 'name'> & {
     price: number;

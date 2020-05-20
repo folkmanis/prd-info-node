@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Invoice, INVOICE_SCHEMA, InvoiceResponse, InvoicesFilter } from '../lib/invoice.class';
+import { Invoice, INVOICE_SCHEMA, InvoiceResponse, InvoicesFilter } from '../interfaces';
 
 let invoices: Collection<Invoice>;
 const INVOICES_COLLECTION_NAME = 'invoices';

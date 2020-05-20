@@ -45,7 +45,7 @@ import Preferences from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
 import { customersDAO } from '../dao/customersDAO';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
-import { Customer } from '../lib/customers-interface';
+import { Customer } from '../interfaces';
 
 @Controller('data/customers')
 @ClassMiddleware([

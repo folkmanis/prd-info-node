@@ -28,7 +28,7 @@ import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
 import { productsDAO } from '../dao/productsDAO';
-import { Product, ProductNoId } from '../lib/products-interface';
+import { Product, ProductNoId } from '../interfaces';
 import { omit } from 'lodash';
 
 

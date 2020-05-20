@@ -21,11 +21,10 @@
 
 import { Controller, ClassMiddleware, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { ArchiveSearchParams } from '../lib/xmf-archive-class';
+import { ArchiveSearchParams, UserPreferences } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
-import { UserPreferences } from '../lib/user-class';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 
 @Controller('data/xmf-search')

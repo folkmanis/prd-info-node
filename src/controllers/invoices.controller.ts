@@ -4,9 +4,7 @@ import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
-import { ObjectId, Logger } from 'mongodb';
-import { Job, JobQueryFilter } from '../lib/job.class';
-import { InvoicesFilter } from '../lib/invoice.class';
+import { InvoicesFilter } from '../interfaces';
 import { invoicesDAO, PreferencesDAO, jobsDAO } from '../dao';
 
 @Controller('data/invoices')

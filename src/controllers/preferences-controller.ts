@@ -33,7 +33,7 @@ import Preferences from '../lib/preferences-handler';
 
 
 import { PreferencesDAO } from '../dao/preferencesDAO';
-import { Modules } from '../lib/preferences-class';
+import { Modules } from '../interfaces';
 
 @Controller('data/preferences')
 @ClassMiddleware([

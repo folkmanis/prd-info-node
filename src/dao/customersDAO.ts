@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Customer, CustomerResult } from '../lib/customers-interface';
+import { Customer, CustomerResult } from '../interfaces';
 
 let customers: Collection<Customer>;
 const CUSTOMERS_COLLECTION_NAME = 'customers';

@@ -1,9 +1,7 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { MongoClient } from 'mongodb';
-import { User, UserPreferences } from './user-class';
-import { SystemPreferencesMap } from '../lib/preferences-class';
-import { UsersDAO } from '../dao/usersDAO';
+import { NextFunction, Request, Response } from 'express';
 import { PreferencesDAO } from '../dao/preferencesDAO';
+import { UsersDAO } from '../dao/usersDAO';
+import { User } from '../interfaces';
 import Logger from './logger';
 
 export default class Preferences {

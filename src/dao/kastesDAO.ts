@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
 import Logger from '../lib/logger';
-import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
+import { KastesVeikals, KastesPasutijums } from '../interfaces';
 
 interface CleanupResponse { deleted: { pasutijumi: number, veikali: number, }; }
 

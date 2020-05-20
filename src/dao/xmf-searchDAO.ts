@@ -1,7 +1,13 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
-import { ArchiveJob, ArchiveSearchParams, ArchiveJobSorted } from '../lib/xmf-archive-class';
-import { UserPreferences } from "../lib/user-class";
-import { ArchiveSearchResult, FacetResult, XmfUploadProgress } from '../lib/xmf-archive-class';
+import {
+    UserPreferences,
+    ArchiveJob,
+    ArchiveSearchParams,
+    ArchiveJobSorted,
+    ArchiveSearchResult,
+    FacetResult,
+    XmfUploadProgress,
+} from '../interfaces';
 import Logger from '../lib/logger';
 
 let archives: Collection<Partial<ArchiveJob>>; // galvenā datubāze

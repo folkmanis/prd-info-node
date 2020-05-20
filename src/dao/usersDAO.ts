@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
-import { User, UserPreferences } from '../lib/user-class';
+import { User, UserPreferences } from '../interfaces';
 import Logger from '../lib/logger';
 
 let users: Collection<User>;

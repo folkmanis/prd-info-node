@@ -38,7 +38,7 @@ import Preferences from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
 import { ObjectId } from 'mongodb';
-import { KastesVeikals, KastesPasutijums } from '../lib/kastes-class';
+import { KastesVeikals, KastesPasutijums } from '../interfaces';
 
 @Controller('data/kastes')
 @ClassMiddleware([

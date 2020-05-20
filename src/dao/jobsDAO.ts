@@ -1,7 +1,14 @@
 import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Job, JobResponse, JobQueryFilter, JOBS_SCHEMA } from '../lib/job.class';
-import { Invoice, InvoiceProduct, InvoiceResponse, ProductTotals } from '../lib/invoice.class';
+import {
+    Job,
+    JobResponse,
+    JobQueryFilter,
+    JOBS_SCHEMA,
+    InvoiceProduct,
+    InvoiceResponse,
+    ProductTotals
+} from '../interfaces';
 
 let jobs: Collection<Job>;
 const JOBS_COLLECTION_NAME = 'jobs';

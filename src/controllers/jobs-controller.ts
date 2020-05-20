@@ -1,14 +1,17 @@
 import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
-import { Request, Response, response } from 'express';
+import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
-import { ObjectId } from 'mongodb';
-import { Job, JobQueryFilter, JobResponse } from '../lib/job.class';
-import { InvoicesFilter } from '../lib/invoice.class';
-import { Customer } from '../lib/customers-interface';
-import { ProductNoPrices, ProductPriceImport } from '../lib/products-interface';
+import {
+    Job,
+    JobQueryFilter,
+    JobResponse,
+    Customer,
+    ProductNoPrices,
+    ProductPriceImport
+} from '../interfaces';
 import { invoicesDAO, PreferencesDAO, jobsDAO, customersDAO, productsDAO } from '../dao';
 
 class JobImportResponse implements JobResponse {

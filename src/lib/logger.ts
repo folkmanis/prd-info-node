@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { MongoClient } from 'mongodb';
-import { LoggerDAO as mongoLoggerDAO, LogRecord } from '../dao/loggerDAO';
-
-export { LogRecord } from '../dao/loggerDAO';
+import { LoggerDAO as mongoLoggerDAO} from '../dao/loggerDAO';
+import { LogRecord } from '../interfaces';
 
 /**
  * Izvades kanāls
