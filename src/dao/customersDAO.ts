@@ -30,6 +30,7 @@ export class customersDAO {
                 _id: 1,
                 "CustomerName": 1,
                 code: 1,
+                disabled: 1,
             })
             .sort({ CustomerName: 1 })
             .toArray();

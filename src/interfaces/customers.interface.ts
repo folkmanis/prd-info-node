@@ -6,7 +6,10 @@ export interface Customer {
     code?: string,
     CustomerName: string,
     disabled?: boolean,
+    description?: string,
+    insertedFromXmf?: Date,
 }
 
 export interface CustomerResult extends ResponseBase<Customer> {
 }
+

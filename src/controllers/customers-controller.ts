@@ -65,7 +65,7 @@ export class CustomersController {
     }
 
     @Put()
-    private async newUser(req: Request, res: Response) {
+    private async newCustomer(req: Request, res: Response) {
         if (!req.body || !req.body['CustomerName']) {
             res.status(404).json();
             return;
@@ -76,7 +76,7 @@ export class CustomersController {
     }
 
     @Post(':id')
-    private async updateUser(req: Request, res: Response) {
+    private async updateCustomer(req: Request, res: Response) {
         const _id = new ObjectId(req.params.id);
         delete req.body._id;
         const result = await customersDAO.updateCustomer(_id, req.body as Partial<Customer>);
@@ -84,7 +84,7 @@ export class CustomersController {
     }
 
     @Delete(':id')
-    private async deleteUser(req: Request, res: Response) {
+    private async deleteCustomer(req: Request, res: Response) {
         const id: string | undefined = req.params.id;
         if (!id) {
             res.status(404).json();
