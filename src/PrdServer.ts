@@ -15,7 +15,7 @@ export class PrdServer extends Server {
         super(true);
         Logger.addTransport(new Console());  // Pievieno konsoles izvadi Logger objektam
         this.app.use(Logger.handler); // Logger funkcijas būs pieejamas kā req.log
-        this.app.use(bodyParser.json({limit: '200kb'}));
+        this.app.use(bodyParser.json({limit: process.env.BODY_SIZE_LIMIT}));
         this.app.use(bodyParser.urlencoded({ extended: true }));
     }
 
