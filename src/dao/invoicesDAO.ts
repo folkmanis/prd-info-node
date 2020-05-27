@@ -51,6 +51,8 @@ export class invoicesDAO {
                             $unwind: { 'path': '$products' }
                         }, {
                             $project: { _id: 0 },
+                        }, {
+                            $sort: { receivedDate: 1 },
                         }
                     ],
                     'as': 'jobs'
