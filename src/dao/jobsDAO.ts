@@ -72,7 +72,7 @@ export class jobsDAO {
                 '$unwind': {
                     'path': '$products',
                     'includeArrayIndex': 'productsIdx',
-                    'preserveNullAndEmptyArrays': false
+                    'preserveNullAndEmptyArrays': true,
                 }
             });
         }
