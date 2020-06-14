@@ -218,6 +218,10 @@ export class jobsDAO {
                     'count': { '$sum': '$products.count' },
                     'total': { '$sum': '$products.total' }
                 }
+            }, {
+                '$sort': {
+                    '_id': 1,
+                }
             }
         ];
         return {
