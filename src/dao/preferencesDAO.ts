@@ -1,4 +1,5 @@
-import { MongoClient, Collection, ObjectId, BulkWriteOpResultObject } from "mongodb";
+import { MongoClient, Collection, ObjectId, BulkWriteOperation, BulkWriteOpResultObject } from "mongodb";
+import { defaultsDeep, defaults } from 'lodash';
 import Logger from '../lib/logger';
 import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference, PreferencesResponse } from '../interfaces';
 import { LogLevels } from '../lib/logger';
@@ -14,7 +15,7 @@ interface BulkUpdateOne {
     };
 }
 
-const defaults: SystemPreferences = [
+const defaultPrefs: SystemPreferences = [
     {
         module: 'kastes',
         settings: {
@@ -51,6 +52,24 @@ const defaults: SystemPreferences = [
                     description: 'Perforētais papīrs',
                 }
             ],
+            jobStates: [
+                {
+                    state: 10,
+                    description: 'Sagatavošana',
+                },
+                {
+                    state: 20,
+                    description: 'Ražošana',
+                },
+                {
+                    state: 30,
+                    description: 'Gatavs',
+                },
+                {
+                    state: 50,
+                    description: 'Izrakstīts',
+                }
+            ],
             lastJobId: 5001,
             lastInvoiceId: 1,
         }
@@ -67,7 +86,7 @@ export class PreferencesDAO {
         try {
             preferences = conn.db(process.env.DB_BASE as string)
                 .collection('preferences');
-            PreferencesDAO.insertDefaults(defaults);
+            PreferencesDAO.insertDefaults(defaultPrefs);
             preferences.createIndex(
                 { module: 1 },
                 { unique: true, name: 'module_1' }
@@ -137,7 +156,7 @@ export class PreferencesDAO {
      * @param mod Moduļa nosaukums
      */
     static async setDefaults(mod: Modules): Promise<PreferencesResponse> {
-        const def = defaults.find(obj => obj.module === mod);
+        const def = defaultPrefs.find(obj => obj.module === mod);
         if (!def) { return { error: 'Module not found' }; }
         try {
             const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
@@ -151,10 +170,27 @@ export class PreferencesDAO {
     }
 
     private static async insertDefaults(def: SystemPreferenceModule[]) {
-        const modules = await preferences.find({}, { projection: { module: 1 } }).toArray();
-        const missing = def.filter(val => !modules.some(mod => mod.module === val.module));
+        const modules = await preferences.find({}).toArray();
+        const missing: BulkWriteOperation<SystemPreferenceModule>[] = [];
+        for (const mod of def) {
+            const modDb = modules.find(md => md.module === mod.module);
+            if (modDb) {
+                missing.push(
+                    {
+                        updateOne: {
+                            filter: { module: modDb.module },
+                            update: { $set: defaultsDeep(modDb, mod) },
+                        }
+                    }
+
+                );
+            } else {
+                missing.push({ insertOne: { document: mod } });
+            }
+        }
+
         if (missing.length > 0) {
-            await preferences.insertMany(missing);
+            await preferences.bulkWrite(missing);
         }
     }
 

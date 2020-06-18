@@ -28,6 +28,10 @@ export interface JobsSystemPreference {
         category: string,
         description: string,
     }[];
+    jobStates: {
+        state: number,
+        description: string;
+    }[];
     lastJobId: number;
     lastInvoiceId: number;
 }
