@@ -80,7 +80,7 @@ export default class Logger {
  * Log transporta klase konsoles izvadam
  */
 export class Console implements Transport {
-    minlevel: LogLevels = LogLevels.SILLY; // console raksta visu
+    minlevel: LogLevels = process.env.DEBUG ? LogLevels.SILLY : LogLevels.INFO; // console raksta visu
     async write(rec: LogRecord): Promise<void> {
         const levStr = LogLevels[rec.level] || rec.level;
         console.log(`${levStr} | ${rec.timestamp.toLocaleString()} | ${rec.info}`);
