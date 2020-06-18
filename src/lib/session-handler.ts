@@ -53,6 +53,7 @@ export default class PrdSession {
             saveUninitialized: false,
             unset: 'destroy',
             resave: false,
+            rolling: true,
         });
     }
 

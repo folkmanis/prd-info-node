@@ -8,6 +8,9 @@ export interface Customer {
     disabled?: boolean,
     description?: string,
     insertedFromXmf?: Date,
+    financial?: {
+        clientName: string;
+    };
 }
 
 export interface CustomerResult extends ResponseBase<Customer> {
