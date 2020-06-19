@@ -189,9 +189,7 @@ export class PreferencesDAO {
             }
         }
 
-        if (missing.length > 0) {
-            await preferences.bulkWrite(missing);
-        }
+        await preferences.bulkWrite(missing);
     }
 
     static async getNextJobId(): Promise<number> {

@@ -19,6 +19,9 @@ export interface Job {
     invoiceId?: string;
     products?: JobProduct[] | JobProduct;
     productsIdx?: number;
+    jobStatus: {
+        generalStatus: number;
+    };
 }
 
 export interface JobResponse extends ResponseBase {
@@ -31,13 +34,14 @@ export interface JobQueryFilter {
     invoice?: boolean;
     jobsId?: string;
     unwindProducts?: 0 | 1;
+    jobStatus?: string,
 };
 
 export type JobUpdate = Pick<Job, 'jobId'> & Partial<Job>;
 
 export const JOBS_SCHEMA: { [key: string]: any; } = {
     bsonType: 'object',
-    required: ['jobId', 'customer', 'receivedDate', 'name'],
+    required: ['jobId', 'customer', 'receivedDate', 'name', 'jobStatus'],
     properties: {
         jobId: {
             bsonType: 'number',
@@ -54,5 +58,13 @@ export const JOBS_SCHEMA: { [key: string]: any; } = {
         invoiceId: {
             bsonType: 'string',
         },
+        jobStatus: {
+            bsonType: 'object',
+            properties: {
+                generalStatus: {
+                    bsonType: 'int',
+                }
+            }
+        }
     }
 };

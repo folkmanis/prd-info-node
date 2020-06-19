@@ -23,6 +23,7 @@ export class jobsDAO {
             Logger.error('Customers DAO', err);
         }
         await this.createCollection(conn);
+        await this.upgradeDb();
         jobsDAO.createIndexes();
     }
 
@@ -45,6 +46,11 @@ export class jobsDAO {
         if (query.jobsId) {
             filter.jobId = { $in: query.jobsId.split(',').map(id => +id) };
         }
+        if (query.jobStatus) {
+            filter['jobStatus.generalStatus'] = {
+                $in: query.jobStatus.split(',').map(st => +st),
+            };
+        }
         const aggr: object[] = [
             {
                 $match: filter
@@ -59,6 +65,7 @@ export class jobsDAO {
                     receivedDate: 1,
                     products: 1,
                     invoiceId: 1,
+                    jobStatus: 1,
                 }
             },
             {
@@ -244,6 +251,9 @@ export class jobsDAO {
             },
             {
                 key: { invoiceId: 1 },
+            },
+            {
+                key: { 'jobStatus.generalStatus': 1 },
             }
         ]);
     }
@@ -257,9 +267,43 @@ export class jobsDAO {
             });
     }
 
+    static async upgradeDb(): Promise<void> {
+        const { modifiedCount: modN } = await jobs.updateMany(
+            {
+                jobStatus: { $exists: false },
+                invoiceId: { $exists: false },
+            },
+            {
+                $set: {
+                    'jobStatus.generalStatus': 10,
+                }
+            }
+        );
+        if (modN > 0) {
+            Logger.info(`Updated ${modN} jobs status to jobStatus.generalStatus: 10`);
+        }
+        const { modifiedCount: modI } = await jobs.updateMany(
+            {
+                jobStatus: { $exists: false },
+                invoiceId: { $exists: true },
+            },
+            {
+                $set: {
+                    'jobStatus.generalStatus': 50,
+                }
+            }
+        );
+        if (modI > 0) {
+            Logger.info(`Updated ${modI} jobs status to jobStatus.generalStatus: 50`);
+        }
+    }
+
     static validateJob<T extends Partial<Job>>(job: T): T {
         if (typeof job.receivedDate === 'string') {
             job.receivedDate = new Date(job.receivedDate);
+        }
+        if (!job.jobStatus) {
+            job.jobStatus = { generalStatus: 10 };
         }
         return job;
     }
