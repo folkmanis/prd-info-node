@@ -54,8 +54,14 @@ export class jobsDAO {
         const aggr: object[] = [
             {
                 $match: filter
-            },
-            {
+            }, {
+                $lookup: {
+                    from: 'customers',
+                    localField: 'customer',
+                    foreignField: 'CustomerName',
+                    as: 'custCode'
+                }
+            }, {
                 $project: {
                     _id: 0,
                     jobId: 1,
@@ -66,6 +72,7 @@ export class jobsDAO {
                     products: 1,
                     invoiceId: 1,
                     jobStatus: 1,
+                    custCode: { $arrayElemAt: ["$custCode.code", 0] }
                 }
             },
             {

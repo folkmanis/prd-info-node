@@ -22,6 +22,7 @@ export interface Job {
     jobStatus: {
         generalStatus: number;
     };
+    custCode: string;
 }
 
 export interface JobResponse extends ResponseBase {
