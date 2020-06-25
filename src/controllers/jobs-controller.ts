@@ -54,7 +54,7 @@ export class JobsController {
     private async updateJob(req: Request, res: Response) {
         const jobId = +req.params.jobId;
         const job = req.body as Partial<Job>;
-        req.log.info(`Job ${jobId} updated`, { jobId, ...job});
+        req.log.info(`Job ${jobId} updated`, { jobId, ...job });
         delete job._id;
         delete job.jobId;
         res.json(
@@ -64,14 +64,26 @@ export class JobsController {
 
     @Put('')
     private async newJob(req: Request, res: Response) {
-        const job = req.body as Job;
-        delete job.jobId;
-        job.receivedDate = new Date(req.body.receivedDate || Date.now());
-        job.jobId = await PreferencesDAO.getNextJobId();
+        const job = req.body as Job | Job[];
+        if (job instanceof Array) {
+            let ids = (await PreferencesDAO.getNextJobId(job.length)) - job.length;
+            res.json(
+                await jobsDAO.insertJobs(
+                    job.map(jb => ({
+                        ...jb,
+                        receivedDate: new Date(jb.receivedDate || Date.now()),
+                        jobId: ids++,
+                    }))
+                )
+            );
+        } else {
+            job.receivedDate = new Date(req.body.receivedDate || Date.now());
+            job.jobId = await PreferencesDAO.getNextJobId();
+            res.json(
+                await jobsDAO.insertJob(job)
+            );
+        }
         req.log.info('Job inserted', job);
-        res.json(
-            await jobsDAO.insertJob(job)
-        );
     }
 
     @Get(':jobId')

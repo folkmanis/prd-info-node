@@ -192,11 +192,11 @@ export class PreferencesDAO {
         await preferences.bulkWrite(missing);
     }
 
-    static async getNextJobId(): Promise<number> {
+    static async getNextJobId(nums = 1): Promise<number> {
         const result = (await preferences.findOneAndUpdate({
             module: 'jobs',
         }, {
-            $inc: { 'settings.lastJobId': 1 }
+            $inc: { 'settings.lastJobId': nums }
         }, {
             returnOriginal: false,
         })).value as any;

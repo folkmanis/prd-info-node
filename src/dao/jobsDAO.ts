@@ -130,10 +130,11 @@ export class jobsDAO {
         if (!(insertJobs && insertJobs.length > 0)) { return { error: null, insertedCount: 0 }; }
         insertJobs.forEach(job => job = jobsDAO.validateJob(job));
         try {
-            const result = await jobs.insertMany(insertJobs);
+            const { insertedCount, insertedIds } = await jobs.insertMany(insertJobs);
             return {
-                error: !result.result.ok,
-                insertedCount: result.insertedCount,
+                error: false,
+                insertedCount,
+                insertedIds,
             };
         } catch (error) { return { error }; }
     }

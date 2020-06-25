@@ -26,6 +26,7 @@ export interface Job {
 }
 
 export interface JobResponse extends ResponseBase {
+    insertedIds?: { [key: number]: ObjectId; },
 }
 
 export interface JobQueryFilter {
