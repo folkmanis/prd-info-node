@@ -172,7 +172,12 @@ export class jobsDAO {
             customer: customerId,
         };
         const update: UpdateQuery<Job> = {
-            $set: { invoiceId },
+            $set: {
+                invoiceId,
+                jobStatus: {
+                    generalStatus: 50,
+                },
+            },
         };
         return jobs
             .updateMany(filter, update)
