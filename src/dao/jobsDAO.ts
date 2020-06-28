@@ -288,16 +288,16 @@ export class jobsDAO {
             },
             {
                 $set: {
-                    'jobStatus.generalStatus': 10,
+                    'jobStatus.generalStatus': 20,
                 }
             }
         );
         if (modN > 0) {
-            Logger.info(`Updated ${modN} jobs status to jobStatus.generalStatus: 10`);
+            Logger.info(`Updated ${modN} jobs status to jobStatus.generalStatus: 20`);
         }
         const { modifiedCount: modI } = await jobs.updateMany(
             {
-                jobStatus: { $exists: false },
+                // jobStatus: { $exists: false },
                 invoiceId: { $exists: true },
             },
             {
