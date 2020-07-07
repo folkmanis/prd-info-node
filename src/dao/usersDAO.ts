@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
-import { User, UserPreferences, Login, LoginResponse } from '../interfaces';
+import { User, UserPreferences, Login, LoginResponse, ResponseBase } from '../interfaces';
 import Logger from '../lib/logger';
 
 let users: Collection<User>;
@@ -103,7 +103,7 @@ export class UsersDAO {
         return {
             error: !updResp.ok,
             data: updResp.value,
-        }
+        };
     }
 
     static async getPreferences(username: string): Promise<UserPreferences | null> {
@@ -119,7 +119,7 @@ export class UsersDAO {
      * @param username Lietotājvārds
      * @param mod Modulis
      */
-    static async getUserPreferences(username: string, mod: string): Promise<{ [key: string]: any; }> {
+    static async getUserPreferences(username: string, mod: string): Promise<{ error: any;[key: string]: any; }> {
         const pipeline = [{
             $match: { username }
         }, {
@@ -129,7 +129,12 @@ export class UsersDAO {
         }, {
             $replaceRoot: { newRoot: '$userPreferences.options' }
         }];
-        return (await users.aggregate(pipeline).toArray())[0];
+        try {
+            return {
+                error: null,
+                userPreferences: (await users.aggregate<{ [key: string]: any; }>(pipeline).toArray())[0],
+            };
+        } catch (error) { return { error }; }
     }
     /**
      * Nomaina lietotāja iestatījumus noteiktam modulim
@@ -137,11 +142,17 @@ export class UsersDAO {
      * @param mod Modulis
      * @param val Moduļa iestatījumi
      */
-    static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<boolean> {
+    static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
         if (val.pasutijums) {
             val.pasutijums = new ObjectId(val.pasutijums);
         }
-        const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
-        return !!updRes.result.ok;
+        try {
+            const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
+            return {
+                error: null,
+                modifiedCount: updRes.modifiedCount,
+            };
+        } catch (error) { return { error }; }
+
     }
 }

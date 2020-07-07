@@ -1,46 +1,16 @@
-/*
-data/kastes/
-
-GET pasnames
-pasūtījumu saraksts
-{ _id: ObjectId, pasutijums: string }
-
-POST addpasutijums
-pievieno pasūtījumu
-req.body = { pasutijums: string }
-res = {_id: ObjectId | null}
-
-POST table
-Saraksts ar veikalu kastēm
-
-GET numbers
-pasutijums: string pasūtījuma id
-total?: number kopējais skaits kastē
-
-GET preferences
-sesijas lietotāja privētie iestatījumi modulim 'kastes'
-
-POST preferences
-sesijas lietotāja moduļa 'kastes' iestatījumu iestatīšana
-body.preferences: {key: value}
-
-POST gatavs
-atzīmē kastes lauku kā gatavu
-{ field, id, kaste, yesno } = req.body
-
-*/
-
-import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete } from '@overnightjs/core';
+import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { ObjectId, Timestamp } from 'mongodb';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import PrdSession from '../lib/session-handler';
 import Preferences from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { ObjectId } from 'mongodb';
 import { KastesVeikals, KastesPasutijums } from '../interfaces';
+import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes')
+@ClassErrorMiddleware(logError)
 @ClassMiddleware([
     Preferences.getUserPreferences,
     PrdSession.validateSession,
@@ -81,58 +51,53 @@ export class KastesController {
         );
     }
 
-    @Get('kastes')
-    private async getKastes(req: Request, res: Response) {
-        req.log.debug('get kastes', req.query);
-        const apjoms = req.query.apjoms ? +req.query.apjoms : undefined;
-        res.json(
-            await KastesDAO.kastesList(new ObjectId(req.query.pasutijums as string), apjoms)
-        );
-    }
-
-    @Get('kaste')
-    private async getKaste(req: Request, res: Response) {
-        const kaste = req.query.kaste ? +req.query.kaste : 0;
-        const id = req.query.id;
-        res.json(
-            await KastesDAO.getKaste(new ObjectId(id as string), kaste)
-        );
-    }
-
-    @Get('totals')
-    private async getTotals(req: Request, res: Response) {
-        const pas = new ObjectId(<string>req.query.pasutijums);
-        res.json(
-            await KastesDAO.veikaliTotals(pas)
-        );
-    }
-
-    @Get('totals-kastes')
-    private async getTotalsAndKastes(req: Request, res: Response) {
-        const pas = new ObjectId(<string>req.query.pasutijums);
-        res.json(
-            {
-                totals: await KastesDAO.veikaliTotals(pas),
-                kastes: await KastesDAO.kastesList(pas)
-            }
-        );
-    }
-
-    @Post('gatavs')
-    private async setGatavs(req: Request, res: Response) {
-        req.log.debug('post gatavs', req.body);
-        const { field, id, kaste, yesno } = req.body;
-        res.json(
-            await KastesDAO.setGatavs(field, new ObjectId(id), kaste, yesno)
-        );
-    }
-
     @Post('table')
     private async table(req: Request, res: Response) {
         const veikali = req.body.veikali as KastesVeikals[];
         req.log.debug('post table', veikali);
-        const count = await KastesDAO.veikaliAdd(veikali.map(vk => ({ ...vk, pasutijums: new ObjectId(vk.pasutijums) })));
+        const count = await KastesDAO.veikaliAdd(veikali
+            .map(vk => ({
+                ...vk, 
+                pasutijums: new ObjectId(vk.pasutijums),
+                lastModified: new Date(),
+            }))
+        );
         res.json({ affectedRows: count || 0 });
+    }
+
+
+    @Post('preferences')
+    private async postPreferences(req: Request, res: Response) {
+        req.log.debug('post kastes preferences', req.body);
+        const username = req.session?.user.username || '';
+        const preferences = req.body;
+        res.json(
+            await UsersDAO.updateUserPreferences(username, 'kastes', preferences)
+        );
+    }
+
+    @Post('label')
+    private async setLabel(req: Request, res: Response) {
+        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
+        const kods = req.body.kods;
+        req.log.info('set kastes label', { pasutijumsId, kods });
+        res.json(
+            await KastesDAO.setLabel(pasutijumsId, kods)
+        );
+    }
+
+    @Post(':id/:kaste/gatavs/:yesno')
+    private async setGatavs(req: Request, res: Response) {
+        const params = {
+            id: new ObjectId(req.params.id as string),
+            kaste: +req.params.kaste,
+            yesno: +req.params.yesno ? true : false,
+        };
+        req.log.debug('post gatavs', params);
+        // const { field, id, kaste, yesno } = req.body;
+        res.json(
+            await KastesDAO.setGatavs(params)
+        );
     }
 
     @Get('preferences')
@@ -143,13 +108,29 @@ export class KastesController {
         );
     }
 
-    @Post('preferences')
-    private async postPreferences(req: Request, res: Response) {
-        req.log.debug('post kastes preferences', req.body);
-        const username = req.session?.user.username || '';
-        const preferences = req.body.preferences;
+    @Get('apjomi')
+    async getApjomi(req: Request, res: Response) {
+        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
         res.json(
-            await UsersDAO.updateUserPreferences(username, 'kastes', preferences)
+            await KastesDAO.kastesApjomi(pasutijumsId)
+        );
+    }
+
+    @Get(':id')
+    private async getKaste(req: Request, res: Response) {
+        const kaste = req.query.kaste ? +req.query.kaste : 0;
+        const id = new ObjectId(req.params.id);
+        res.json(
+            await KastesDAO.getKaste(id, kaste)
+        );
+    }
+
+    @Get('')
+    private async getKastes(req: Request, res: Response) {
+        req.log.debug('get kastes', req.query.pasutijumsId);
+        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
+        res.json(
+            await KastesDAO.kastesList(pasutijumsId)
         );
     }
 
