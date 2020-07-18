@@ -16,6 +16,7 @@ export interface CustomerProduct {
 
 export interface Product {
     _id: ObjectId,
+    inactive: boolean,
     category: string,
     name: string,
     description?: string,
