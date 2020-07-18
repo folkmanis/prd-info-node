@@ -33,7 +33,6 @@ export class productsDAO {
             .catch(error => ({ error }));
     }
 
-    // Done!
     static async getProducts(category?: string): Promise<ProductResult> {
         const filter: Partial<Product> = {};
         if (category) {
@@ -43,6 +42,7 @@ export class productsDAO {
             _id: 1,
             category: 1,
             name: 1,
+            inactive: 1,
         };
         const result = products.find(filter)
             .project(projection)

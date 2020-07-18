@@ -1,4 +1,4 @@
-import { ObjectId, Timestamp } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import { ResponseBase } from './response-base.interface';
 
 export interface KastesVeikals {
@@ -15,13 +15,6 @@ export interface KastesVeikals {
     }[],
     lastModified: Date,
     kaste?: number,
-}
-
-export interface KastesPasutijums {
-    _id: ObjectId,
-    name: string,
-    deleted: boolean,
-    created: Date,
 }
 
 export interface KastesResponse extends ResponseBase {

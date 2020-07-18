@@ -1,4 +1,8 @@
-import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete, ClassErrorMiddleware } from '@overnightjs/core';
+import {
+    Controller, ClassMiddleware,
+    Post, Put, Get, Delete,
+    ClassWrapper, ClassErrorMiddleware
+} from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { ObjectId, Timestamp } from 'mongodb';
 import { asyncWrapper } from '../lib/asyncWrapper';
@@ -19,50 +23,18 @@ import { logError } from '../lib/errorMiddleware';
 @ClassWrapper(asyncWrapper)
 export class KastesController {
 
-    @Get('pasnames')
-    private async pasnames(req: Request, res: Response) {
-        res.json(
-            await KastesDAO.pasNames()
-        );
-    }
-
-    @Post('addpasutijums')
-    private async addpasutijums(req: Request, res: Response) {
-        res.json(
-            await KastesDAO.pasutijumsAdd(req.body.pasutijums as string)
-        );
-    }
-
-    @Post('updatepasutijums')
-    private async updatePasutijums(req: Request, res: Response) {
-        const id = new ObjectId(req.body.pasutijums._id);
-        const pas = req.body.pasutijums as KastesPasutijums;
-        delete pas._id;
-        if (!id || !pas) { res.json({}); }
-        res.json(
-            await KastesDAO.pasutijumsUpdate(id, pas)
-        );
-    }
-
-    @Delete('pasutijums-cleanup')
-    private async pasCleanup(req: Request, res: Response) {
-        res.json(
-            await KastesDAO.pasutijumiCleanup()
-        );
-    }
-
-    @Post('table')
+    @Put('')
     private async table(req: Request, res: Response) {
-        const veikali = req.body.veikali as KastesVeikals[];
-        req.log.debug('post table', veikali);
-        const count = await KastesDAO.veikaliAdd(veikali
+        const veikali = req.body as KastesVeikals[];
+        const resp = await KastesDAO.veikaliAdd(veikali
             .map(vk => ({
-                ...vk, 
+                ...vk,
                 pasutijums: new ObjectId(vk.pasutijums),
                 lastModified: new Date(),
             }))
         );
-        res.json({ affectedRows: count || 0 });
+        req.log.info('kastes order table inserted', resp);
+        res.json(resp);
     }
 
 

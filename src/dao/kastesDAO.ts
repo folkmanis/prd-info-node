@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
 import Logger from '../lib/logger';
-import { KastesVeikals, KastesPasutijums, KastesResponse } from '../interfaces';
+import { KastesVeikals, KastesPasutijums, KastesResponse, KastesOrderResponse } from '../interfaces';
 
 interface CleanupResponse { deleted: { pasutijumi: number, veikali: number, }; }
 
@@ -54,27 +54,37 @@ export class KastesDAO {
         }
     }
     /**
-     * Saraksts ar pasūtījumiem, kas nav dzēsti
+     * Saraksts ar pasūtījumiem
      */
-    static async pasNames(): Promise<Partial<KastesPasutijums>[]> {
-        return (await pasutijumi.find({}).toArray());
+    static async pasNames(): Promise<KastesOrderResponse> {
+        try {
+            const resp = await pasutijumi.find({}).toArray();
+            return {
+                error: false,
+                data: resp,
+            };
+        } catch (error) { return { error }; }
     }
     /**
      * Pievieno pasūtījumu
-     * @param name Pasūtījuma nosaukums
+     * @param pasutijums Pasūtījuma nosaukums
      */
-    static async pasutijumsAdd(name: string): Promise<{ _id: ObjectId; } | null> {
+    static async pasutijumsAdd(pasutijums: Partial<KastesPasutijums>): Promise<KastesOrderResponse> {
         try {
             const pas = {
-                name,
+                ...pasutijums,
                 deleted: false,
-                created: new Date(Date.now()),
+                created: new Date(),
             };
-            const insertRes = await pasutijumi.insertOne(pas);
-            return insertRes.result.ok ? { _id: insertRes.insertedId } : null;
-        } catch (e) {
-            Logger.error('Pasutijums insert error', e);
-            return null;
+            const resp = await pasutijumi.insertOne(pas);
+            return {
+                error: false,
+                insertedId: resp.insertedId,
+                insertedCount: resp.insertedCount,
+            };
+        } catch (error) {
+            Logger.error('Pasutijums insert error', error);
+            return { error };
         }
     }
     /**
@@ -82,40 +92,61 @@ export class KastesDAO {
      * @param id Pasūtījums Id
      * @param pas Izmaiņas
      */
-    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesPasutijums>): Promise<{ changedRows: number; } | null> {
+    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesPasutijums>): Promise<KastesOrderResponse> {
         try {
-            const res = await pasutijumi.updateOne({ _id: id }, { $set: pas });
-            Logger.debug('pas update res', res.result);
-            return { changedRows: res.result.nModified };
-        } catch (e) {
-            Logger.error('Pasutijums update failed', e);
-            return null;
+            const resp = await pasutijumi.updateOne({ _id: id }, { $set: pas });
+            Logger.debug('pas update res', resp.result);
+            return {
+                error: false,
+                modifiedCount: resp.modifiedCount,
+            };
+        } catch (error) {
+            Logger.error('Pasutijums update failed', error);
+            return { error };
         }
     }
     /**
      * Izdzēš no pasūtījumiem neaktīvos un atbilstošos no pakošanas
      */
-    static async pasutijumiCleanup(): Promise<CleanupResponse> {
-        const resp: CleanupResponse = { deleted: { veikali: 0, pasutijumi: 0 } };
-        const saraksts = (await pasutijumi.find({ deleted: true }, { projection: { _id: 1 } }).toArray()).map(pas => pas._id);
-        if (!saraksts.length) {
-            return resp;
-        }
-        resp.deleted.veikali = (await veikali.deleteMany({ pasutijums: { $in: saraksts } })).deletedCount || 0;
-        resp.deleted.pasutijumi = (await pasutijumi.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
-        return resp;
+    static async pasutijumiCleanup(): Promise<KastesOrderResponse> {
+        try {
+            // TODO refactor to one atomic operation
+            const saraksts = (await pasutijumi.find<Pick<KastesPasutijums, '_id'>>({ deleted: true }, { projection: { _id: 1 } })
+                .toArray())
+                .map(pas => pas._id)
+            if (!saraksts.length) {
+                return {
+                    error: false,
+                    deletedCount: 0,
+                };
+            }
+            const deletedVeikali = (await veikali.deleteMany({ pasutijums: { $in: saraksts } })).deletedCount || 0;
+            const deletedPasutijumi = (await pasutijumi.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
+            return {
+                error: false,
+                deletedCount: deletedPasutijumi,
+                deleted: {
+                    veikali: deletedVeikali,
+                    orders: deletedPasutijumi,
+                    ids: saraksts,
+                }
+            };
+        } catch (error) { return { error }; }
     }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(kastes: KastesVeikals[]): Promise<number | null> {
+    static async veikaliAdd(kastes: KastesVeikals[]): Promise<KastesResponse> {
         try {
-            const insertRes = await veikali.insertMany(kastes);
-            return insertRes.result.ok ? insertRes.result.n : null;
-        } catch (e) {
-            Logger.error('Veikali insert failed', e);
-            return null;
+            const insertResp = await veikali.insertMany(kastes);
+            return {
+                error: false,
+                insertedCount: insertResp.insertedCount,
+            }
+        } catch (error) {
+            Logger.error('Veikali insert failed', error);
+            return {error};
         }
     }
 

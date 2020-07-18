@@ -3,6 +3,7 @@ export * from './login-controller';
 export * from './xmf-search-controller';
 export * from './xmf-upload-controller';
 export * from './kastes-controller';
+export * from './kastes-orders-controller';
 export * from './preferences-controller';
 export * from './log-controller';
 export * from './customers-controller';
