@@ -36,8 +36,15 @@ export class customersDAO {
             .toArray();
     }
 
-    static async getCustomerById(id: string): Promise<Customer | null> {
-        return await customers.findOne({ _id: new ObjectId(id) });
+    static async getCustomer(fltr: FilterQuery<Customer>): Promise<CustomerResult> {
+        try {
+            const result = await customers.findOne(fltr);
+            return {
+                error: false,
+                data: result || undefined,
+            };
+
+        } catch (error) { return { error }; }
     }
 
     static async insertCustomer(customer: Customer): Promise<CustomerResult> {

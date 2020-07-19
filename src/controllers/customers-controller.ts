@@ -73,18 +73,13 @@ export class CustomersController {
         res.json(await customersDAO.validate(property));
     }
 
+    // id - either _id or CustomerName
     @Get(':id')
     private async getById(req: Request, res: Response) {
-        const id: string | undefined = req.params.id;
-        if (!id) {
-            res.status(404).json();
-            return;
-        }
+        const param = req.params.id;
+        const fltr = (/^[a-f\d]{24}$/i).test(param) ? { _id: new ObjectId(param) } : { CustomerName: param };
         res.json(
-            {
-                data: await customersDAO.getCustomerById(id),
-                error: null
-            }
+            await customersDAO.getCustomer(fltr)
         );
     }
 
