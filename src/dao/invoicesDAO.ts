@@ -48,7 +48,7 @@ export class invoicesDAO {
                         {
                             $match: { '$expr': { '$in': ['$jobId', '$$jobsId'] } }
                         }, {
-                            $unwind: { 'path': '$products' }
+                            $unwind: { path: '$products', preserveNullAndEmptyArrays: true, }
                         }, {
                             $project: { _id: 0 },
                         }, {
