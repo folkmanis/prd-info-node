@@ -9,6 +9,7 @@ export interface Invoice {
     createdDate: Date;
     jobsId: number[];
     products: InvoiceProduct[];
+    comment?: string;
 }
 
 export interface InvoicesFilter {
@@ -21,6 +22,7 @@ export interface InvoiceProduct {
     jobsCount: number;
     count: number;
     price: number;
+    comment?: string;
 };
 
 export interface InvoiceResponse extends ResponseBase<Invoice> {
