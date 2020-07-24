@@ -1,4 +1,7 @@
-import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Double, BulkWriteOperation } from "mongodb";
+import {
+    MongoClient, Collection, ObjectId, DeleteWriteOpResultObject,
+    FilterQuery, Double, BulkWriteOperation, UpdateQuery, BulkWriteUpdateOneOperation
+} from "mongodb";
 import Logger from '../lib/logger';
 import { Product, ProductResult, ProductNoId, CustomerProduct, ProductNoPrices, ProductPriceImport } from '../interfaces';
 
@@ -64,33 +67,55 @@ export class productsDAO {
     }
 
     static async getCustomerProducts(customerName: string): Promise<ProductResult> {
-        const pipeline = [{
-            $unwind: {
-                path: "$prices"
+        const allProductsPipeline = [
+            {
+                '$addFields': {
+                    'idx': {
+                        '$indexOfArray': [
+                            '$prices.customerName', customerName
+                        ]
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'price': {
+                        '$cond': {
+                            'if': { '$eq': ['$idx', -1] },
+                            'then': undefined,
+                            'else': {
+                                '$arrayElemAt': ['$prices', '$idx']
+                            }
+                        }
+                    },
+                    'isPrice': {
+                        '$toBool': { '$add': ['$idx', 1] }
+                    }
+                }
+            }, {
+                '$sort': {
+                    'isPrice': -1,
+                    'price.lastUsed': -1,
+                    'name': 1
+                }
+            }, {
+                '$project': {
+                    '_id': 0,
+                    'productName': '$name',
+                    'category': 1,
+                    'description': 1,
+                    'customerName': '$price.customerName',
+                    'price': '$price.price',
+                    'lastUsed': '$price.lastUsed',
+                }
             }
-        }, {
-            $match: {
-                "prices.customerName": customerName
-            }
-        }, {
-            $sort: {
-                name: 1
-            }
-        }, {
-            $project: {
-                _id: 0,
-                productName: "$name",
-                category: 1,
-                description: 1,
-                customerName: "$prices.customerName",
-                price: "$prices.price"
-            }
-        }];
-        const result = await products.aggregate<CustomerProduct>(pipeline).toArray();
-        return {
-            customerProducts: result,
-            error: false,
-        };
+        ];
+        try {
+            const customerProducts = await products.aggregate<CustomerProduct>(allProductsPipeline).toArray();
+            return {
+                customerProducts,
+                error: false,
+            };
+        } catch (error) { return { error }; }
     }
 
     static async deleteProduct(id: ObjectId): Promise<ProductResult> {
@@ -115,6 +140,30 @@ export class productsDAO {
             error: !result,
             prices: result ? result.prices : [],
         };
+    }
+
+    static async touchProduct(data: { name: string, customer: string; }[]): Promise<ProductResult> {
+        const updates: BulkWriteUpdateOneOperation<Product>[] = data.map(upd => {
+            return {
+                updateOne: {
+                    filter: {
+                        name: upd.name,
+                        'prices.customerName': upd.customer,
+                    },
+                    update: {
+                        $currentDate: {
+                            'prices.$.lastUsed': { $type: "timestamp" }
+                        }
+                    },
+                }
+            };
+        });
+        try {
+            const resp = await products.bulkWrite(updates, { w: 0 });
+            return {
+                error: false,
+            };
+        } catch (error) { return { error }; }
     }
 
     static async updatePrice(id: ObjectId, customer: string, price: number): Promise<ProductResult> {
@@ -227,7 +276,7 @@ export class productsDAO {
                     '_id': 0,
                     'product': '$name',
                     'customerName': '$custPrice.customerName',
-                    'price': '$prices.price'
+                    'price': '$prices.price',
                 }
             }
         ];

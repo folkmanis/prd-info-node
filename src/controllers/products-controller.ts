@@ -61,7 +61,6 @@ export class ProductsController {
         }
     }
 
-
     @Get('prices/customers')
     private async getPricesCustomers(req: Request, res: Response) {
         const filter = JSON.parse(req.query.filter as string) as {
@@ -97,6 +96,16 @@ export class ProductsController {
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
+    @Put(':id/price/:customer')
+    private async addCustomerPrice(req: Request, res: Response) {
+        const id = new ObjectId(req.params.id);
+        const customer = <string>req.params.customer;
+        const price: number = req.body.price;
+        if (price !== +price) { throw new Error('nuber required'); }
+        res.json(await productsDAO.addPrice(id, customer, +price));
+    }
+
+    @Middleware(PrdSession.validateModule('jobs-admin'))
     @Put('')
     private async newProduct(req: Request, res: Response) {
         const prod = <ProductNoId | undefined>req.body;
@@ -111,14 +120,16 @@ export class ProductsController {
         }
     }
 
-    @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Post(':id')
-    private async updateProduct(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        const product: ProductNoId = omit(<Product>req.body, ['_id']);
-        const result = await productsDAO.updateProduct(id, product);
-        res.json(result);
-        req.log.info('product updated', result);
+    @Post('touch/:customer')
+    private async lastUsed(req: Request, res: Response) {
+        const customer = <string>req.params.customer;
+        const updates = (req.body as string[]).map(name => ({
+            name,
+            customer,
+        }));
+        res.json(
+            await productsDAO.touchProduct(updates)
+        );
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -132,13 +143,21 @@ export class ProductsController {
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Put(':id/price/:customer')
-    private async addCustomerPrice(req: Request, res: Response) {
+    @Post(':id/prices')
+    private async updatePrices(req: Request, res: Response) {
         const id = new ObjectId(req.params.id);
-        const customer = <string>req.params.customer;
-        const price: number = req.body.price;
-        if (price !== +price) { throw new Error('nuber required'); }
-        res.json(await productsDAO.addPrice(id, customer, +price));
+        const product: Pick<Product, 'prices'> = { prices: req.body };
+        res.json({ id, product });
+    }
+
+    @Middleware(PrdSession.validateModule('jobs-admin'))
+    @Post(':id')
+    private async updateProduct(req: Request, res: Response) {
+        const id = new ObjectId(req.params.id);
+        const product: ProductNoId = omit(<Product>req.body, ['_id']);
+        const result = await productsDAO.updateProduct(id, product);
+        res.json(result);
+        req.log.info('product updated', result);
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -147,14 +166,6 @@ export class ProductsController {
         const id = new ObjectId(req.params.id);
         const customer = <string>req.params.customer;
         res.json(await productsDAO.deletePrice(id, customer));
-    }
-
-    @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Post(':id/prices')
-    private async updatePrices(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        const product: Pick<Product, 'prices'> = { prices: req.body };
-        res.json({ id, product });
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))

@@ -24,6 +24,7 @@ export interface Product {
         {
             customerName: string,
             price: number,
+            lastUsed?: Date,
         }
     ];
 }
