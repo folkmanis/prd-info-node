@@ -1,25 +1,3 @@
-/*
-    @Get('id/:id')
-    {
-        error
-        product: Product
-    }
-
-    @Get('category/:name')
-    {
-        error
-        products: Product[]
-    }
-
-    @Post('update')
-        Partial<Product>
-    { error }
-
-    @Put('new')
-        Partial<Product>
-    { error }
-*/
-
 import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
@@ -118,18 +96,6 @@ export class ProductsController {
             req.log.info('product inserted', result);
             res.json(result);
         }
-    }
-
-    @Post('touch/:customer')
-    private async lastUsed(req: Request, res: Response) {
-        const customer = <string>req.params.customer;
-        const updates = (req.body as string[]).map(name => ({
-            name,
-            customer,
-        }));
-        res.json(
-            await productsDAO.touchProduct(updates)
-        );
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))

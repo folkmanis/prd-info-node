@@ -60,7 +60,10 @@ export class JobsController {
         res.json(
             await jobsDAO.updateJob(jobId, job)
         );
-    }
+        if (job.customer && job.products instanceof Array) {
+            productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
+        }
+}
 
     @Put('')
     private async newJob(req: Request, res: Response) {
@@ -82,6 +85,9 @@ export class JobsController {
             res.json(
                 await jobsDAO.insertJob(job)
             );
+            if (job.customer && job.products instanceof Array) {
+                productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
+            }
         }
         req.log.info('Job inserted', job);
     }

@@ -142,24 +142,18 @@ export class productsDAO {
         };
     }
 
-    static async touchProduct(data: { name: string, customer: string; }[]): Promise<ProductResult> {
-        const updates: BulkWriteUpdateOneOperation<Product>[] = data.map(upd => {
-            return {
-                updateOne: {
-                    filter: {
-                        name: upd.name,
-                        'prices.customerName': upd.customer,
-                    },
-                    update: {
-                        $currentDate: {
-                            'prices.$.lastUsed': { $type: "timestamp" }
-                        }
-                    },
-                }
-            };
-        });
+    static async touchProduct(customer: string, data: string[]): Promise<ProductResult> {
+        const filter: FilterQuery<Product> = {
+            name: { $in: data },
+            'prices.customerName': customer,
+        };
+        const update: UpdateQuery<Product> = {
+            $currentDate: {
+                'prices.$.lastUsed': true
+            }
+        };
         try {
-            const resp = await products.bulkWrite(updates, { w: 0 });
+            const resp = await products.updateMany(filter, update, { w: 0 });
             return {
                 error: false,
             };
