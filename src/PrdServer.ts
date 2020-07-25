@@ -73,7 +73,7 @@ export class PrdServer extends Server {
     }
 
     start(port: number): void {
-        this.app.get('*', (req, res) => {
+        this.app.all('*', (req, res) => {
             res.send(this.SERVER_STARTED);
         });
         this.app.listen(port, () => {
