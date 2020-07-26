@@ -38,12 +38,42 @@ export class UsersDAO {
     }
 
     static async getUser(username: string): Promise<User | null> {
+        const pipeline = [
+            {
+                '$match': { username }
+            }, {
+                '$lookup': {
+                    'from': 'sessions',
+                    'let': {                        'user': '$username'                    },
+                    'pipeline': [
+                        {
+                            '$match': {
+                                '$expr': {
+                                    '$eq': [
+                                        '$session.user.username', '$$user'
+                                    ]
+                                }
+                            }
+                        }, {
+                            '$project': {
+                                'lastSeen': '$session.lastSeen'
+                            }
+                        }
+                    ],
+                    'as': 'sessions'
+                }
+            }, {
+                '$project': {
+                    '_id': 0,
+                    'password': 0
+                }
+            }
+        ];
         const projection = {
             _id: 0,
-            __v: 0,
             password: 0,
         };
-        return await users.findOne<User>({ username }, { projection });
+        return (await users.aggregate(pipeline).toArray())[0] || null;
     }
 
     static async addUser(user: User):
