@@ -43,8 +43,8 @@ export class PrdServer extends Server {
             }
             Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
-            this.setupDAO(client);
-            this.app.use(PrdSession.injectDB(client));
+            this.setupDAO(client); // All DAO initialisation
+            this.app.use(PrdSession.injectDB(client)); // Session handler initialisation
             return client;
         });
     }
