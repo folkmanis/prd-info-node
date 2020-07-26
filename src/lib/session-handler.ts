@@ -10,6 +10,7 @@ export default class PrdSession {
 
     static validateSession(req: Request, res: Response, next: NextFunction) {
         if (req.session && req.session.user) {
+            req.session.lastSeen = new Date();
             next();
         } else {
             Logger.error('Not logged in');
@@ -40,7 +41,7 @@ export default class PrdSession {
     }
 
     static injectDB(conn: MongoClient): RequestHandler {
-        const sessionStore = new MongoStore({ client: conn });
+        const sessionStore = new MongoStore({ client: conn, stringify: false });
         Logger.debug("session handler started");
         return session({
             secret: 'HGG50EtOT7',
