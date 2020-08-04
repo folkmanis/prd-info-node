@@ -89,7 +89,6 @@ export class JobsController {
                 productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
             }
         }
-        req.log.info('Job inserted', job);
     }
 
     @Get(':jobId')

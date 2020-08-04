@@ -107,6 +107,7 @@ export class jobsDAO {
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
+        Logger.info('insert job', job);
         try {
             const result = await jobs.insertOne(job).then(
                 result => jobs.findOne(
@@ -127,6 +128,7 @@ export class jobsDAO {
     }
 
     static async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
+        Logger.info('insert jobs many', insertJobs);
         if (!(insertJobs && insertJobs.length > 0)) { return { error: null, insertedCount: 0 }; }
         insertJobs.forEach(job => job = jobsDAO.validateJob(job));
         try {
