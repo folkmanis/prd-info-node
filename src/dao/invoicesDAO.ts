@@ -19,21 +19,54 @@ export class invoicesDAO {
     }
 
     static async getInvoices(filter?: InvoicesFilter): Promise<InvoiceResponse> {
-        const filterQuery: FilterQuery<Invoice> = {};
-        if (filter?.customer) {
-            filterQuery.customer = filter.customer;
-        }
-        const result = await invoices.find(
-            filterQuery,
+        let pipeline: any[] = [
             {
-                projection: { _id: 0 },
-                sort: { invoiceId: -1 },
+                '$sort': { 'invoiceId': 1 }
             }
-        ).toArray();
-        return {
-            error: null,
-            data: result,
-        };
+        ];
+        if (filter?.customer) {
+            pipeline = [
+                ...pipeline,
+                {
+                    '$match': { 'customer': filter.customer }
+                }
+            ];
+        }
+        pipeline = [
+            ...pipeline,
+            {
+                '$project': {
+                    '_id': 0,
+                    'invoiceId': 1,
+                    'customer': 1,
+                    'createdDate': 1,
+                    'totals': {
+                        '$reduce': {
+                            'input': '$products',
+                            'initialValue': {
+                                'count': 0,
+                                'sum': 0
+                            },
+                            'in': {
+                                'count': {
+                                    '$add': ['$$value.count', '$$this.count']
+                                },
+                                'sum': {
+                                    '$add': ['$$value.sum', '$$this.total']
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        ];
+        try {
+            const result = await invoices.aggregate(pipeline).toArray();
+            return {
+                error: null,
+                data: result,
+            };
+        } catch (error) { return { error }; }
     }
 
     static async getInvoice(invoiceId: string): Promise<InvoiceResponse> {
