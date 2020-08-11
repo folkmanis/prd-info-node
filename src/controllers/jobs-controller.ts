@@ -63,7 +63,7 @@ export class JobsController {
         if (job.customer && job.products instanceof Array) {
             productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
         }
-}
+    }
 
     @Put('')
     private async newJob(req: Request, res: Response) {
@@ -89,6 +89,13 @@ export class JobsController {
                 productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
             }
         }
+    }
+
+    @Get('jobs-without-invoices-totals')
+    private async getInvoicesTotals(req: Request, res: Response) {
+        res.json(
+            await jobsDAO.jobsWithoutInvoiceTotals()
+        )
     }
 
     @Get(':jobId')

@@ -25,8 +25,15 @@ export interface Job {
     custCode: string;
 }
 
+export interface JobsWithoutInvoicesTotals {
+    _id: string;
+    jobs: number;
+    totals: number;
+}
+
 export interface JobResponse extends ResponseBase {
-    insertedIds?: { [key: number]: ObjectId; },
+    insertedIds?: { [key: number]: ObjectId; };
+    jobsWithoutInvoicesTotals?: JobsWithoutInvoicesTotals[];
 }
 
 export interface JobQueryFilter {

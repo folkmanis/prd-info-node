@@ -7,7 +7,8 @@ import {
     JOBS_SCHEMA,
     InvoiceProduct,
     InvoiceResponse,
-    ProductTotals
+    ProductTotals,
+    JobsWithoutInvoicesTotals,
 } from '../interfaces';
 
 let jobs: Collection<Job>;
@@ -99,11 +100,13 @@ export class jobsDAO {
     }
 
     static async getJob(jobId: number): Promise<JobResponse> {
-        const resp = await jobs.findOne({ jobId });
-        return {
-            data: resp || undefined,
-            error: null,
-        };
+        try {
+            const resp = await jobs.findOne({ jobId });
+            return {
+                data: resp || undefined,
+                error: null,
+            };
+        } catch (error) { return { error } }
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
@@ -120,11 +123,7 @@ export class jobsDAO {
                 insertedId: result?.jobId || 0,
             };
 
-        } catch (error) {
-            return {
-                error
-            };
-        }
+        } catch (error) { return { error }; }
     }
 
     static async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
@@ -220,6 +219,50 @@ export class jobsDAO {
             }
         ];
         return jobs.aggregate<InvoiceProduct>(aggr).toArray();
+    }
+
+    static async jobsWithoutInvoiceTotals(): Promise<JobResponse> {
+        const pipeline = [
+            {
+                '$match': {
+                    'invoiceId': { '$exists': false },
+                    'jobStatus.generalStatus': { '$lt': 50 }
+                }
+            }, {
+                '$addFields': {
+                    'totals': {
+                        '$reduce': {
+                            'input': '$products',
+                            'initialValue': 0,
+                            'in': {
+                                '$add': [
+                                    '$$value', {
+                                        '$multiply': ['$$this.count', '$$this.price']
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }, {
+                '$group': {
+                    '_id': '$customer',
+                    'jobs': { '$sum': 1 },
+                    'totals': { '$sum': '$totals' }
+                }
+            }, {
+                '$sort': {
+                    '_id': 1,
+                }
+            }
+        ];
+        try {
+            const resp = await jobs.aggregate<JobsWithoutInvoicesTotals>(pipeline).toArray();
+            return {
+                error: false,
+                jobsWithoutInvoicesTotals: resp,
+            }
+        } catch (error) { return { error } }
     }
 
     static async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {
