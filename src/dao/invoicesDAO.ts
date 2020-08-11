@@ -21,7 +21,7 @@ export class invoicesDAO {
     static async getInvoices(filter?: InvoicesFilter): Promise<InvoiceResponse> {
         let pipeline: any[] = [
             {
-                '$sort': { 'invoiceId': 1 }
+                '$sort': { 'invoiceId': -1 }
             }
         ];
         if (filter?.customer) {
