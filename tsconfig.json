@@ -69,7 +69,8 @@
   },
   "include": [
     "src/**/*.ts",
-    "@types/**/*.ts"
+    "@types/**/*.ts",
+    "version.json"
   ],
   // "exclude": [
   //   "node_modules"

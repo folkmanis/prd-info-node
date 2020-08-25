@@ -4,8 +4,10 @@ import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 
 import { MongoClient } from 'mongodb';
-import PrdSession from './lib/session-handler';
+import { PrdSession } from './lib/session-handler';
+import { VersionHandler } from './lib/version-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
+import { Application } from 'express';
 
 export class PrdServer extends Server {
 
@@ -50,6 +52,11 @@ export class PrdServer extends Server {
         });
     }
 
+    async handleVersion(): Promise<Application> {
+        return new VersionHandler().initVersion()
+            .then(vHandl => this.app.use(vHandl.handler()));
+    }
+
     setupControllers(): void {
         const ctlrInstances = [];
         for (const name in controllers) {
@@ -63,7 +70,7 @@ export class PrdServer extends Server {
 
     private setupDAO(client: MongoClient): void {
         for (const name in dao) {
-            Logger.debug('dao', name);
+            Logger.debug(`dao ${name}`);
             if (dao.hasOwnProperty(name)) {
                 const element = (dao as any)[name];
                 if (element.injectDB instanceof Function) {

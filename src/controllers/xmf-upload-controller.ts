@@ -5,8 +5,8 @@
 import { Controller, ClassMiddleware, Post, ClassWrapper, Get } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import { FileParser, UploadProgressTracker } from '../lib/upload-parser';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 import Busboy from "busboy";
@@ -36,7 +36,7 @@ export class XmfUploadController {
         busboy.on('file', async (fieldname, file, filename) => {
             result.filename = filename;
             result.size = +(req.headers['content-length'] || 0);
-            tracker.update({fileName: result.filename, fileSize: result.size})
+            tracker.update({ fileName: result.filename, fileSize: result.size });
             tempFile = await tmpFile({ prefix: 'xmf-', postfix: '.dbd' });
             file.pipe(fs.createWriteStream(tempFile.path));
             req.log.info('xmf-archive upload', result);

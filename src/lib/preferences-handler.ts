@@ -4,7 +4,7 @@ import { UsersDAO } from '../dao/usersDAO';
 import { User,SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
 
-export default class Preferences {
+export class Preferences {
     static async getUserPreferences(req: Request, res: Response, next: NextFunction) {
         if (req.userPreferences) { // ja preferences jau ir, vēlreiz neiegūst
             next();

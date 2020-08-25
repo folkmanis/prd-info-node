@@ -11,6 +11,7 @@ declare namespace Express {
             error: (message: string, metadata?: any) => void,
         };
         systemPreferences?: Map<string, { [key: string]: any; }>;
+        version?: Version;
     }
     export interface Response {
         result: { [key: string]: any; };
@@ -27,4 +28,8 @@ declare namespace Express {
             modules: string[],
         };
     }
+    export interface Version {
+        apiBuild: number;
+        appBuild: number;
+    }    
 }
