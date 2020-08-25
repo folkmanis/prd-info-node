@@ -2,8 +2,8 @@
 import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
 import { customersDAO } from '../dao/customersDAO';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';

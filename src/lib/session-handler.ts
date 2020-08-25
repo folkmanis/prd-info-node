@@ -6,7 +6,7 @@ const MongoStore = require('connect-mongo')(session);
 
 type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin';
 
-export default class PrdSession {
+export class PrdSession {
 
     static validateSession(req: Request, res: Response, next: NextFunction) {
         if (req.session && req.session.user) {

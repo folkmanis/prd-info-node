@@ -28,8 +28,8 @@ response {updated: 0 | 1}
 import { Controller, ClassMiddleware, Middleware, Post, ClassWrapper, Get, Delete, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 
 
 import { PreferencesDAO } from '../dao/preferencesDAO';

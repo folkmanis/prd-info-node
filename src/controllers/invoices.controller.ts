@@ -2,8 +2,8 @@ import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delet
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import { InvoicesFilter } from '../interfaces';
 import { invoicesDAO, PreferencesDAO, jobsDAO } from '../dao';
 

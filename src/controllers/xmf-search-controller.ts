@@ -23,8 +23,8 @@ import { Controller, ClassMiddleware, Get, Post, Wrapper, ClassWrapper } from '@
 import { Request, Response } from 'express';
 import { ArchiveSearchParams, UserPreferences } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 
 @Controller('data/xmf-search')

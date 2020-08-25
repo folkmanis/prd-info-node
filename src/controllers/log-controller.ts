@@ -17,7 +17,7 @@ _id: dienas YYYY-m-d
 import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
+import { PrdSession } from '../lib/session-handler';
 import { LoggerDAO } from '../dao/loggerDAO';
 
 @Controller('data/log')
@@ -27,7 +27,7 @@ export class LogController {
 
     @Get('entries')
     private async getEntries(req: Request, res: Response) {
-        const query = req.query as {[key: string]: string};
+        const query = req.query as { [key: string]: string; };
         const params = {
             limit: +query.limit || 1000,
             start: +query.start || 0,

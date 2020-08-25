@@ -31,7 +31,7 @@ import crypto from 'crypto';
 import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { User } from '../interfaces';
-import PrdSession from '../lib/session-handler';
+import { PrdSession } from '../lib/session-handler';
 import { UsersDAO } from '../dao/usersDAO';
 
 
@@ -100,7 +100,7 @@ export class UsersController {
             const error = new Error('User not set');
             req.log.error('User delete error', error);
             res.status(404).json({ success: false, error });
-            return
+            return;
         }
         req.log.debug('delete request', username);
         const result = await UsersDAO.deleteUser(username);

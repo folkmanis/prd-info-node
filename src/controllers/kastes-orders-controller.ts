@@ -6,8 +6,8 @@ import {
 import { Request, Response } from 'express';
 import { ObjectId, Timestamp } from 'mongodb';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
 import { KastesVeikals, KastesPasutijums } from '../interfaces';

@@ -2,8 +2,8 @@ import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delet
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
-import PrdSession from '../lib/session-handler';
-import Preferences from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
 import {
     Job,
     JobQueryFilter,
@@ -95,7 +95,7 @@ export class JobsController {
     private async getInvoicesTotals(req: Request, res: Response) {
         res.json(
             await jobsDAO.jobsWithoutInvoiceTotals()
-        )
+        );
     }
 
     @Get(':jobId')
