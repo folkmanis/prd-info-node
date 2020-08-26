@@ -1,11 +1,14 @@
 import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
 import Logger from '../lib/logger';
-import { KastesVeikals, KastesPasutijums, KastesResponse, KastesOrderResponse } from '../interfaces';
+import {
+    KastesVeikals, KastesPasutijums,
+    KastesResponse, KastesOrderResponse,
+    ColorTotals, ApjomiTotals
+} from '../interfaces';
 
-interface CleanupResponse { deleted: { pasutijumi: number, veikali: number, }; }
 
 let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
-let pasutijumi: Collection<Partial<KastesPasutijums>>; // Pasūtījumi
+let pasutijumi: Collection<KastesPasutijums>; // Pasūtījumi
 
 export class KastesDAO {
 
@@ -69,7 +72,7 @@ export class KastesDAO {
      * Pievieno pasūtījumu
      * @param pasutijums Pasūtījuma nosaukums
      */
-    static async pasutijumsAdd(pasutijums: Partial<KastesPasutijums>): Promise<KastesOrderResponse> {
+    static async pasutijumsAdd(pasutijums: KastesPasutijums): Promise<KastesOrderResponse> {
         try {
             const pas = {
                 ...pasutijums,
@@ -86,6 +89,22 @@ export class KastesDAO {
             Logger.error('Pasutijums insert error', error);
             return { error };
         }
+    }
+
+    static async pasutijums(_id: ObjectId): Promise<KastesOrderResponse> {
+        const pas = await pasutijumi.findOne({ _id });
+        if (!pas) { return { error: 'Order not found' }; }
+        return {
+            error: false,
+            data: {
+                ...pas,
+                totals: {
+                    colorTotals: await KastesDAO.colorTotals(_id),
+                    apjomiTotals: await KastesDAO.apjomiTotals(_id),
+                    veikali: await veikali.find({ pasutijums: _id }).count(),
+                }
+            }
+        };
     }
     /**
      * Izmaina pasūtījuma ierakstu
@@ -113,7 +132,7 @@ export class KastesDAO {
             // TODO refactor to one atomic operation
             const saraksts = (await pasutijumi.find<Pick<KastesPasutijums, '_id'>>({ deleted: true }, { projection: { _id: 1 } })
                 .toArray())
-                .map(pas => pas._id)
+                .map(pas => pas._id);
             if (!saraksts.length) {
                 return {
                     error: false,
@@ -133,6 +152,56 @@ export class KastesDAO {
             };
         } catch (error) { return { error }; }
     }
+
+    static async colorTotals(pasutijums: ObjectId): Promise<ColorTotals[]> {
+        const pipeline = [
+            { '$match': { pasutijums } },
+            { '$unwind': { 'path': '$kastes', } },
+            {
+                '$group': {
+                    '_id': null,
+                    'yellow': { '$sum': '$kastes.yellow' },
+                    'rose': { '$sum': '$kastes.rose' },
+                    'white': { '$sum': '$kastes.white' }
+                }
+            },
+            {
+                '$project': {
+                    '_id': 0,
+                    'totals': [
+                        { 'color': 'yellow', 'total': '$yellow' },
+                        { 'color': 'rose', 'total': '$rose' },
+                        { 'color': 'white', 'total': '$white' }
+                    ]
+                }
+            },
+            { '$unwind': { 'path': '$totals' } },
+            { '$replaceRoot': { 'newRoot': '$totals' } }
+        ];
+        return veikali.aggregate<ColorTotals>(pipeline).toArray();
+    }
+
+    static async apjomiTotals(pasutijums: ObjectId): Promise<ApjomiTotals[]> {
+        const pipeline = [
+            { '$match': { pasutijums } },
+            { '$unwind': { 'path': '$kastes' } },
+            {
+                '$group': {
+                    '_id': '$kastes.total',
+                    'total': { '$sum': 1 }
+                }
+            },
+            { '$sort': { '_id': 1 } },
+            {
+                '$project': {
+                    '_id': 0,
+                    'apjoms': '$_id',
+                    'total': 1
+                }
+            }
+        ];
+        return veikali.aggregate<ApjomiTotals>(pipeline).toArray();
+    }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
@@ -143,10 +212,10 @@ export class KastesDAO {
             return {
                 error: false,
                 insertedCount: insertResp.insertedCount,
-            }
+            };
         } catch (error) {
             Logger.error('Veikali insert failed', error);
-            return {error};
+            return { error };
         }
     }
 

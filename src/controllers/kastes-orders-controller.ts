@@ -23,6 +23,14 @@ import { logError } from '../lib/errorMiddleware';
 @ClassWrapper(asyncWrapper)
 export class KastesOrderController {
 
+    @Get(':id')
+    private async getOrder(req: Request, res: Response) {
+        const id = new ObjectId(req.params.id);
+        res.json(
+            await KastesDAO.pasutijums(id)
+        );
+    }
+
     @Get('')
     private async pasnames(req: Request, res: Response) {
         res.json(
@@ -33,7 +41,7 @@ export class KastesOrderController {
     @Put('')
     private async addpasutijums(req: Request, res: Response) {
         res.json(
-            await KastesDAO.pasutijumsAdd(req.body as Partial<KastesPasutijums>)
+            await KastesDAO.pasutijumsAdd(req.body as KastesPasutijums)
         );
     }
 
