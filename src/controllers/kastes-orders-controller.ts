@@ -10,7 +10,7 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesPasutijums } from '../interfaces';
+import { KastesVeikals, KastesOrder } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes-orders')
@@ -27,28 +27,28 @@ export class KastesOrderController {
     private async getOrder(req: Request, res: Response) {
         const id = new ObjectId(req.params.id);
         res.json(
-            await KastesDAO.pasutijums(id)
+            await KastesDAO.kastesOrder(id)
         );
     }
 
     @Get('')
-    private async pasnames(req: Request, res: Response) {
+    private async kastesOrders(req: Request, res: Response) {
         res.json(
-            await KastesDAO.pasNames()
+            await KastesDAO.kastesOrders()
         );
     }
 
     @Put('')
     private async addpasutijums(req: Request, res: Response) {
         res.json(
-            await KastesDAO.pasutijumsAdd(req.body as KastesPasutijums)
+            await KastesDAO.pasutijumsAdd(req.body as KastesOrder)
         );
     }
 
     @Post(':id')
     private async updatePasutijums(req: Request, res: Response) {
         const id = new ObjectId(req.params.id);
-        const pas = req.body as Partial<KastesPasutijums>;
+        const pas = req.body as Partial<KastesOrder>;
         delete pas._id;
         res.json(
             await KastesDAO.pasutijumsUpdate(id, pas)

@@ -10,7 +10,7 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesPasutijums } from '../interfaces';
+import { KastesVeikals, KastesOrder } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes')
@@ -25,16 +25,18 @@ export class KastesController {
 
     @Put('')
     private async table(req: Request, res: Response) {
-        const veikali = req.body as KastesVeikals[];
-        const resp = await KastesDAO.veikaliAdd(veikali
+        const veikali = req.body.data as KastesVeikals[];
+        const pasutijums = new ObjectId(req.body.orderId);
+        const lastModified = new Date();
+        const resp = await KastesDAO.veikaliAdd(pasutijums, veikali
             .map(vk => ({
                 ...vk,
-                pasutijums: new ObjectId(vk.pasutijums),
-                lastModified: new Date(),
+                pasutijums,
+                lastModified,
             }))
         );
-        req.log.info('kastes order table inserted', resp);
         res.json(resp);
+        req.log.info('kastes order table inserted', resp);
     }
 
 

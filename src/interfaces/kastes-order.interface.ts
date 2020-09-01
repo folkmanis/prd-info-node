@@ -13,19 +13,26 @@ export interface ApjomiTotals {
     total: number;
 }
 
-export interface KastesPasutijums {
+export interface KastesOrder {
     _id: ObjectId;
     name: string;
     deleted: boolean;
     created: Date;
+    dueDate: Date; // Izpildes termiņš
+    isLocked: boolean; // ir izveidots pakošanas saraksts
     totals: {
         veikali: number;
         colorTotals: ColorTotals[];
         apjomiTotals: ApjomiTotals[];
     };
+    apjomsPlanned: ColorTotals[];
 }
 
-export interface KastesOrderResponse extends ResponseBase<KastesPasutijums> {
+export type KastesOrderPartialKeys = '_id' | 'name' | 'created' | 'deleted' | 'isLocked' | 'dueDate';
+
+export type KastesOrderPartial = Pick<KastesOrder, KastesOrderPartialKeys>;
+
+export interface KastesOrderResponse extends ResponseBase<KastesOrder> {
     deleted?: {
         veikali: number;
         orders: number;

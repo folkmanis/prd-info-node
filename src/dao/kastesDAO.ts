@@ -1,14 +1,14 @@
 import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
 import Logger from '../lib/logger';
 import {
-    KastesVeikals, KastesPasutijums,
+    KastesVeikals, KastesOrder,
     KastesResponse, KastesOrderResponse,
-    ColorTotals, ApjomiTotals
+    ColorTotals, ApjomiTotals, KastesOrderPartial, KastesOrderPartialKeys
 } from '../interfaces';
 
 
 let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
-let pasutijumi: Collection<KastesPasutijums>; // Pasūtījumi
+let pasutijumi: Collection<KastesOrder>; // Pasūtījumi
 
 export class KastesDAO {
 
@@ -59,9 +59,17 @@ export class KastesDAO {
     /**
      * Saraksts ar pasūtījumiem
      */
-    static async pasNames(): Promise<KastesOrderResponse> {
+    static async kastesOrders(): Promise<KastesOrderResponse> {
+        const projection: Record<KastesOrderPartialKeys, number | string> = {
+            _id: 1,
+            name: 1,
+            created: 1,
+            deleted: 1,
+            isLocked: 1,
+            dueDate: 1,
+        };
         try {
-            const resp = await pasutijumi.find({}).toArray();
+            const resp = await pasutijumi.find({}, { projection }).toArray();
             return {
                 error: false,
                 data: resp,
@@ -72,7 +80,7 @@ export class KastesDAO {
      * Pievieno pasūtījumu
      * @param pasutijums Pasūtījuma nosaukums
      */
-    static async pasutijumsAdd(pasutijums: KastesPasutijums): Promise<KastesOrderResponse> {
+    static async pasutijumsAdd(pasutijums: KastesOrder): Promise<KastesOrderResponse> {
         try {
             const pas = {
                 ...pasutijums,
@@ -91,7 +99,7 @@ export class KastesDAO {
         }
     }
 
-    static async pasutijums(_id: ObjectId): Promise<KastesOrderResponse> {
+    static async kastesOrder(_id: ObjectId): Promise<KastesOrderResponse> {
         const pas = await pasutijumi.findOne({ _id });
         if (!pas) { return { error: 'Order not found' }; }
         return {
@@ -111,7 +119,7 @@ export class KastesDAO {
      * @param id Pasūtījums Id
      * @param pas Izmaiņas
      */
-    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesPasutijums>): Promise<KastesOrderResponse> {
+    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesOrder>): Promise<KastesOrderResponse> {
         try {
             const resp = await pasutijumi.updateOne({ _id: id }, { $set: pas });
             Logger.debug('pas update res', resp.result);
@@ -130,7 +138,7 @@ export class KastesDAO {
     static async pasutijumiCleanup(): Promise<KastesOrderResponse> {
         try {
             // TODO refactor to one atomic operation
-            const saraksts = (await pasutijumi.find<Pick<KastesPasutijums, '_id'>>({ deleted: true }, { projection: { _id: 1 } })
+            const saraksts = (await pasutijumi.find<Pick<KastesOrder, '_id'>>({ deleted: true }, { projection: { _id: 1 } })
                 .toArray())
                 .map(pas => pas._id);
             if (!saraksts.length) {
@@ -206,9 +214,10 @@ export class KastesDAO {
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(kastes: KastesVeikals[]): Promise<KastesResponse> {
+    static async veikaliAdd(orderId: ObjectId, kastes: KastesVeikals[]): Promise<KastesResponse> {
         try {
             const insertResp = await veikali.insertMany(kastes);
+            await KastesDAO.pasutijumsUpdate(orderId, { isLocked: true }); // Pasūtījums
             return {
                 error: false,
                 insertedCount: insertResp.insertedCount,
