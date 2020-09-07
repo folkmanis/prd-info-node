@@ -15,6 +15,7 @@ export interface Job {
     name: string;
     customerJobId?: string;
     receivedDate: Date;
+    dueDate: Date;
     comment?: string,
     invoiceId?: string;
     products?: JobProduct[] | JobProduct;

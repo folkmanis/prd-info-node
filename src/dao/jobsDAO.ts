@@ -70,6 +70,7 @@ export class jobsDAO {
                     name: 1,
                     customerJobId: 1,
                     receivedDate: 1,
+                    dueDate: 1,
                     products: 1,
                     invoiceId: 1,
                     jobStatus: 1,
@@ -359,6 +360,9 @@ export class jobsDAO {
     static validateJob<T extends Partial<Job>>(job: T): T {
         if (typeof job.receivedDate === 'string') {
             job.receivedDate = new Date(job.receivedDate);
+        }
+        if (typeof job.dueDate === 'string') {
+            job.dueDate = new Date(job.dueDate);
         }
         if (!job.jobStatus) {
             job.jobStatus = { generalStatus: 10 };
