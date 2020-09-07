@@ -1,27 +1,16 @@
 import { NextFunction, Request, Response, RequestHandler } from 'express';
-import { promises as fsPromises } from 'fs';
-import * as path from 'path';
 import Logger from './logger';
 import { Version } from '../interfaces/version.interface';
+import { VERSION } from '../version';
 
-const FILENAME = 'version.json';
 
 export class VersionHandler {
     private version: Version | undefined;
 
     async initVersion(): Promise<VersionHandler> {
-        const pathname = path.resolve(process.cwd(), FILENAME);
-        return fsPromises.readFile(pathname, { encoding: 'utf8' })
-            .then(vObj => {
-                this.version = JSON.parse(vObj) as Version;
-                Logger.info(`API build ${this.version.apiBuild}`, vObj);
-                return this;
-            })
-            .catch(err => {
-                Logger.error('version.json not found', err);
-                return this;
-            });
-
+        this.version = VERSION;
+        Logger.info(`API build ${this.version.apiBuild}`, this.version);
+        return this;
     }
 
     handler(): RequestHandler {
