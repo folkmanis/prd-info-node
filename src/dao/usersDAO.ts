@@ -173,9 +173,6 @@ export class UsersDAO {
      * @param val Moduļa iestatījumi
      */
     static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
-        if (val.pasutijums) {
-            val.pasutijums = new ObjectId(val.pasutijums);
-        }
         try {
             const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
             return {

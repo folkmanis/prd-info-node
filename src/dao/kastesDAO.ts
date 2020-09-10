@@ -1,14 +1,13 @@
 import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
 import Logger from '../lib/logger';
 import {
-    KastesVeikals, KastesOrder,
+    KastesVeikals,
     KastesResponse, KastesOrderResponse,
-    ColorTotals, ApjomiTotals, KastesOrderPartial, KastesOrderPartialKeys
+    ColorTotals, ApjomiTotals
 } from '../interfaces';
 
 
 let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
-let pasutijumi: Collection<KastesOrder>; // Pasūtījumi
 
 export class KastesDAO {
 
@@ -47,121 +46,40 @@ export class KastesDAO {
             }
         }
 
-        if (!pasutijumi) {
-            try {
-                pasutijumi = conn.db(process.env.DB_BASE as string)
-                    .collection('kastes-pasutijumi');
-            } catch (e) {
-                Logger.error('kastesDAO: unable to connect pasutijumi', e);
-            }
-        }
-    }
-    /**
-     * Saraksts ar pasūtījumiem
-     */
-    static async kastesOrders(): Promise<KastesOrderResponse> {
-        const projection: Record<KastesOrderPartialKeys, number | string> = {
-            _id: 1,
-            name: 1,
-            created: 1,
-            deleted: 1,
-            isLocked: 1,
-            dueDate: 1,
-        };
-        try {
-            const resp = await pasutijumi.find({}, { projection }).toArray();
-            return {
-                error: false,
-                data: resp,
-            };
-        } catch (error) { return { error }; }
-    }
-    /**
-     * Pievieno pasūtījumu
-     * @param pasutijums Pasūtījuma nosaukums
-     */
-    static async pasutijumsAdd(pasutijums: KastesOrder): Promise<KastesOrderResponse> {
-        try {
-            const pas = {
-                ...pasutijums,
-                deleted: false,
-                created: new Date(),
-            };
-            const resp = await pasutijumi.insertOne(pas);
-            return {
-                error: false,
-                insertedId: resp.insertedId,
-                insertedCount: resp.insertedCount,
-            };
-        } catch (error) {
-            Logger.error('Pasutijums insert error', error);
-            return { error };
-        }
-    }
-
-    static async kastesOrder(_id: ObjectId): Promise<KastesOrderResponse> {
-        const pas = await pasutijumi.findOne({ _id });
-        if (!pas) { return { error: 'Order not found' }; }
-        return {
-            error: false,
-            data: {
-                ...pas,
-                totals: {
-                    colorTotals: await KastesDAO.colorTotals(_id),
-                    apjomiTotals: await KastesDAO.apjomiTotals(_id),
-                    veikali: await veikali.find({ pasutijums: _id }).count(),
-                }
-            }
-        };
-    }
-    /**
-     * Izmaina pasūtījuma ierakstu
-     * @param id Pasūtījums Id
-     * @param pas Izmaiņas
-     */
-    static async pasutijumsUpdate(id: ObjectId, pas: Partial<KastesOrder>): Promise<KastesOrderResponse> {
-        try {
-            const resp = await pasutijumi.updateOne({ _id: id }, { $set: pas });
-            Logger.debug('pas update res', resp.result);
-            return {
-                error: false,
-                modifiedCount: resp.modifiedCount,
-            };
-        } catch (error) {
-            Logger.error('Pasutijums update failed', error);
-            return { error };
-        }
     }
     /**
      * Izdzēš no pasūtījumiem neaktīvos un atbilstošos no pakošanas
      */
     static async pasutijumiCleanup(): Promise<KastesOrderResponse> {
-        try {
-            // TODO refactor to one atomic operation
-            const saraksts = (await pasutijumi.find<Pick<KastesOrder, '_id'>>({ deleted: true }, { projection: { _id: 1 } })
-                .toArray())
-                .map(pas => pas._id);
-            if (!saraksts.length) {
-                return {
-                    error: false,
-                    deletedCount: 0,
-                };
-            }
-            const deletedVeikali = (await veikali.deleteMany({ pasutijums: { $in: saraksts } })).deletedCount || 0;
-            const deletedPasutijumi = (await pasutijumi.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
+        const pipeline = [
+            {
+                $lookup: {
+                    'from': 'jobs',
+                    'localField': 'pasutijums',
+                    'foreignField': 'jobId',
+                    'as': 'jobId'
+                }
+            },
+            { $match: { '$expr': { '$eq': [{ '$size': '$jobId' }, 0] } } },
+            { $project: { '_id': 1 } }
+        ];
+        const saraksts: ObjectId[] = (await veikali.aggregate<{ _id: ObjectId; }>(pipeline).toArray()).map(pas => pas._id);
+        if (saraksts.length) {
+            const deletedCount = (await veikali.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
+            Logger.info(`Kastes database cleanup performed. Deleted ${deletedCount} records.`, saraksts);
             return {
                 error: false,
-                deletedCount: deletedPasutijumi,
-                deleted: {
-                    veikali: deletedVeikali,
-                    orders: deletedPasutijumi,
-                    ids: saraksts,
-                }
+                deletedCount,
             };
-        } catch (error) { return { error }; }
+        } else {
+            return {
+                error: false,
+                deletedCount: 0,
+            };
+        }
     }
 
-    static async colorTotals(pasutijums: ObjectId): Promise<ColorTotals[]> {
+    static async colorTotals(pasutijums: number): Promise<ColorTotals[]> {
         const pipeline = [
             { '$match': { pasutijums } },
             { '$unwind': { 'path': '$kastes', } },
@@ -189,7 +107,7 @@ export class KastesDAO {
         return veikali.aggregate<ColorTotals>(pipeline).toArray();
     }
 
-    static async apjomiTotals(pasutijums: ObjectId): Promise<ApjomiTotals[]> {
+    static async apjomiTotals(pasutijums: number): Promise<ApjomiTotals[]> {
         const pipeline = [
             { '$match': { pasutijums } },
             { '$unwind': { 'path': '$kastes' } },
@@ -210,14 +128,17 @@ export class KastesDAO {
         ];
         return veikali.aggregate<ApjomiTotals>(pipeline).toArray();
     }
+
+    static async veikaliCount(pasutijums: number): Promise<number> {
+        return veikali.find({ pasutijums }).count();
+    }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(orderId: ObjectId, kastes: KastesVeikals[]): Promise<KastesResponse> {
+    static async veikaliAdd(orderId: number, kastes: KastesVeikals[]): Promise<KastesResponse> {
         try {
             const insertResp = await veikali.insertMany(kastes);
-            await KastesDAO.pasutijumsUpdate(orderId, { isLocked: true }); // Pasūtījums
             return {
                 error: false,
                 insertedCount: insertResp.insertedCount,
@@ -228,7 +149,7 @@ export class KastesDAO {
         }
     }
 
-    static async kastesApjomi(pas: ObjectId): Promise<KastesResponse> {
+    static async kastesApjomi(pas: number): Promise<KastesResponse> {
         const pipeline: Array<any> = [{
             $match: { pasutijums: pas }
         }, {
@@ -266,7 +187,7 @@ export class KastesDAO {
      * @param pasutijums pasūtījuma ID
      * @param apjoms skaits vienā kastē (ja nav norādīts, meklēs visus)
      */
-    static async kastesList(pasutijums: ObjectId): Promise<KastesResponse> {
+    static async kastesList(pasutijums: number): Promise<KastesResponse> {
         const kastesPipeline: Array<any> = [{
             $match: {
                 pasutijums
@@ -342,7 +263,7 @@ export class KastesDAO {
         } catch (error) { return { error }; }
     }
 
-    static async setLabel(pasutijumsId: ObjectId, kods: number | string): Promise<KastesResponse> {
+    static async setLabel(pasutijumsId: number, kods: number | string): Promise<KastesResponse> {
         try {
             const data = (await veikali.aggregate([{
                 $unwind: {

@@ -4,7 +4,7 @@ import { ResponseBase } from './response-base.interface';
 export interface KastesVeikals {
     kods: number | string,
     adrese: string,
-    pasutijums: ObjectId,
+    pasutijums: number,
     kastes: {
         total: number,
         yellow: number,

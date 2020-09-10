@@ -3,6 +3,7 @@ import Logger from '../lib/logger';
 import {
     Job,
     JobResponse,
+    JobCategories,
     JobQueryFilter,
     JOBS_SCHEMA,
     InvoiceProduct,
@@ -51,6 +52,9 @@ export class jobsDAO {
             filter['jobStatus.generalStatus'] = {
                 $in: query.jobStatus.split(',').map(st => +st),
             };
+        }
+        if (typeof query.category === 'string') {
+            filter.category = query.category;
         }
         const aggr: object[] = [
             {
@@ -107,7 +111,7 @@ export class jobsDAO {
                 data: resp || undefined,
                 error: null,
             };
-        } catch (error) { return { error } }
+        } catch (error) { return { error }; }
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
@@ -262,8 +266,8 @@ export class jobsDAO {
             return {
                 error: false,
                 jobsWithoutInvoicesTotals: resp,
-            }
-        } catch (error) { return { error } }
+            };
+        } catch (error) { return { error }; }
     }
 
     static async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {

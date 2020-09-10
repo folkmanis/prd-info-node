@@ -9,8 +9,9 @@ import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
+import { jobsDAO } from '../dao/jobsDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesOrder } from '../interfaces';
+import { KastesVeikals, KastesJob, Colors, KastesOrderResponse, Product, JobProduct, ColorTotals } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes-orders')
@@ -25,33 +26,47 @@ export class KastesOrderController {
 
     @Get(':id')
     private async getOrder(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const jobId = +req.params.id;
+        const result: Promise<KastesOrderResponse> = Promise.all([
+            jobsDAO.getJob(jobId),
+            KastesDAO.colorTotals(jobId),
+            KastesDAO.apjomiTotals(jobId),
+            KastesDAO.veikaliCount(jobId),
+        ])
+            .then(([{error, data}, colorTotals, apjomiTotals, veikali]) => ({
+                error,
+                data: data && !(data instanceof Array) ? {
+                    ...data,
+                    category: 'perforated paper',
+                    isLocked: false,
+                    apjomsPlanned: data.products instanceof Array ? productsTocolorTotals(data.products) : [],
+                    totals: {
+                        veikali,
+                        colorTotals,
+                        apjomiTotals,
+                    }
+                } : undefined
+            }));
         res.json(
-            await KastesDAO.kastesOrder(id)
+            await result
         );
     }
 
     @Get('')
     private async kastesOrders(req: Request, res: Response) {
         res.json(
-            await KastesDAO.kastesOrders()
-        );
-    }
-
-    @Put('')
-    private async addpasutijums(req: Request, res: Response) {
-        res.json(
-            await KastesDAO.pasutijumsAdd(req.body as KastesOrder)
+            await jobsDAO.getJobs({ category: 'perforated paper' })
         );
     }
 
     @Post(':id')
     private async updatePasutijums(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        const pas = req.body as Partial<KastesOrder>;
-        delete pas._id;
+        const jobId = +req.params.id;
+        if (isNaN(jobId)) { throw new Error('jobId not provided'); }
+        const pas = req.body as Partial<KastesJob>;
+        delete pas.jobId;
         res.json(
-            await KastesDAO.pasutijumsUpdate(id, pas)
+            await jobsDAO.updateJob(jobId, pas)
         );
     }
 
@@ -63,4 +78,11 @@ export class KastesOrderController {
     }
 
 
+}
+
+function productsTocolorTotals(products: JobProduct[]): ColorTotals[] {
+    const colors: string[] = ['rose', 'white', 'yellow'];
+    return products
+        .filter(prod => colors.indexOf(prod.name) > -1)
+        .map(prod => ({ color: prod.name as Colors, total: prod.count }));
 }
