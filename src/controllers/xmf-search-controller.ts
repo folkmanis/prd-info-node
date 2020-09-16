@@ -27,12 +27,12 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 
-@Controller('data/xmf-search')
+@Controller('data/xmf-archive')
 @ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-search')])
 @ClassWrapper(asyncWrapper)
 export class XmfSearchController {
 
-    @Get('search')
+    @Get()
     private async search(req: Request, res: Response) {
         const query = req.query.query ? JSON.parse(req.query.query as string) : {};
         query.q && query.q.length > 0 && req.log.info("XMF search");
@@ -43,7 +43,7 @@ export class XmfSearchController {
 
     @Get('customers')
     private async getCustomers(req: Request, res: Response) {
-        req.log.debug('xmfserach customers');
+        req.log.debug('xmfCustomers customers');
         res.json(await xmfSearchDAO.getCustomers());
     }
 

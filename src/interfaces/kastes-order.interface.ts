@@ -25,23 +25,8 @@ export type KastesJob = JobBase & {
     };
 };
 
-// export interface KastesOrder {
-//     _id: ObjectId;
-//     name: string;
-//     deleted: boolean;
-//     created: Date;
-//     dueDate: Date; // Izpildes termiņš
-//     isLocked: boolean; // ir izveidots pakošanas saraksts
-//     totals: {
-//         veikali: number;
-//         colorTotals: ColorTotals[];
-//         apjomiTotals: ApjomiTotals[];
-//     };
-//     apjomsPlanned: ColorTotals[];
-// }
-
 export type KastesJobPartialKeys = 'jobId' | 'name' | 'receivedDate' | 'isLocked' | 'dueDate';
 
-export type KastesJobPartial = Pick<KastesJob, KastesJobPartialKeys>;
+export type KastesJobPartial = Pick<KastesJob, KastesJobPartialKeys> & { veikaliCount?: number; };
 
-export interface KastesOrderResponse extends ResponseBase<KastesJob> { }
+export interface KastesJobResponse extends ResponseBase<KastesJob> { }

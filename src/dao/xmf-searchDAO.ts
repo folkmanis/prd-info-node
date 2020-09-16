@@ -4,9 +4,9 @@ import {
     ArchiveJob,
     ArchiveSearchParams,
     ArchiveJobSorted,
-    ArchiveSearchResult,
     FacetResult,
     XmfUploadProgress,
+    XmfArchiveResponse,
 } from '../interfaces';
 import Logger from '../lib/logger';
 
@@ -47,9 +47,9 @@ export class xmfSearchDAO {
         await xmfSearchDAO.sortedDb();
     }
 
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<ArchiveSearchResult>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: string, lim?: string): Promise<{ data: Partial<ArchiveJob>[]; }>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: string, lim = '100'): Promise<ArchiveSearchResult | { data: Partial<ArchiveJob>[]; }> {
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<XmfArchiveResponse>;
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: string, lim?: string): Promise<XmfArchiveResponse>;
+    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: string, lim = '100'): Promise<XmfArchiveResponse> {
         await xmfSearchDAO.sortedDb();
         const filter = xmfSearchDAO.getFilter(search, userPreferences.customers);
         Logger.debug(JSON.stringify(filter));
@@ -58,7 +58,13 @@ export class xmfSearchDAO {
             .skip(+(start || 0))
             .limit(+lim)
             .toArray();
-        if (start) { return { data }; } // Ja vajadzīgs no-līdz, tad facet un count nemeklē
+        // Ja vajadzīgs no-līdz, tad facet un count nemeklē
+        if (start) {
+            return {
+                error: false,
+                data
+            };
+        }
         // Kopējais skaits
         const count = await findRes.count();
         // Facet rezultāts
@@ -84,7 +90,12 @@ export class xmfSearchDAO {
             }
         ];
         const facet = (await archSorted.aggregate<FacetResult>(pipeline).toArray())[0];
-        return { count, data, facet };
+        return {
+            error: false,
+            count,
+            data,
+            facet
+        };
 
     }
 
@@ -136,7 +147,7 @@ export class xmfSearchDAO {
         }
     }
 
-    static async getCustomers(): Promise<string[]> {
+    static async getCustomers(): Promise<XmfArchiveResponse> {
         const pipeline = [{
             $group: {
                 _id: "$CustomerName"
@@ -146,7 +157,12 @@ export class xmfSearchDAO {
                 _id: 1
             }
         }];
-        return (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id);
+        try {
+            return {
+                error: false,
+                xmfCustomers: (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id),
+            };
+        } catch (error) { return { error }; }
     }
 
     static async customersToCustomersDb(dbName: string) {

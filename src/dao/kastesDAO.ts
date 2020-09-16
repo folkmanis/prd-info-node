@@ -2,7 +2,7 @@ import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
 import Logger from '../lib/logger';
 import {
     KastesVeikals,
-    KastesResponse, KastesOrderResponse,
+    KastesResponse, KastesJobResponse,
     ColorTotals, ApjomiTotals
 } from '../interfaces';
 
@@ -50,7 +50,7 @@ export class KastesDAO {
     /**
      * Izdzēš no pasūtījumiem neaktīvos un atbilstošos no pakošanas
      */
-    static async pasutijumiCleanup(): Promise<KastesOrderResponse> {
+    static async pasutijumiCleanup(): Promise<KastesJobResponse> {
         const pipeline = [
             {
                 $lookup: {

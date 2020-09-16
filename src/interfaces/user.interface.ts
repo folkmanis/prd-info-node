@@ -1,3 +1,5 @@
+import { ResponseBase } from './response-base.interface';
+
 export interface User {
     username: string,
     name: string,
@@ -10,4 +12,7 @@ export interface User {
 export interface UserPreferences {
     customers: string[],
     modules: string[],
+}
+
+export interface UsersResponse extends ResponseBase<User> {
 }

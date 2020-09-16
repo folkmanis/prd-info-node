@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 
 export interface ResponseBase<T = any> {
     // [key: string]: any,
-    insertedId?: ObjectId | number;
+    insertedId?: ObjectId | string | number;
     deletedCount?: number;
     modifiedCount?: number;
     insertedCount?: number;
@@ -10,7 +10,7 @@ export interface ResponseBase<T = any> {
     data?: T | Partial<T>[];
     error: any;
     result?: {
-        ok: number;
-        n: number;
+        ok?: number;
+        n?: number;
     };
 }

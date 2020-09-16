@@ -11,7 +11,7 @@ import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { jobsDAO } from '../dao/jobsDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesJob, Colors, KastesOrderResponse, Product, JobProduct, ColorTotals } from '../interfaces';
+import { KastesVeikals, KastesJob, Colors, KastesJobResponse, Product, JobProduct, ColorTotals } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes-orders')
@@ -27,13 +27,13 @@ export class KastesOrderController {
     @Get(':id')
     private async getOrder(req: Request, res: Response) {
         const jobId = +req.params.id;
-        const result: Promise<KastesOrderResponse> = Promise.all([
+        const result: Promise<KastesJobResponse> = Promise.all([
             jobsDAO.getJob(jobId),
             KastesDAO.colorTotals(jobId),
             KastesDAO.apjomiTotals(jobId),
             KastesDAO.veikaliCount(jobId),
         ])
-            .then(([{error, data}, colorTotals, apjomiTotals, veikali]) => ({
+            .then(([{ error, data }, colorTotals, apjomiTotals, veikali]) => ({
                 error,
                 data: data && !(data instanceof Array) ? {
                     ...data,
@@ -53,9 +53,10 @@ export class KastesOrderController {
     }
 
     @Get('')
-    private async kastesOrders(req: Request, res: Response) {
+    async getKastesJobs(req: Request, res: Response) {
+        const veikali: boolean = req.query.veikali === '1';
         res.json(
-            await jobsDAO.getJobs({ category: 'perforated paper' })
+            await jobsDAO.getKastesJobs(veikali)
         );
     }
 
