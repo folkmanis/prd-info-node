@@ -24,6 +24,9 @@ export interface Job {
         generalStatus: number;
     };
     custCode: string;
+    files?: {
+        path?: string[];
+    };
 }
 
 export interface JobsWithoutInvoicesTotals {

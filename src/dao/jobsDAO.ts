@@ -1,5 +1,6 @@
 import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery } from "mongodb";
 import Logger from '../lib/logger';
+import { fileSystemDAO } from './fileSystemDAO';
 import {
     Job,
     JobResponse,
@@ -107,7 +108,7 @@ export class jobsDAO {
                 data: resp || undefined,
                 error: null,
             };
-        } catch (error) { return { error } }
+        } catch (error) { return { error }; }
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
@@ -143,6 +144,13 @@ export class jobsDAO {
 
     static async updateJob(jobId: number, job: Partial<Job>): Promise<JobResponse> {
         job = jobsDAO.validateJob(job);
+        if (job.files?.path) {
+            try {
+                await fileSystemDAO.createFolder(job.files.path);
+            } catch (error) {
+                delete job.files.path;
+            }
+        }
         const result = await jobs.updateOne(
             {
                 jobId,
@@ -262,8 +270,8 @@ export class jobsDAO {
             return {
                 error: false,
                 jobsWithoutInvoicesTotals: resp,
-            }
-        } catch (error) { return { error } }
+            };
+        } catch (error) { return { error }; }
     }
 
     static async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {

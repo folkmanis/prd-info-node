@@ -7,3 +7,4 @@ export * from './customersDAO';
 export * from './productsDAO';
 export * from './jobsDAO';
 export * from './invoicesDAO';
+export * from './fileSystemDAO';
