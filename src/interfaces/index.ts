@@ -11,3 +11,4 @@ export * from './kastes.interface';
 export * from './kastes-order.interface';
 export * from './login.interface';
 export * from './version.interface';
+export * from './job-base.interface';

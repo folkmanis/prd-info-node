@@ -1,33 +1,14 @@
 import { ObjectId } from 'mongodb';
 import { Product } from './products.interface';
 import { ResponseBase } from './response-base.interface';
+import { JobBase, JobCategories } from './job-base.interface';
+import { KastesJob } from './kastes-order.interface';
 
-export type JobProduct = Pick<Product, 'name'> & {
-    price: number;
-    count: number;
-    comment: string;
-};
-
-export interface Job {
-    _id: ObjectId;
-    jobId: number;
-    customer: string;
-    name: string;
-    customerJobId?: string;
-    receivedDate: Date;
-    dueDate: Date;
-    comment?: string,
-    invoiceId?: string;
-    products?: JobProduct[] | JobProduct;
-    productsIdx?: number;
-    jobStatus: {
-        generalStatus: number;
-    };
-    custCode: string;
-    files?: {
-        path?: string[];
-    };
+export type ReproJob = JobBase & {
+    category: 'repro';
 }
+
+export type Job = ReproJob | KastesJob
 
 export interface JobsWithoutInvoicesTotals {
     _id: string;
@@ -35,7 +16,7 @@ export interface JobsWithoutInvoicesTotals {
     totals: number;
 }
 
-export interface JobResponse extends ResponseBase {
+export interface JobResponse extends ResponseBase<Job> {
     insertedIds?: { [key: number]: ObjectId; };
     jobsWithoutInvoicesTotals?: JobsWithoutInvoicesTotals[];
 }
@@ -47,7 +28,8 @@ export interface JobQueryFilter {
     invoice?: boolean;
     jobsId?: string;
     unwindProducts?: 0 | 1;
-    jobStatus?: string,
+    jobStatus?: string;
+    category?: JobCategories;
 };
 
 export type JobUpdate = Pick<Job, 'jobId'> & Partial<Job>;

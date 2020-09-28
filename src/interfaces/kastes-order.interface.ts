@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { ResponseBase } from './response-base.interface';
+import { JobBase } from './job-base.interface';
 
 export type Colors = 'yellow' | 'rose' | 'white';
 
@@ -13,29 +14,19 @@ export interface ApjomiTotals {
     total: number;
 }
 
-export interface KastesOrder {
-    _id: ObjectId;
-    name: string;
-    deleted: boolean;
-    created: Date;
-    dueDate: Date; // Izpildes termiņš
+export type KastesJob = JobBase & {
+    category: 'perforated paper';
     isLocked: boolean; // ir izveidots pakošanas saraksts
+    apjomsPlanned: ColorTotals[];
     totals: {
         veikali: number;
         colorTotals: ColorTotals[];
         apjomiTotals: ApjomiTotals[];
     };
-    apjomsPlanned: ColorTotals[];
-}
+};
 
-export type KastesOrderPartialKeys = '_id' | 'name' | 'created' | 'deleted' | 'isLocked' | 'dueDate';
+export type KastesJobPartialKeys = 'jobId' | 'name' | 'receivedDate' | 'isLocked' | 'dueDate';
 
-export type KastesOrderPartial = Pick<KastesOrder, KastesOrderPartialKeys>;
+export type KastesJobPartial = Pick<KastesJob, KastesJobPartialKeys> & { veikaliCount?: number; };
 
-export interface KastesOrderResponse extends ResponseBase<KastesOrder> {
-    deleted?: {
-        veikali: number;
-        orders: number;
-        ids: ObjectId[];
-    };
-}
+export interface KastesJobResponse extends ResponseBase<KastesJob> { }

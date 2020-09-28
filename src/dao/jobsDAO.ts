@@ -4,12 +4,14 @@ import { fileSystemDAO } from './fileSystemDAO';
 import {
     Job,
     JobResponse,
+    JobCategories,
     JobQueryFilter,
     JOBS_SCHEMA,
     InvoiceProduct,
     InvoiceResponse,
     ProductTotals,
     JobsWithoutInvoicesTotals,
+    KastesJob, KastesJobPartial, KastesJobResponse
 } from '../interfaces';
 
 let jobs: Collection<Job>;
@@ -53,6 +55,9 @@ export class jobsDAO {
                 $in: query.jobStatus.split(',').map(st => +st),
             };
         }
+        if (typeof query.category === 'string') {
+            filter.category = query.category;
+        }
         const aggr: object[] = [
             {
                 $match: filter
@@ -75,6 +80,7 @@ export class jobsDAO {
                     products: 1,
                     invoiceId: 1,
                     jobStatus: 1,
+                    category: 1,
                     custCode: { $arrayElemAt: ["$custCode.code", 0] }
                 }
             },
@@ -99,6 +105,45 @@ export class jobsDAO {
             data: await result.toArray(),
             error: null,
         };
+    }
+
+    static async getKastesJobs(veikali: boolean = false): Promise<KastesJobResponse> {
+        const pipeline = [
+            { $match: { 'category': 'perforated paper' } },
+            {
+                $lookup: {
+                    'from': 'kastes-kastes',
+                    'localField': 'jobId',
+                    'foreignField': 'pasutijums',
+                    'as': 'kastes-kastes'
+                }
+            },
+            {
+                $addFields: { 'veikaliCount': { '$size': '$kastes-kastes' } }
+            },
+            {
+                $match: {
+                    'veikaliCount': veikali ? { $gt: 0 } : { $eq: 0 }
+                }
+            },
+            {
+                $project: {
+                    '_id': 0,
+                    'jobId': 1,
+                    'name': 1,
+                    'receivedDate': 1,
+                    'dueDate': 1,
+                    'veikaliCount': 1,
+                }
+            }
+        ];
+        try {
+            const result = await jobs.aggregate<KastesJobPartial>(pipeline).toArray();
+            return {
+                error: false,
+                data: result,
+            };
+        } catch (error) { return { error }; }
     }
 
     static async getJob(jobId: number): Promise<JobResponse> {

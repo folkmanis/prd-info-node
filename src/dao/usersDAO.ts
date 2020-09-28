@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId } from "mongodb";
-import { User, UserPreferences, Login, LoginResponse, ResponseBase } from '../interfaces';
+import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse } from '../interfaces';
 import Logger from '../lib/logger';
 
 let users: Collection<User>;
@@ -28,23 +28,19 @@ export class UsersDAO {
         }
     }
 
-    static async total(): Promise<number> {
-        return await users.countDocuments({});
-    }
-
     static async list(): Promise<User[]> {
         return await users.find<User>({})
             .project(UsersDAO.projection).toArray();
     }
 
-    static async getUser(username: string): Promise<User | null> {
+    static async getUser(username: string): Promise<User | undefined> {
         const pipeline = [
             {
                 '$match': { username }
             }, {
                 '$lookup': {
                     'from': 'sessions',
-                    'let': {                        'user': '$username'                    },
+                    'let': { 'user': '$username' },
                     'pipeline': [
                         {
                             '$match': {
@@ -73,54 +69,52 @@ export class UsersDAO {
             _id: 0,
             password: 0,
         };
-        return (await users.aggregate(pipeline).toArray())[0] || null;
+        return users.aggregate(pipeline).toArray().then(usr => usr[0]);
     }
 
-    static async addUser(user: User):
-        Promise<{ success: boolean; } | { error: Error; }> {
+    static async addUser(user: User): Promise<UsersResponse> {
         try {
-            await users.insertOne(user, { w: 'majority' });
-            return { success: true };
+            const result = await users.insertOne(user, { w: 'majority' });
+            return {
+                error: false,
+                insertedCount: result.insertedCount,
+                insertedId: user.username,
+            };
         } catch (error) {
             return { error };
         }
     }
 
-    static async updateUser(user: Partial<User>): Promise<{ success: boolean, error?: any; }> {
+    static async updateUser(user: Partial<User>): Promise<UsersResponse> {
         if (!user.username) { // Ja nav lietotājvārds, tad neko nedara
-            const error = "User not defined";
-            Logger.error(error);
-            return { success: false, error };
+            const error = new Error('User not defined');
+            Logger.error(error.message);
+            return { error };
         }
         try {
-            const updResp = await users.updateOne({ username: user.username }, { $set: user }, { w: 'majority' });
-            if (updResp.matchedCount === 0) {
-                const error = "User not found";
-                Logger.error(error);
-                return { success: false, error };
-            }
-            return { success: true };
-
+            const resp = await users.updateOne({ username: user.username }, { $set: user }, { w: 'majority' });
+            return {
+                error: false,
+                modifiedCount: resp.modifiedCount,
+                result: resp.result,
+            };
         } catch (error) {
             Logger.error("User update error ", error);
-            return { success: false, error };
+            return { error };
         }
     }
 
-    static async deleteUser(username: string): Promise<{ success: boolean, error?: any; }> {
+    static async deleteUser(username: string): Promise<UsersResponse> {
         try {
-            const updResp = await users.deleteOne({ username }, { w: 'majority' });
-            Logger.debug('Delete result: ', updResp);
-            if (updResp.deletedCount === 0) {
-                const error = "User not found";
-                Logger.error(error);
-                return { success: false, error };
-            }
-            return { success: true };
-
+            const { deletedCount, result } = await users.deleteOne({ username }, { w: 'majority' });
+            return {
+                error: false,
+                deletedCount,
+                result,
+            };
         } catch (error) {
             Logger.error('User delete error', error);
-            return { success: false, error };
+            return { error };
         }
     }
 
@@ -173,9 +167,6 @@ export class UsersDAO {
      * @param val Moduļa iestatījumi
      */
     static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
-        if (val.pasutijums) {
-            val.pasutijums = new ObjectId(val.pasutijums);
-        }
         try {
             const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
             return {

@@ -10,8 +10,9 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesOrder } from '../interfaces';
+import { KastesVeikals, KastesJob } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
+import { jobsDAO } from '../dao/jobsDAO';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
@@ -26,7 +27,8 @@ export class KastesController {
     @Put('')
     private async table(req: Request, res: Response) {
         const veikali = req.body.data as KastesVeikals[];
-        const pasutijums = new ObjectId(req.body.orderId);
+        const pasutijums = +req.body.orderId;
+        if (isNaN(pasutijums)) { throw new Error('jobId not provided'); }
         const lastModified = new Date();
         const resp = await KastesDAO.veikaliAdd(pasutijums, veikali
             .map(vk => ({
@@ -35,6 +37,7 @@ export class KastesController {
                 lastModified,
             }))
         );
+        await jobsDAO.updateJob(pasutijums, { isLocked: true });
         res.json(resp);
         req.log.info('kastes order table inserted', resp);
     }
@@ -52,7 +55,7 @@ export class KastesController {
 
     @Post('label')
     private async setLabel(req: Request, res: Response) {
-        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
+        const pasutijumsId = +(req.query.pasutijumsId || 0);
         const kods = req.body.kods;
         req.log.info('set kastes label', { pasutijumsId, kods });
         res.json(
@@ -84,7 +87,7 @@ export class KastesController {
 
     @Get('apjomi')
     async getApjomi(req: Request, res: Response) {
-        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
+        const pasutijumsId = +(req.query.pasutijumsId || 0);
         res.json(
             await KastesDAO.kastesApjomi(pasutijumsId)
         );
@@ -102,7 +105,7 @@ export class KastesController {
     @Get('')
     private async getKastes(req: Request, res: Response) {
         req.log.debug('get kastes', req.query.pasutijumsId);
-        const pasutijumsId: ObjectId = new ObjectId(req.query.pasutijumsId as string);
+        const pasutijumsId = +(req.query.pasutijumsId || 0);
         res.json(
             await KastesDAO.kastesList(pasutijumsId)
         );

@@ -1,4 +1,11 @@
 import { ObjectId } from "mongodb";
+import { ResponseBase } from './response-base.interface';
+
+export interface XmfArchiveResponse extends ResponseBase<ArchiveJob> {
+    xmfCustomers?: string[];
+    count?: number;
+    facet?: FacetResult;
+}
 
 export interface ArchiveJob {
     JobID: string;
@@ -39,12 +46,6 @@ export interface ArchiveSearchParams {
     customerName?: string;
     year?: string;
     month?: string;
-}
-
-export interface ArchiveSearchResult {
-    count: number;
-    data: Partial<ArchiveJob>[];
-    facet: FacetResult;
 }
 
 interface Count { _id: string, count: number; };
