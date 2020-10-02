@@ -33,13 +33,13 @@ export class KastesOrderController {
             KastesDAO.apjomiTotals(jobId),
             KastesDAO.veikaliCount(jobId),
         ])
-            .then(([{ error, data }, colorTotals, apjomiTotals, veikali]) => ({
-                error,
-                data: data && !(data instanceof Array) ? {
-                    ...data,
+            .then(([job, colorTotals, apjomiTotals, veikali]) => ({
+                error: false,
+                data: job ? {
+                    ...job,
                     category: 'perforated paper',
                     isLocked: false,
-                    apjomsPlanned: data.products instanceof Array ? productsTocolorTotals(data.products) : [],
+                    apjomsPlanned: job.products instanceof Array ? productsTocolorTotals(job.products) : [],
                     totals: {
                         veikali,
                         colorTotals,

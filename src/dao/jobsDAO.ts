@@ -146,14 +146,8 @@ export class jobsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async getJob(jobId: number): Promise<JobResponse> {
-        try {
-            const resp = await jobs.findOne({ jobId });
-            return {
-                data: resp || undefined,
-                error: null,
-            };
-        } catch (error) { return { error }; }
+    static async getJob(jobId: number): Promise<Job | null> {
+        return jobs.findOne({ jobId });
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
