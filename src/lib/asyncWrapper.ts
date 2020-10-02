@@ -7,15 +7,7 @@ export const asyncWrapper = (action: RequestHandler) => {
             return await action(req, res, next);
         }
         catch (error) {
-            // res.json({ error });
-            // console.error(error);
-            if (req.log) {
-                // Logger.error('Error', { error, req });
-            } else {
-                // Logger.error(error);
-            }
             next(error);
         }
-        next();
     };
 };
