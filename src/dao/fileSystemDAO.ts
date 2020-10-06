@@ -1,4 +1,4 @@
-import { promises as fsPromises } from 'fs';
+import { promises as fsPromises, createWriteStream } from 'fs';
 import Logger from '../lib/logger';
 import path from 'path';
 
@@ -15,5 +15,14 @@ export class fileSystemDAO {
         const resp = await fsPromises.mkdir(fullPath, { recursive: true });
         Logger.info(`Folder ${fullPath} created`, { fullPath, resp });
         return resp;
+    }
+
+    static resolveFullPath(folder: string[], filename: string): string {
+        return path.resolve(rootPath, ...folder, filename);
+    }
+
+    static writeFile(file: NodeJS.ReadableStream, folder: string[], filename: string) {
+        const fullPath = this.resolveFullPath(folder, filename);
+        file.pipe(createWriteStream(fullPath));
     }
 }

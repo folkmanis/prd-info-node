@@ -1,4 +1,5 @@
 import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
+import Busboy from "busboy";
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
@@ -12,7 +13,7 @@ import {
     ProductNoPrices,
     ProductPriceImport
 } from '../interfaces';
-import { invoicesDAO, PreferencesDAO, jobsDAO, customersDAO, productsDAO } from '../dao';
+import { invoicesDAO, PreferencesDAO, jobsDAO, customersDAO, productsDAO, fileSystemDAO } from '../dao';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;
@@ -23,13 +24,13 @@ class JobImportResponse implements JobResponse {
 }
 
 @Controller('data/jobs')
-@ClassErrorMiddleware(logError)
 @ClassMiddleware([
     Preferences.getUserPreferences,
     PrdSession.validateSession,
     PrdSession.validateModule('jobs'),
 ])
 @ClassWrapper(asyncWrapper)
+@ClassErrorMiddleware(logError)
 export class JobsController {
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -48,6 +49,52 @@ export class JobsController {
         response.insertedJobs = (await jobsDAO.insertJobs(data.jobs)).insertedCount || 0;
         req.log.info('Imported documents', response);
         res.json(response);
+    }
+
+    @Post(':jobId/file')
+    private async uploadFile(req: Request, res: Response) {
+        const jobId = +req.params.jobId;
+        /** jobId validity check */
+        if (isNaN(jobId)) { throw new Error('Invalid jobId'); }
+
+        const job = await jobsDAO.getJob(jobId);
+        /* Job validity check */
+        if (!job) { throw new Error('Job not found'); }
+
+        const busboy = new Busboy({ headers: req.headers });
+        let filename: string;
+
+        if (!job.files?.path) { throw new Error(`Path not set for the job ${job.jobId}`); }
+        const path: string[] = job.files.path;
+        let fileNames = job.files.fileNames || [];
+
+        busboy.on('file', (_, file, fName) => {
+            filename = fName;
+            if (!fileNames.includes(fName)) {
+                fileNames = [...fileNames, fName];
+            }
+            req.log.info('Upload started', { jobId: job.jobId, path, filename });
+            fileSystemDAO.writeFile(file, path, fName);
+        });
+        busboy.on('finish', async () => {
+            req.log.info('Upload complete', { jobId: job.jobId, path, filename });
+            jobsDAO.updateJob(
+                job.jobId,
+                {
+                    files: {
+                        path,
+                        fileNames,
+                    }
+                }
+            );
+            res.json({
+                error: false,
+                resp: 'file uploaded',
+                file: filename,
+                jobId: job.jobId,
+            });
+        });
+        req.pipe(busboy);
     }
 
     @Post(':jobId')
@@ -102,9 +149,10 @@ export class JobsController {
     private async getJob(req: Request, res: Response) {
         const jobId = +req.params.jobId;
         if (isNaN(jobId)) { throw new Error('Invalid jobId'); }
-        res.json(
-            await jobsDAO.getJob(jobId)
-        );
+        res.json({
+            error: false,
+            data: await jobsDAO.getJob(jobId) || undefined,
+        });
     }
 
     @Get('')
