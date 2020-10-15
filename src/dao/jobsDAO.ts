@@ -151,6 +151,9 @@ export class jobsDAO {
     }
 
     static async insertJob(job: Job): Promise<JobResponse> {
+        if (!job.jobStatus) {
+            job.jobStatus = { generalStatus: 10 };
+        }
         Logger.info('insert job', job);
         try {
             const result = await jobs.insertOne(job).then(
@@ -187,7 +190,7 @@ export class jobsDAO {
             try {
                 await fileSystemDAO.createFolder(job.files.path);
             } catch (error) {
-                delete job.files.path;
+                 job.files = undefined;
             }
         }
         const result = await jobs.updateOne(
@@ -410,9 +413,6 @@ export class jobsDAO {
         }
         if (typeof job.dueDate === 'string') {
             job.dueDate = new Date(job.dueDate);
-        }
-        if (!job.jobStatus) {
-            job.jobStatus = { generalStatus: 10 };
         }
         return job;
     }

@@ -89,13 +89,11 @@ export class ProductsController {
         const prod = <ProductNoId | undefined>req.body;
         if (!prod?.name || !prod.category) {
             throw new Error('no data');
-        } else if (prod.prices) {
-            throw new Error('can not put prices');
-        } else {
-            const result = await productsDAO.insertNewProduct(prod);
-            req.log.info('product inserted', result);
-            res.json(result);
         }
+
+        const result = await productsDAO.insertNewProduct(prod);
+        req.log.info('product inserted', result);
+        res.json(result);
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
