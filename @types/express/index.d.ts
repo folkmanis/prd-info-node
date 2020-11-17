@@ -1,6 +1,5 @@
 declare namespace Express {
     export interface Request {
-        session?: Session;
         userPreferences?: {
             customers: string[],
             modules: string[],
@@ -13,23 +12,11 @@ declare namespace Express {
         systemPreferences?: Map<string, { [key: string]: any; }>;
         version?: Version;
     }
-    export interface Response {
+    interface Response {
         result: { [key: string]: any; };
     }
-    export interface Session {
-        user: User;
-    }
-    export interface User {
-        name: string;
-        username: string;
-        admin: boolean;
-        preferences: {
-            customers: string[],
-            modules: string[],
-        };
-    }
-    export interface Version {
+    interface Version {
         apiBuild: number;
         appBuild: number;
-    }    
+    }
 }

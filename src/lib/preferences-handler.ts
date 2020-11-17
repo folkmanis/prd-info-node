@@ -3,6 +3,7 @@ import { PreferencesDAO } from '../dao/preferencesDAO';
 import { UsersDAO } from '../dao/usersDAO';
 import { User,SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
+import '../interfaces/session';
 
 export class Preferences {
     static async getUserPreferences(req: Request, res: Response, next: NextFunction) {

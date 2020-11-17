@@ -2,17 +2,16 @@
  * /data/xmf-upload/
  */
 
-import { Controller, ClassMiddleware, Post, ClassWrapper, Get } from '@overnightjs/core';
-import { Request, Response } from 'express';
-import { asyncWrapper } from '../lib/asyncWrapper';
-import { PrdSession } from '../lib/session-handler';
-import { Preferences } from '../lib/preferences-handler';
-import { FileParser, UploadProgressTracker } from '../lib/upload-parser';
-import { xmfSearchDAO } from '../dao/xmf-searchDAO';
+import { ClassMiddleware, Controller, Get, Post } from '@overnightjs/core';
 import Busboy from "busboy";
+import { Request, Response } from 'express';
 import fs from 'fs';
 import { ObjectId } from 'mongodb';
 import { file as tmpFile, FileResult } from 'tmp-promise';
+import { xmfSearchDAO } from '../dao/xmf-searchDAO';
+import { Preferences } from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
+import { FileParser, UploadProgressTracker } from '../lib/upload-parser';
 
 @Controller('data/xmf-upload')
 @ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-upload')])
@@ -31,7 +30,7 @@ export class XmfUploadController {
             [key: string]: number | string | ObjectId | null | undefined,
         } = {};
         /** palaiž statusa sekotāju */
-        result.id = (await tracker.start({ username: req.session?.user.username })) || undefined;
+        result.id = (await tracker.start({ username: req.session?.user?.username })) || undefined;
         const busboy = new Busboy({ headers: req.headers });
         busboy.on('file', async (fieldname, file, filename) => {
             result.filename = filename;

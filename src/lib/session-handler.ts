@@ -2,6 +2,8 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
 import session from 'express-session';
 import Logger from './logger';
+import '../interfaces/session';
+
 const MongoStore = require('connect-mongo')(session);
 
 type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin';

@@ -49,9 +49,9 @@ export class UsersController {
 
     @Post(':id/password')
     private async updatePassword(req: Request, res: Response) {
-        if (!req.body.username) { throw new Error('Password not set'); }
+        if (!req.body.password) { throw new Error('Password not set'); }
 
-        const user = { username: req.body.username as string, password: hashPassword(req.body.password) };
+        const user = { username: req.params.id as string, password: hashPassword(req.body.password) };
         const result = await UsersDAO.updateUser(user);
         res.json(result);
         req.log.info('password updated', result);

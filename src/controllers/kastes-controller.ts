@@ -13,6 +13,7 @@ import { UsersDAO } from '../dao/usersDAO';
 import { KastesVeikals, KastesJob } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 import { jobsDAO } from '../dao/jobsDAO';
+import '../interfaces/session';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
@@ -46,7 +47,7 @@ export class KastesController {
     @Post('preferences')
     private async postPreferences(req: Request, res: Response) {
         req.log.debug('post kastes preferences', req.body);
-        const username = req.session?.user.username || '';
+        const username = req.session?.user?.username || '';
         const preferences = req.body;
         res.json(
             await UsersDAO.updateUserPreferences(username, 'kastes', preferences)
@@ -79,7 +80,7 @@ export class KastesController {
 
     @Get('preferences')
     private async getPreferences(req: Request, res: Response) {
-        const username = req.session?.user.username || '';
+        const username = req.session?.user?.username || '';
         res.json(
             await UsersDAO.getUserPreferences(username, 'kastes')
         );

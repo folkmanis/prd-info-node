@@ -30,8 +30,8 @@ import { Request, Response, Express } from 'express';
 import { logError } from '../lib/errorMiddleware';
 import { UsersDAO } from '../dao/usersDAO';
 import { Login, LoginResponse } from '../interfaces';
-
-type Session = Express.Session;
+import session from 'express-session';
+import '../interfaces/session';
 
 @ClassErrorMiddleware(logError)
 @Controller('data/login')
@@ -76,7 +76,7 @@ export class LoginController {
         res.json(loginResponse);
     }
 
-    private async logout(session: Session): Promise<LoginResponse> {
+    private async logout(session: session.Session): Promise<LoginResponse> {
         return new Promise<LoginResponse>((resolve, reject) => {
             session.destroy((err) => {
                 if (err) {
