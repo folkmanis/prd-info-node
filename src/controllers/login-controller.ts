@@ -61,6 +61,7 @@ export class LoginController {
         const login: Login = {
             username: req.body.username,
             password: crypto.createHash('sha256').update(req.body.password).digest('hex'),
+            // userDisabled: false,
         };
 
         const loginResponse = await UsersDAO.login(login);

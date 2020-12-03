@@ -1,19 +1,19 @@
 import {
-    Controller, ClassMiddleware,
-    Post, Put, Get, Delete,
-    ClassWrapper, ClassErrorMiddleware
+    ClassErrorMiddleware, ClassMiddleware,
+    ClassWrapper, Controller,
+    Get, Post, Put
 } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { ObjectId, Timestamp } from 'mongodb';
-import { asyncWrapper } from '../lib/asyncWrapper';
-import { PrdSession } from '../lib/session-handler';
-import { Preferences } from '../lib/preferences-handler';
+import { ObjectId } from 'mongodb';
+import { jobsDAO } from '../dao/jobsDAO';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesJob } from '../interfaces';
-import { logError } from '../lib/errorMiddleware';
-import { jobsDAO } from '../dao/jobsDAO';
+import { KastesVeikals } from '../interfaces';
 import '../interfaces/session';
+import { asyncWrapper } from '../lib/asyncWrapper';
+import { logError } from '../lib/errorMiddleware';
+import { Preferences } from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
