@@ -1,4 +1,4 @@
-import { MongoClient, Collection, ObjectId } from "mongodb";
+import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
 import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse } from '../interfaces';
 import Logger from '../lib/logger';
 
@@ -119,8 +119,12 @@ export class UsersDAO {
     }
 
     static async login(login: Login): Promise<LoginResponse> {
+        const filter: FilterQuery<User> = {
+            ...login,
+            userDisabled: { $not: { $eq: true } },
+        };
         const updResp = await users.findOneAndUpdate(
-            login,
+            filter,
             { $set: { last_login: new Date() } },
             { projection: UsersDAO.projection }
         );

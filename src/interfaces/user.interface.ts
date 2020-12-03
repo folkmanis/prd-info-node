@@ -6,6 +6,7 @@ export interface User {
     password: string,
     admin: boolean,
     last_login: Date,
+    userDisabled: boolean,
     preferences: UserPreferences,
 }
 
