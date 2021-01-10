@@ -11,7 +11,7 @@ import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { jobsDAO } from '../dao/jobsDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals, KastesJob, Colors, KastesJobResponse, Product, JobProduct, ColorTotals } from '../interfaces';
+import { Veikals, KastesJob, Colors, KastesJobResponse, Product, JobProduct, ColorTotals } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/kastes-orders')
@@ -31,7 +31,7 @@ export class KastesOrderController {
             jobsDAO.getJob(jobId),
             KastesDAO.colorTotals(jobId),
             KastesDAO.apjomiTotals(jobId),
-            KastesDAO.veikaliCount(jobId),
+            KastesDAO.veikali(jobId),
         ])
             .then(([job, colorTotals, apjomiTotals, veikali]) => ({
                 error: false,
@@ -41,10 +41,11 @@ export class KastesOrderController {
                     isLocked: false,
                     apjomsPlanned: job.products instanceof Array ? productsTocolorTotals(job.products) : [],
                     totals: {
-                        veikali,
+                        veikali: veikali.length,
                         colorTotals,
                         apjomiTotals,
-                    }
+                    },
+                    veikali,
                 } : undefined
             }));
         res.json(
@@ -60,6 +61,18 @@ export class KastesOrderController {
         );
     }
 
+    @Post(':id/veikali')
+    private async updateVeikali(req: Request, res: Response) {
+        const id = +req.params.id;
+        const { veikali } = req.body as { veikali: Veikals[]; };
+        if (!veikali || isNaN(id)) { throw new Error('invalid data'); }
+        res.json(
+            await KastesDAO.updateVeikali(id, veikali)
+        );
+    }
+
+
+
     @Post(':id')
     private async updatePasutijums(req: Request, res: Response) {
         const jobId = +req.params.id;
@@ -70,14 +83,6 @@ export class KastesOrderController {
             await jobsDAO.updateJob(jobId, pas)
         );
     }
-
-    @Delete('')
-    private async pasCleanup(req: Request, res: Response) {
-        res.json(
-            await KastesDAO.pasutijumiCleanup()
-        );
-    }
-
 
 }
 

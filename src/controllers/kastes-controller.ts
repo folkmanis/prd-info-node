@@ -1,6 +1,7 @@
 import {
     ClassErrorMiddleware, ClassMiddleware,
     ClassWrapper, Controller,
+    Delete,
     Get, Post, Put
 } from '@overnightjs/core';
 import { Request, Response } from 'express';
@@ -8,7 +9,7 @@ import { ObjectId } from 'mongodb';
 import { jobsDAO } from '../dao/jobsDAO';
 import { KastesDAO } from '../dao/kastesDAO';
 import { UsersDAO } from '../dao/usersDAO';
-import { KastesVeikals } from '../interfaces';
+import { Veikals } from '../interfaces';
 import '../interfaces/session';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
@@ -27,7 +28,7 @@ export class KastesController {
 
     @Put('')
     private async table(req: Request, res: Response) {
-        const veikali = req.body.data as KastesVeikals[];
+        const veikali = req.body.data as Veikals[];
         const pasutijums = +req.body.orderId;
         if (isNaN(pasutijums)) { throw new Error('jobId not provided'); }
         const lastModified = new Date();
@@ -71,7 +72,7 @@ export class KastesController {
             kaste: +req.params.kaste,
             yesno: +req.params.yesno ? true : false,
         };
-        req.log.debug('post gatavs', params);
+        req.log.info('post gatavs', params);
         // const { field, id, kaste, yesno } = req.body;
         res.json(
             await KastesDAO.setGatavs(params)
@@ -109,6 +110,18 @@ export class KastesController {
         const pasutijumsId = +(req.query.pasutijumsId || 0);
         res.json(
             await KastesDAO.kastesList(pasutijumsId)
+        );
+    }
+
+    @Delete('')
+    private async deleteKastes(req: Request, res: Response) {
+        if (!req.query.pasutijumsId || isNaN(+req.query.pasutijumsId)) {
+            throw new Error('no jobId');
+        }
+        const pasutijumsId = +req.query.pasutijumsId;
+        req.log.info('delete kastes requested', pasutijumsId);
+        res.json(
+            await KastesDAO.deleteKastes(pasutijumsId)
         );
     }
 

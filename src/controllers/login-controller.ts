@@ -51,7 +51,7 @@ export class LoginController {
             return;
         }
         if (req.session) { // Ja ir sesija, tad izdzēš
-            await new Promise((resolve, reject) => {
+            await new Promise<void>((resolve, reject) => {
                 req.session?.regenerate((err) => {  // Sesijas dzēšana
                     err ? reject(err) : resolve();
                 });

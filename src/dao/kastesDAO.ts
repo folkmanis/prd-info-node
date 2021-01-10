@@ -1,13 +1,14 @@
-import { MongoClient, Collection, ObjectId, ObjectID } from "mongodb";
+import { MongoClient, Collection, ObjectId, ObjectID, BulkWriteOperation } from "mongodb";
 import Logger from '../lib/logger';
 import {
-    KastesVeikals,
+    Veikals,
     KastesResponse, KastesJobResponse,
     ColorTotals, ApjomiTotals
 } from '../interfaces';
+import { omit } from 'lodash';
 
 
-let veikali: Collection<Partial<KastesVeikals>>; // Veikalu piegādes kopējais saraksts
+let veikali: Collection<Veikals>; // Veikalu piegādes kopējais saraksts
 
 export class KastesDAO {
 
@@ -46,37 +47,6 @@ export class KastesDAO {
             }
         }
 
-    }
-    /**
-     * Izdzēš no pasūtījumiem neaktīvos un atbilstošos no pakošanas
-     */
-    static async pasutijumiCleanup(): Promise<KastesJobResponse> {
-        const pipeline = [
-            {
-                $lookup: {
-                    'from': 'jobs',
-                    'localField': 'pasutijums',
-                    'foreignField': 'jobId',
-                    'as': 'jobId'
-                }
-            },
-            { $match: { '$expr': { '$eq': [{ '$size': '$jobId' }, 0] } } },
-            { $project: { '_id': 1 } }
-        ];
-        const saraksts: ObjectId[] = (await veikali.aggregate<{ _id: ObjectId; }>(pipeline).toArray()).map(pas => pas._id);
-        if (saraksts.length) {
-            const deletedCount = (await veikali.deleteMany({ _id: { $in: saraksts } })).deletedCount || 0;
-            Logger.info(`Kastes database cleanup performed. Deleted ${deletedCount} records.`, saraksts);
-            return {
-                error: false,
-                deletedCount,
-            };
-        } else {
-            return {
-                error: false,
-                deletedCount: 0,
-            };
-        }
     }
 
     static async colorTotals(pasutijums: number): Promise<ColorTotals[]> {
@@ -129,14 +99,14 @@ export class KastesDAO {
         return veikali.aggregate<ApjomiTotals>(pipeline).toArray();
     }
 
-    static async veikaliCount(pasutijums: number): Promise<number> {
-        return veikali.find({ pasutijums }).count();
+    static async veikali(pasutijums: number): Promise<Veikals[]> {
+        return veikali.find({ pasutijums }).toArray();
     }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(orderId: number, kastes: KastesVeikals[]): Promise<KastesResponse> {
+    static async veikaliAdd(orderId: number, kastes: Veikals[]): Promise<KastesResponse> {
         try {
             const insertResp = await veikali.insertMany(kastes);
             return {
@@ -145,6 +115,27 @@ export class KastesDAO {
             };
         } catch (error) {
             Logger.error('Veikali insert failed', error);
+            return { error };
+        }
+    }
+
+    static async updateVeikali(jobId: number, kastes: Veikals[]): Promise<KastesResponse> {
+        Logger.info('veikals update requested', { jobId, kastes });
+        try {
+            const ops: BulkWriteOperation<Veikals>[] = kastes.map(k => ({
+                updateOne: {
+                    filter: { _id: new ObjectId(k._id) },
+                    update: {
+                        $set: omit(k, ['_id', 'lastModified']),
+                        $currentDate: { lastModified: true },
+                    }
+                }
+            }));
+            const result = await veikali.bulkWrite(ops);
+            Logger.info('veikals update success', result);
+            return { error: false, modifiedCount: result.modifiedCount, result: result.result };
+        } catch (error) {
+            Logger.error('veikals update failed', { jobId, kastes });
             return { error };
         }
     }
@@ -179,7 +170,7 @@ export class KastesDAO {
      * Atrod vienu ierakstu no datubāzes pēc tā ID
      * @param _id Ieraksta ID
      */
-    static async getVeikals(_id: ObjectId): Promise<KastesVeikals | null> {
+    static async getVeikals(_id: ObjectId): Promise<Veikals | null> {
         return await veikali.findOne({ _id });
     };
     /**
@@ -306,6 +297,16 @@ export class KastesDAO {
             }
         } catch (error) { return { error }; }
 
+    }
+
+    static async deleteKastes(jobId: number): Promise<KastesResponse> {
+        try {
+            const resp = veikali.deleteMany({ pasutijums: jobId });
+            return {
+                error: false,
+                deletedCount: (await resp).deletedCount,
+            };
+        } catch (error) { return { error }; }
     }
 
 }
