@@ -1,8 +1,6 @@
-import { ObjectId } from 'mongodb';
 import { ResponseBase } from './response-base.interface';
 import { JobBase } from './job-base.interface';
-
-export type Colors = 'yellow' | 'rose' | 'white';
+import { Colors, Veikals } from './kastes.interface';
 
 export interface ColorTotals {
     color: Colors;
@@ -23,6 +21,8 @@ export type KastesJob = JobBase & {
         colorTotals: ColorTotals[];
         apjomiTotals: ApjomiTotals[];
     };
+    veikali: Veikals[];
+
 };
 
 export type KastesJobPartialKeys = 'jobId' | 'name' | 'receivedDate' | 'isLocked' | 'dueDate';
