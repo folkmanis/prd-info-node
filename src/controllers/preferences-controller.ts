@@ -65,7 +65,7 @@ export class PreferencesController {
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post('')
     private async updatePreferences(req: Request, res: Response) {
-        const pref = req.body.preferences as SystemPreferenceModule[];
+        const pref = req.body as SystemPreferenceModule[];
         req.log.debug('put preferences update', pref);
         const result = await PreferencesDAO.updatePreferences(...pref);
         res.json(result);
