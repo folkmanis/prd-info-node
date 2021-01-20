@@ -46,7 +46,6 @@ export class PreferencesController {
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post(':module')
     private async resetModule(req: Request, res: Response) {
-        console.log(req.body);
         const module = req.params.module as Modules;
         if (req.body.settings) {
             const pref: SystemPreferenceModule = {
@@ -66,9 +65,9 @@ export class PreferencesController {
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post('')
     private async updatePreferences(req: Request, res: Response) {
-        const pref = req.body.preferences;
+        const pref = req.body.preferences as SystemPreferenceModule[];
         req.log.debug('put preferences update', pref);
-        const result = await PreferencesDAO.updatePreferences(pref);
+        const result = await PreferencesDAO.updatePreferences(...pref);
         res.json(result);
     }
 

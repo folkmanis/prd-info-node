@@ -65,6 +65,15 @@ export class KastesController {
         );
     }
 
+    @Post('veikali')
+    private async updateVeikali(req: Request, res: Response) {
+        const { veikali } = req.body as { veikali: Veikals[]; };
+        if (!veikali) { throw new Error('invalid data'); }
+        res.json(
+            await KastesDAO.updateVeikali(veikali)
+        );
+    }
+
     @Post(':id/:kaste/gatavs/:yesno')
     private async setGatavs(req: Request, res: Response) {
         const params = {

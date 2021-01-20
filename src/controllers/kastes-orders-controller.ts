@@ -61,17 +61,6 @@ export class KastesOrderController {
         );
     }
 
-    @Post(':id/veikali')
-    private async updateVeikali(req: Request, res: Response) {
-        const id = +req.params.id;
-        const { veikali } = req.body as { veikali: Veikals[]; };
-        if (!veikali || isNaN(id)) { throw new Error('invalid data'); }
-        res.json(
-            await KastesDAO.updateVeikali(id, veikali)
-        );
-    }
-
-
 
     @Post(':id')
     private async updatePasutijums(req: Request, res: Response) {

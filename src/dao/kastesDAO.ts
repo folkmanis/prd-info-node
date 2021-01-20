@@ -119,8 +119,8 @@ export class KastesDAO {
         }
     }
 
-    static async updateVeikali(jobId: number, kastes: Veikals[]): Promise<KastesResponse> {
-        Logger.info('veikals update requested', { jobId, kastes });
+    static async updateVeikali(kastes: Veikals[]): Promise<KastesResponse> {
+        Logger.info('veikals update requested', { kastes });
         try {
             const ops: BulkWriteOperation<Veikals>[] = kastes.map(k => ({
                 updateOne: {
@@ -135,7 +135,7 @@ export class KastesDAO {
             Logger.info('veikals update success', result);
             return { error: false, modifiedCount: result.modifiedCount, result: result.result };
         } catch (error) {
-            Logger.error('veikals update failed', { jobId, kastes });
+            Logger.error('veikals update failed', { kastes });
             return { error };
         }
     }
