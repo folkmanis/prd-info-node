@@ -138,7 +138,7 @@ export class PreferencesDAO {
             update.push({
                 updateOne: {
                     filter: { module: pr.module },
-                    update: { $set: flattenObject({ settings: pr.settings }) }
+                    update: { $set: { settings: pr.settings } }
                 }
             })
         );
