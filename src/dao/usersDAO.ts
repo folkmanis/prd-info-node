@@ -13,6 +13,7 @@ export class UsersDAO {
         admin: 1,
         last_login: 1,
         preferences: 1,
+        userDisabled: 1,
     };
 
 
