@@ -70,6 +70,7 @@ const defaultPrefs: SystemPreferences = [
                     description: 'Izrakstīts',
                 }
             ],
+            productUnits: [],
             lastJobId: 5001,
             lastInvoiceId: 1,
         }
@@ -133,15 +134,14 @@ export class PreferencesDAO {
      * @param pref Preferences objekts vai objektu masīvs
      */
     static async updatePreferences(...pref: SystemPreferenceModule[]): Promise<PreferencesResponse> {
-        const update: BulkUpdateOne[] = [];
-        pref.forEach(pr =>
-            update.push({
+        const update: BulkUpdateOne[] = pref.map(pr => (
+            {
                 updateOne: {
                     filter: { module: pr.module },
-                    update: { $set: { settings: pr.settings } }
+                    update: { $set: flattenObject(pr.settings, 1) }
                 }
-            })
-        );
+            }
+        ));
         Logger.debug('update preferences DAO', JSON.stringify(update));
         try {
             const updResult = await preferences.bulkWrite(update, { ordered: false });

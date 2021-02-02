@@ -20,6 +20,11 @@ export interface SystemSystemPreference {
     logLevels: Array<LogLevels | string>[];
 }
 
+export interface ProductUnit {
+    unitName: string;
+    disabled: boolean;
+}
+
 export interface JobsSystemPreference {
     productCategories:
     {
@@ -30,6 +35,7 @@ export interface JobsSystemPreference {
         state: number,
         description: string;
     }[];
+    productUnits: ProductUnit[];
     lastJobId: number;
     lastInvoiceId: number;
 }
