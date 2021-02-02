@@ -70,11 +70,11 @@
   "include": [
     "src/**/*.ts",
     "@types/**/*.ts",
-    "version.json"
   ],
-  // "exclude": [
-  //   "node_modules"
-  // ],
+  "exclude": [
+    "node_modules", 
+    "**/*.spec.ts"
+  ],
   "files": [
     "@types/express/index.d.ts", "./src/lib/asyncWrapper.ts"
   ],
