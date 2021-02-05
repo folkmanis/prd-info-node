@@ -16,6 +16,7 @@ import {
 
 let jobs: Collection<Job>;
 const JOBS_COLLECTION_NAME = 'jobs';
+const DEFAULT_UNIT = 'gab.';
 
 export class jobsDAO {
     static async injectDB(conn: MongoClient): Promise<void> {
@@ -190,7 +191,7 @@ export class jobsDAO {
             try {
                 await fileSystemDAO.createFolder(job.files.path);
             } catch (error) {
-                 job.files = undefined;
+                job.files = undefined;
             }
         }
         const result = await jobs.updateOne(
@@ -377,7 +378,7 @@ export class jobsDAO {
     }
 
     static async upgradeDb(): Promise<void> {
-        const { modifiedCount: modN } = await jobs.updateMany(
+        return await jobs.updateMany(
             {
                 jobStatus: { $exists: false },
                 invoiceId: { $exists: false },
@@ -387,24 +388,42 @@ export class jobsDAO {
                     'jobStatus.generalStatus': 20,
                 }
             }
-        );
-        if (modN > 0) {
-            Logger.info(`Updated ${modN} jobs status to jobStatus.generalStatus: 20`);
-        }
-        const { modifiedCount: modI } = await jobs.updateMany(
+        ).then(result => {
+            if (result.modifiedCount > 0) {
+                Logger.info(`Updated ${result.modifiedCount} jobs status to jobStatus.generalStatus: 20`);
+            }
+
+        }).then(_ =>
+            jobs.updateMany(
+                {
+                    invoiceId: { $exists: true },
+                },
+                {
+                    $set: {
+                        'jobStatus.generalStatus': 50,
+                    }
+                }
+            )
+        ).then(result => {
+            if (result.modifiedCount > 0) {
+                Logger.info(`Updated ${result.modifiedCount} jobs status to jobStatus.generalStatus: 50`);
+            }
+        }).then(_ => jobs.updateMany(
             {
-                // jobStatus: { $exists: false },
-                invoiceId: { $exists: true },
+                products: { $exists: true },
+                'products.units': { $exists: false }
             },
             {
                 $set: {
-                    'jobStatus.generalStatus': 50,
+                    'products.$[].units': DEFAULT_UNIT
                 }
             }
-        );
-        if (modI > 0) {
-            Logger.info(`Updated ${modI} jobs status to jobStatus.generalStatus: 50`);
-        }
+        )
+        ).then(result => {
+            if (result.modifiedCount > 0) {
+                Logger.info(`Updated ${result.modifiedCount} jobs products.units to '${DEFAULT_UNIT}'`, result);
+            }
+        });
     }
 
     static validateJob<T extends Partial<Job>>(job: T): T {

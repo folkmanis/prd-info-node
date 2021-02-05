@@ -5,7 +5,7 @@ import { logError } from '../lib/errorMiddleware';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { InvoicesFilter } from '../interfaces';
-import { invoicesDAO, PreferencesDAO, jobsDAO } from '../dao';
+import { invoicesDAO, PreferencesDAO, jobsDAO, countersDAO } from '../dao';
 
 @Controller('data/invoices')
 @ClassErrorMiddleware(logError)
@@ -21,7 +21,7 @@ export class InvoicesController {
     private async newInvoice(req: Request, res: Response) {
         const jobIds: number[] = req.body.selectedJobs;
         const customerId: string = req.body.customerId;
-        const invoiceId = await PreferencesDAO.getNextInvoiceId();
+        const invoiceId = (await countersDAO.getNextId('lastInvoiceId')).toString().padStart(5, '0');
         const jobsId = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
         const products = await jobsDAO.getInvoiceTotals(invoiceId);
         res.json(

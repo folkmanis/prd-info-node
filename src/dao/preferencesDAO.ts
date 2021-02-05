@@ -71,8 +71,6 @@ const defaultPrefs: SystemPreferences = [
                 }
             ],
             productUnits: [],
-            lastJobId: 5001,
-            lastInvoiceId: 1,
         }
     }
 ];
@@ -192,25 +190,4 @@ export class PreferencesDAO {
         await preferences.bulkWrite(missing);
     }
 
-    static async getNextJobId(nums = 1): Promise<number> {
-        const result = (await preferences.findOneAndUpdate({
-            module: 'jobs',
-        }, {
-            $inc: { 'settings.lastJobId': nums }
-        }, {
-            returnOriginal: false,
-        })).value as any;
-        return result.settings?.lastJobId;
-    }
-
-    static async getNextInvoiceId(): Promise<string> {
-        const result = (await preferences.findOneAndUpdate({
-            module: 'jobs',
-        }, {
-            $inc: { 'settings.lastInvoiceId': 1 }
-        }, {
-            returnOriginal: false,
-        })).value?.settings as JobsSystemPreference;
-        return result.lastInvoiceId.toString().padStart(5, '0');
-    }
 }

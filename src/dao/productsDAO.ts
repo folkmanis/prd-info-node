@@ -6,7 +6,8 @@ import Logger from '../lib/logger';
 import { Product, ProductResult, ProductNoId, CustomerProduct, ProductNoPrices, ProductPriceImport } from '../interfaces';
 
 let products: Collection<Product>;
-let PRODUCTS_COLLECTION_NAME = 'products';
+const PRODUCTS_COLLECTION_NAME = 'products';
+const DEFAULT_UNIT = 'gab.';
 
 export class productsDAO {
     static async injectDB(conn: MongoClient): Promise<void> {
@@ -14,11 +15,12 @@ export class productsDAO {
         try {
             products = conn.db(process.env.DB_BASE as string)
                 .collection(PRODUCTS_COLLECTION_NAME);
+            await productsDAO.updateDb()
+                .then(_ => productsDAO.createIndexes());
         } catch (err) {
             Logger.error('Customers DAO', err);
             return;
         }
-        productsDAO.createIndexes();
     }
 
     static async insertNewProduct(prod: ProductNoId): Promise<ProductResult> {
@@ -106,6 +108,7 @@ export class productsDAO {
                     'customerName': '$price.customerName',
                     'price': '$price.price',
                     'lastUsed': '$price.lastUsed',
+                    'units': 1,
                 }
             }
         ];
@@ -283,8 +286,8 @@ export class productsDAO {
         } catch (error) { return { error }; }
     }
 
-    private static async createIndexes() {
-        products.createIndexes([
+    private static createIndexes(): Promise<any> {
+        return products.createIndexes([
             {
                 key: { category: 1, },
             },
@@ -301,5 +304,15 @@ export class productsDAO {
                 unique: true,
             }
         ]);
+    }
+
+    private static async updateDb(): Promise<void> {
+        return products.updateMany({ units: { $exists: false } }, { $set: { units: DEFAULT_UNIT } })
+            .then(result => {
+                if (result.modifiedCount > 0) {
+                    Logger.info(`Products Collection updated. ${result.modifiedCount} records set units to '${DEFAULT_UNIT}'`);
+                }
+                return;
+            });
     }
 }

@@ -13,7 +13,7 @@ import {
     ProductNoPrices,
     ProductPriceImport
 } from '../interfaces';
-import { invoicesDAO, PreferencesDAO, jobsDAO, customersDAO, productsDAO, fileSystemDAO } from '../dao';
+import { PreferencesDAO, jobsDAO, customersDAO, productsDAO, fileSystemDAO, countersDAO } from '../dao';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;
@@ -116,7 +116,7 @@ export class JobsController {
     private async newJob(req: Request, res: Response) {
         const job = req.body as Job | Job[];
         if (job instanceof Array) {
-            let ids = (await PreferencesDAO.getNextJobId(job.length)) - job.length;
+            let ids = (await countersDAO.getNextId('lastJobId', job.length)) - job.length;
             res.json(
                 await jobsDAO.insertJobs(
                     job.map(jb => ({
@@ -128,7 +128,7 @@ export class JobsController {
             );
         } else {
             job.receivedDate = new Date(req.body.receivedDate || Date.now());
-            job.jobId = await PreferencesDAO.getNextJobId();
+            job.jobId = await countersDAO.getNextId('lastJobId');
             res.json(
                 await jobsDAO.insertJob(job)
             );

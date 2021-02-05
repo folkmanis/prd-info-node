@@ -21,7 +21,8 @@ export interface SystemSystemPreference {
 }
 
 export interface ProductUnit {
-    unitName: string;
+    shortName: string;
+    description: string;
     disabled: boolean;
 }
 
@@ -36,8 +37,6 @@ export interface JobsSystemPreference {
         description: string;
     }[];
     productUnits: ProductUnit[];
-    lastJobId: number;
-    lastInvoiceId: number;
 }
 
 export interface PreferencesResponse extends ResponseBase<SystemPreferenceModule> {
