@@ -1,4 +1,4 @@
-import { MongoClient, Collection, IndexSpecification } from 'mongodb';
+import { MongoClient, Collection, IndexSpecification, FilterQuery } from 'mongodb';
 import { LogRecord, LogReadResponse, DatesGroup } from '../interfaces';
 
 const indexes: IndexSpecification[] = [
@@ -42,7 +42,7 @@ export class LoggerDAO {
         dateTo: Date,
         dateFrom: Date,
     }): Promise<LogReadResponse> {
-        const filter: any = {
+        const filter: FilterQuery<LogRecord> = {
             $and: [
                 { timestamp: { $lte: params.dateTo } },
                 { timestamp: { $gte: params.dateFrom } },
@@ -51,7 +51,7 @@ export class LoggerDAO {
         if (params.level) {
             filter.level = { $lte: params.level };
         }
-        const findres = log.find<LogRecord>(filter).sort({ timestamp: 1 });
+        const findres = log.find(filter).sort({ timestamp: 1 });
         return {
             count: await findres.count(),
             data: await findres.skip(params.start).limit(params.limit).toArray(),
