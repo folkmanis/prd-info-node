@@ -30,7 +30,7 @@ export class UsersDAO {
     }
 
     static async list(): Promise<User[]> {
-        return await users.find<User>({})
+        return await users.find({})
             .project(UsersDAO.projection).toArray();
     }
 

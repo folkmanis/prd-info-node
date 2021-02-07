@@ -14,7 +14,7 @@ export class fileSystemDAO {
         const fullPath = path.resolve(rootPath, ...folder);
         const resp = await fsPromises.mkdir(fullPath, { recursive: true });
         Logger.info(`Folder ${fullPath} created`, { fullPath, resp });
-        return resp;
+        return;
     }
 
     static resolveFullPath(folder: string[], filename: string): string {
