@@ -72,6 +72,10 @@ const defaultPrefs: SystemPreferences = [
             ],
             productUnits: [],
         }
+    },
+    {
+        module: 'paytraq',
+        settings: {}
     }
 ];
 
@@ -136,7 +140,7 @@ export class PreferencesDAO {
             {
                 updateOne: {
                     filter: { module: pr.module },
-                    update: { $set: flattenObject({settings: pr.settings}, 1) }
+                    update: { $set: flattenObject({ settings: pr.settings }, 1) }
                 }
             }
         ));
