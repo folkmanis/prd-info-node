@@ -1,49 +1,53 @@
 import { parseStringPromise, Options } from 'xml2js';
 import { parseNumbers, parseBooleans, firstCharLowerCase } from 'xml2js/lib/processors';
+// import { ObjTree } from 'objtree';
+
+import ObjTree from 'objtree';
 
 export class XmlObject {
 
     private _stringFields = ['regNumber', 'zip', 'phone'];
 
-    private _options: Options = {
-        explicitArray: false,
-        async: true,
-        emptyTag: undefined,
-        valueProcessors: [
-            parseBooleans,
-            this._parseNumbers(this._stringFields),
-        ],
-        tagNameProcessors: [
-            firstCharLowerCase,
-        ]
-    };
+    objTree = new ObjTree();
 
     constructor(
         private _xmlString: string
     ) { }
 
-    async js(options?: Options): Promise<{ [key: string]: any; }> {
-        options = Object.assign(this._options, options);
-        const obj = await parseStringPromise(this._xmlString, options);
-        return this._removeEmpty(obj);
+    js(): { [key: string]: any; } {
+        const obj = this.objTree.parseXML(this._xmlString);
+        return this._clearObject(obj);
     }
 
-    private _removeEmpty(obj: { [key: string]: any; }): { [key: string]: any; } {
+    private _clearObject(obj: { [key: string]: any; }): { [key: string]: any; } {
         return Object.entries(obj)
             .filter(([_, v]) => v !== undefined)
+            .map(this._keyLowerFirstLetter)
+            .map(this._parseNumbers(this._stringFields))
+            .map(this._parseBoolean)
             .reduce(
-                (acc, [k, v]) => ({ ...acc, [k]: typeof v === 'object' ? this._removeEmpty(v) : v }),
+                (acc, [k, v]) => ({ ...acc, [k]: typeof v === 'object' ? this._clearObject(v) : v }),
                 {}
             );
     }
 
-    private _parseNumbers(ignore: string[]): (value: string, name: string) => string | number {
-        return (value: string, name: string): string | number => {
-            if (typeof value !== 'string' || isNaN(+value) || ignore.includes(name)) {
-                return value;
+    private _parseNumbers(ignore: string[]): ([key, value]: [string, string]) => [string, string | number] {
+        return ([key, value]) => {
+            if (typeof value !== 'string' || isNaN(+value) || ignore.includes(key)) {
+                return [key, value];
             } else {
-                return +value;
+                return [key, +value];
             }
         };
+    }
+
+    private _keyLowerFirstLetter<T>([key, value]: [string, T]): [string, T] {
+        return [key[0].toLowerCase() + key.substr(1), value];
+    }
+
+    private _parseBoolean<T extends string | number>([key, value]: [string, T]): [string, T | boolean] {
+        if (value === 'false') { return [key, false]; }
+        if (value === 'true') { return [key, true]; }
+        return [key, value];
     }
 }
