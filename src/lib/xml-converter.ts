@@ -1,10 +1,9 @@
-import { type } from 'os';
 import { parseStringPromise, Options } from 'xml2js';
 import { parseNumbers, parseBooleans, firstCharLowerCase } from 'xml2js/lib/processors';
 
 export class XmlObject {
 
-    private _stringFields = ['regNumber', 'zip'];
+    private _stringFields = ['regNumber', 'zip', 'phone'];
 
     private _options: Options = {
         explicitArray: false,
