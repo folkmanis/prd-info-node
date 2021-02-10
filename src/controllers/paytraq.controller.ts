@@ -20,14 +20,10 @@ import { PaytraqSystemPreference } from '../interfaces/preferences.interface';
 export class PaytraqController {
     @Get('clients')
     private async getClients(req: Request, res: Response) {
-        const options: RequestOptions = {
-            page: req.query.page ? +req.query.page : undefined,
-            query: validateString(req.query.query),
-        };
         const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
 
         res.json({
-            data: await PaytraqDAO.getClients(options, prefs)
+            data: await PaytraqDAO.getClients(options(req), prefs)
         });
     }
 
@@ -40,8 +36,29 @@ export class PaytraqController {
             data: await PaytraqDAO.getClient(id, prefs)
         });
     }
+
+    @Get('products')
+    private async getProducts(req: Request, res: Response) {
+        const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
+        res.json({
+            data: await PaytraqDAO.getProducts(options(req), prefs)
+        });
+    }
+
+    @Get('product/:id')
+    private async getProduct(req: Request, res: Response) {
+        const id = +req.params.id;
+        const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
+
+        res.json({
+            data: await PaytraqDAO.getProduct(id, prefs)
+        });
+    }
 }
 
-function validateString(str: any): string | undefined {
-    return typeof str === 'string' ? str : undefined;
+function options({ query: { page, query } }: Request): RequestOptions {
+    return {
+        page: page ? +page : undefined,
+        query: typeof query === 'string' ? query : undefined,
+    };
 }
