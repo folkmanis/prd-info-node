@@ -1,7 +1,7 @@
 import https from 'https';
 import { URL, URLSearchParams } from 'url';
 import { IncomingMessage } from 'http';
-import { RequestOptions, PaytraqClients, PaytraqClient } from '../interfaces/paytraq.interface';
+import { RequestOptions, PaytraqClients, PaytraqClient } from '../interfaces/paytraq';
 import { PaytraqSystemPreference } from '../interfaces/preferences.interface';
 import { xmlToJs, Options } from '../lib/xml-converter';
 

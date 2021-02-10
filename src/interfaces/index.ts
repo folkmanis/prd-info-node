@@ -13,4 +13,3 @@ export * from './login.interface';
 export * from './version.interface';
 export * from './job-base.interface';
 export * from './counters.interface';
-export * from './paytraq.interface';

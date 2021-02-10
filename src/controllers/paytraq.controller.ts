@@ -5,7 +5,7 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { PaytraqDAO } from '../dao/paytraqDAO';
 import { logError } from '../lib/errorMiddleware';
-import { RequestOptions } from '../interfaces/paytraq.interface';
+import { RequestOptions } from '../interfaces/paytraq';
 import { PaytraqSystemPreference } from '../interfaces/preferences.interface';
 
 @Controller('data/paytraq')
