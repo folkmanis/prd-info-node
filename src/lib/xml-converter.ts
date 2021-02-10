@@ -5,8 +5,6 @@ export interface Options {
     stringFields?: string[];
 }
 
-// private _stringFields = ['RegNumber', 'Zip', 'Phone'];
-
 export function xmlToJs<T = { [key: string]: any; }>(xml: string, options: Options = {}): T {
     const objTree = new ObjTree();
     objTree.force_array = options.forceArray || null;
