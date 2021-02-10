@@ -10,3 +10,4 @@ export * from './customers-controller';
 export * from './products-controller';
 export * from './jobs-controller';
 export * from './invoices.controller';
+export * from './paytraq.controller';

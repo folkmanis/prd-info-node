@@ -38,3 +38,8 @@ export interface PaytraqClient {
 export interface PaytraqClients {
   clients: PaytraqClient[],
 }
+
+export interface RequestOptions {
+  page?: number;
+  query?: string;
+}
