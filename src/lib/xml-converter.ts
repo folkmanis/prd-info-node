@@ -1,53 +1,69 @@
-import { parseStringPromise, Options } from 'xml2js';
-import { parseNumbers, parseBooleans, firstCharLowerCase } from 'xml2js/lib/processors';
-// import { ObjTree } from 'objtree';
-
 import ObjTree from 'objtree';
 
-export class XmlObject {
+export interface Options {
+    forceArray?: string[];
+    stringFields?: string[];
+}
 
-    private _stringFields = ['regNumber', 'zip', 'phone'];
+// private _stringFields = ['RegNumber', 'Zip', 'Phone'];
 
-    objTree = new ObjTree();
+export function xmlToJs<T = { [key: string]: any; }>(xml: string, options: Options = {}): T {
+    const objTree = new ObjTree();
+    objTree.force_array = options.forceArray || null;
+    const obj = objTree.parseXML(xml);
+    return clearObject<T>(obj, options.stringFields);
+}
 
-    constructor(
-        private _xmlString: string
-    ) { }
+function clearObject<T>(
+    obj: { [key: string]: any; }, stringFields: string[] = []
+): T {
+    const entries = Object.entries(obj)
+        .filter(([_, v]) => v !== undefined)
+        .map(parseNumbers(stringFields))
+        .map(parseBoolean)
+        .map(keyLowerFirstLetter);
+    return Object.assign({}, ...entries.map(([k, v]) => {
+        if (v instanceof Array) {
+            return { [k]: clearArray(v, k, stringFields) };
+        }
+        if (typeof v === 'object') {
+            return { [k]: clearObject(v, stringFields) };
+        }
+        return { [k]: v };
+    }));
+}
 
-    js(): { [key: string]: any; } {
-        const obj = this.objTree.parseXML(this._xmlString);
-        return this._clearObject(obj);
-    }
-
-    private _clearObject(obj: { [key: string]: any; }): { [key: string]: any; } {
-        return Object.entries(obj)
-            .filter(([_, v]) => v !== undefined)
-            .map(this._keyLowerFirstLetter)
-            .map(this._parseNumbers(this._stringFields))
-            .map(this._parseBoolean)
-            .reduce(
-                (acc, [k, v]) => ({ ...acc, [k]: typeof v === 'object' ? this._clearObject(v) : v }),
-                {}
-            );
-    }
-
-    private _parseNumbers(ignore: string[]): ([key, value]: [string, string]) => [string, string | number] {
-        return ([key, value]) => {
-            if (typeof value !== 'string' || isNaN(+value) || ignore.includes(key)) {
-                return [key, value];
-            } else {
-                return [key, +value];
+function clearArray<A extends any>(obj: Array<A>, key = '', stringFields: string[] = []): Array<A> {
+    return obj.map(v => [key, v] as [string, any])
+        .map(parseNumbers(stringFields))
+        .map(parseBoolean)
+        .map(([_, v]) => {
+            if (v instanceof Array) {
+                return clearArray(v, key, stringFields);
             }
-        };
-    }
+            if (typeof v === 'object') {
+                return clearObject(v, stringFields);
+            }
+            return v;
+        });
+}
 
-    private _keyLowerFirstLetter<T>([key, value]: [string, T]): [string, T] {
-        return [key[0].toLowerCase() + key.substr(1), value];
-    }
+function parseNumbers(ignore: string[]): ([key, value]: [string, any]) => [string, any] {
+    return ([key, value]) => {
+        if (typeof value !== 'string' || isNaN(+value) || typeof key === 'string' && ignore.includes(key)) {
+            return [key, value];
+        } else {
+            return [key, +value];
+        }
+    };
+}
 
-    private _parseBoolean<T extends string | number>([key, value]: [string, T]): [string, T | boolean] {
-        if (value === 'false') { return [key, false]; }
-        if (value === 'true') { return [key, true]; }
-        return [key, value];
-    }
+function keyLowerFirstLetter<T>([key, value]: [string, T]): [string, T] {
+    return [key[0].toLowerCase() + key.substr(1), value];
+}
+
+function parseBoolean<T extends string | number>([key, value]: [string, T]): [string, T | boolean] {
+    if (value === 'false') { return [key, false]; }
+    if (value === 'true') { return [key, true]; }
+    return [key, value];
 }

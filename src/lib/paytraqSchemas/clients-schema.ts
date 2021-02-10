@@ -7,7 +7,7 @@ export const PaytraqClientsSchema: JSONSchemaType<PaytraqClients> = {
     properties: {
         clients: {
             type: 'array',
-            items: PaytraqClientSchema
+            items: PaytraqClientSchema,
         }
     },
     required: ['clients'],

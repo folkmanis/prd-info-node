@@ -1,4 +1,4 @@
-import { XmlObject } from './xml-converter';
+import { xmlToJs } from './xml-converter';
 
 const client = `<Client>
 <ClientID>7249</ClientID>
@@ -97,48 +97,40 @@ const clientObj = {
 };
 
 describe('should convert xml to js object', () => {
-    let xmlObject = new XmlObject(client);
-    it('should create a object', () =>
-        expect(xmlObject).toBeDefined());
 
-    it('should parse sample xml to object', async () => {
-        const jsObj = await xmlObject.js();
-        expect(jsObj).toBeInstanceOf(Object);
+    it('should parse text fields', () => {
+        const obj = xmlToJs('<name>Terra Virtuala, SIA</name>');
+        expect(obj).toStrictEqual({ name: 'Terra Virtuala, SIA' });
     });
 
-    it('should parse text fields', async () => {
-        const obj = new XmlObject('<name>Terra Virtuala, SIA</name>');
-        const js = await obj.js();
-        expect(js).toStrictEqual({ name: 'Terra Virtuala, SIA' });
+    it('should lowercase first letter', () => {
+        const obj = xmlToJs('<Name>Terra Virtuala, SIA</Name>');
+        expect(obj).toStrictEqual({ name: 'Terra Virtuala, SIA' });
     });
 
-    it('should lowercase first letter', async () => {
-        const obj = new XmlObject('<Name>Terra Virtuala, SIA</Name>');
-        const js = await obj.js();
-        expect(js).toStrictEqual({ name: 'Terra Virtuala, SIA' });
+    it('should parse number', () => {
+        const js = xmlToJs('<name>456</name>');
+        expect(js).toStrictEqual({ name: 456 });
     });
 
-    it('should parse number', async () => {
-        try {
-            const js = await new XmlObject('<name>456</name>').js();
-            expect(js).toStrictEqual({ name: 456 });
-        } catch (error) {
-            expect(error).toMatch('error');
-        }
-    });
-
-    it('should parse boolean', async () => {
-        const js = await (new XmlObject('<name>false</name>')).js();
+    it('should parse boolean', () => {
+        const js = xmlToJs('<name>false</name>');
         expect(js).toStrictEqual({ name: false });
     });
 
-    it('should not parse ignored key', async () => {
-        const js = await (new XmlObject('<RegNumber>456</RegNumber>')).js();
+    it('should not parse ignored key', () => {
+        const js = xmlToJs('<RegNumber>456</RegNumber>', { stringFields: ['RegNumber'] });
         expect(js).toStrictEqual({ regNumber: '456' });
     });
 
-    it('should parse sample xml to object', async () => {
-        const jsObj = await xmlObject.js();
+    it('should parse array', () => {
+        const js = xmlToJs('<client><RegNumber>456</RegNumber><RegNumber>457</RegNumber></client>');
+        // console.log(js);
+        expect(js).toStrictEqual({ client: { regNumber: [456, 457] } });
+    });
+
+    it('should parse sample xml to object', () => {
+        const jsObj = xmlToJs(client, { stringFields: ['RegNumber', 'Zip', 'Phone'] });
         expect(jsObj).toStrictEqual(clientObj);
     });
 });
