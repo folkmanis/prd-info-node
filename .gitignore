@@ -101,6 +101,6 @@ public
 .tern-port
 
 # Compiled js
-# dist/
+dist/
 
 upload.sh
