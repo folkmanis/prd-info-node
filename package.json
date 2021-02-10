@@ -2,7 +2,7 @@
   "name": "prd-info-node",
   "version": "1.0.0",
   "description": "prd info REST module",
-  "main": "/var/www/prd-info-node/dist/start.js",
+  "main": "dist/start.js",
   "scripts": {
     "test": "jest --watch",
     "tsc": "tsc",
