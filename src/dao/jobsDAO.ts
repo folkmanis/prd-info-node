@@ -369,12 +369,14 @@ export class jobsDAO {
     }
 
     static async createCollection(conn: MongoClient): Promise<void> {
-        await conn.db(process.env.DB_BASE as string)
-            .createCollection(JOBS_COLLECTION_NAME, {
-                validator: {
-                    $jsonSchema: JOBS_SCHEMA,
-                }
-            });
+        try {
+            await conn.db(process.env.DB_BASE as string)
+                .createCollection(JOBS_COLLECTION_NAME, {
+                    validator: {
+                        $jsonSchema: JOBS_SCHEMA,
+                    }
+                });
+        } catch (_) { return; }
     }
 
     static async upgradeDb(): Promise<void> {

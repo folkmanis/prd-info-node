@@ -114,12 +114,14 @@ export class invoicesDAO {
     }
 
     static async createCollection(conn: MongoClient): Promise<void> {
-        await conn.db(process.env.DB_BASE as string)
-            .createCollection(INVOICES_COLLECTION_NAME, {
-                validator: {
-                    $jsonSchema: INVOICE_SCHEMA,
-                }
-            });
+        try {
+            await conn.db(process.env.DB_BASE as string)
+                .createCollection(INVOICES_COLLECTION_NAME, {
+                    validator: {
+                        $jsonSchema: INVOICE_SCHEMA,
+                    }
+                });
+        } catch (_) { return; }
     }
 
     static createIndexes(): void {
