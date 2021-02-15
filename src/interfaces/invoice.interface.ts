@@ -23,6 +23,7 @@ export interface InvoiceProduct {
     count: number;
     price: number;
     comment?: string;
+    paytraqId?: string;
 };
 
 export interface InvoiceResponse extends ResponseBase<Invoice> {

@@ -70,38 +70,81 @@ export class invoicesDAO {
     }
 
     static async getInvoice(invoiceId: string): Promise<InvoiceResponse> {
-        const aggr = [
-            {
-                $match: { invoiceId }
-            }, {
-                $lookup: {
-                    'from': 'jobs',
-                    'let': { 'jobsId': '$jobsId' },
-                    'pipeline': [
-                        {
-                            $match: { '$expr': { '$in': ['$jobId', '$$jobsId'] } }
-                        }, {
-                            $unwind: { path: '$products', preserveNullAndEmptyArrays: true, }
-                        }, {
-                            $project: { _id: 0 },
-                        }, {
-                            $sort: { receivedDate: 1 },
+        const aggr = [{
+            $match: { invoiceId }
+        }, {
+            $unwind: { path: '$products', }
+        }, {
+            $lookup: {
+                from: 'products',
+                let: { 'product': '$products' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ['$$product._id', '$name'], },
+                            paytraqId: { '$exists': true }
                         }
-                    ],
-                    'as': 'jobs'
-                }
-            }, {
-                $sort: { 'jobsId': 1 }
-            }, {
-                $project: { '_id': 0 }
+                    },
+                    {
+                        $project: {
+                            paytraqId: 1,
+                            _id: 0
+                        }
+                    }
+                ],
+                as: 'paytraqId'
             }
-        ];
+        }, {
+            $addFields: {
+                products: {
+                    $mergeObjects: [
+                        '$products',
+                        { $arrayElemAt: ['$paytraqId', 0] }
+                    ]
+                }
+            }
+        }, {
+            $group: {
+                _id: '$invoiceId',
+                customer: { $first: '$customer' },
+                createdDate: { $first: '$createdDate' },
+                jobsId: { $first: '$jobsId' },
+                products: { $push: '$products' }
+            }
+        }, {
+            $lookup: {
+                from: 'jobs',
+                let: { jobsId: '$jobsId' },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $in: ['$jobId', '$$jobsId'] }
+                        }
+                    },
+                    {
+                        $unwind: {
+                            path: '$products',
+                            preserveNullAndEmptyArrays: true
+                        }
+                    },
+                    {
+                        $project: { _id: 0 }
+                    },
+                    {
+                        $sort: { jobId: 1 }
+                    }
+                ],
+                as: 'jobs'
+            }
+        }];
+
         const result = await invoices.aggregate(aggr).toArray();
         return {
             error: !result,
             data: result[0] || undefined,
         };
     }
+
 
     static async insertInvoice(inv: Invoice): Promise<InvoiceResponse> {
         const result = await invoices.insertOne(inv);
