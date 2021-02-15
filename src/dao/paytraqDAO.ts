@@ -2,7 +2,7 @@ import https from 'https';
 import { URL, URLSearchParams } from 'url';
 import { IncomingMessage } from 'http';
 import { RequestOptions, PaytraqClients, PaytraqClient, PaytraqProduct, PaytraqProducts } from '../interfaces/paytraq';
-import { PaytraqSystemPreference } from '../interfaces/preferences.interface';
+import { PaytraqConnectionParams, PaytraqSystemPreference } from '../interfaces/preferences.interface';
 import { xmlToJs, Options } from '../lib/xml-converter';
 
 const CLIENT_OPTIONS = { stringFields: ['RegNumber', 'Zip', 'Phone'] };
@@ -44,7 +44,11 @@ export class PaytraqDAO {
 }
 
 class ApiURL extends URL {
-    constructor({ apiUrl, apiKey, apiToken }: PaytraqSystemPreference, ...path: string[]) {
+    constructor({ connectionParams }: PaytraqSystemPreference, ...path: string[]) {
+        if (!connectionParams) {
+            throw new Error('paytraq parameters not set');
+        }
+        const { apiUrl, apiKey, apiToken } = connectionParams;
         if (!apiUrl || !apiKey || !apiToken) { throw new Error('missing server info'); }
         super(path.join('/'), apiUrl);
         const params = new URLSearchParams({
