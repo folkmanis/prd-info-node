@@ -39,13 +39,19 @@ export interface JobsSystemPreference {
     productUnits: ProductUnit[];
 }
 
-export type PaytraqSystemPreference = Partial<{
+export interface PaytraqSystemPreference {
+    enabled: boolean;
+    connectionParams?: PaytraqConnectionParams;
+}
+
+export interface PaytraqConnectionParams {
     connectUrl: string;
     connectKey: string;
     apiUrl: string;
     apiKey: string;
     apiToken: string;
-}>;
+}
+
 
 export interface PreferencesResponse extends ResponseBase<SystemPreferenceModule> {
 

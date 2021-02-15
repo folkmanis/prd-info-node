@@ -1,9 +1,8 @@
-import { MongoClient, Collection, ObjectId, BulkWriteOperation, BulkWriteOpResultObject } from "mongodb";
-import { defaultsDeep, defaults } from 'lodash';
-import Logger from '../lib/logger';
-import { SystemPreferences, Modules, SystemPreferenceModule, JobsSystemPreference, PreferencesResponse } from '../interfaces';
-import { LogLevels } from '../lib/logger';
+import { defaultsDeep } from 'lodash';
+import { BulkWriteOperation, Collection, MongoClient } from "mongodb";
+import { Modules, PreferencesResponse, SystemPreferenceModule, SystemPreferences } from '../interfaces';
 import { flattenObject } from '../lib/flatten-object';
+import Logger, { LogLevels } from '../lib/logger';
 
 interface BulkUpdateOne {
     updateOne: {
@@ -75,7 +74,7 @@ const defaultPrefs: SystemPreferences = [
     },
     {
         module: 'paytraq',
-        settings: {}
+        settings: { enabled: false}
     }
 ];
 
