@@ -136,6 +136,12 @@ export class invoicesDAO {
                 ],
                 as: 'jobs'
             }
+        }, {
+            $addFields: {
+                invoiceId: '$_id'
+            }
+        }, {
+            $unset: '_id'
         }];
 
         const result = await invoices.aggregate(aggr).toArray();
