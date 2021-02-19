@@ -36,15 +36,10 @@ export class customersDAO {
             .toArray();
     }
 
-    static async getCustomer(fltr: FilterQuery<Customer>): Promise<CustomerResult> {
-        try {
-            const result = await customers.findOne(fltr);
-            return {
-                error: false,
-                data: result || undefined,
-            };
+    static async getCustomer(idOrName: string): Promise<Customer | undefined> {
+        const fltr = (/^[a-f\d]{24}$/i).test(idOrName) ? { _id: new ObjectId(idOrName) } : { CustomerName: idOrName };
 
-        } catch (error) { return { error }; }
+        return await customers.findOne(fltr) || undefined;
     }
 
     static async insertCustomer(customer: Customer): Promise<CustomerResult> {

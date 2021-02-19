@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb';
+import { Customer } from './customers.interface';
 import { Job } from './job.interface';
 import { Product } from './products.interface';
 import { ResponseBase } from './response-base.interface';
@@ -6,11 +7,22 @@ import { ResponseBase } from './response-base.interface';
 export interface Invoice {
     invoiceId: string;
     customer: string;
+    customerInfo?: Customer;
     createdDate: Date;
     jobsId: number[];
     products: InvoiceProduct[];
     comment?: string;
+    paytraq?: PaytraqInvoice;
 }
+
+export interface PaytraqInvoice {
+    paytraqId: number;
+    documentRef?: string;
+}
+
+export const INVOICE_UPDATE_FIELDS = ['comment', 'paytraq'] as const;
+
+export type InvoiceUpdate = Partial<Pick<Invoice, typeof INVOICE_UPDATE_FIELDS[number]>>
 
 export interface InvoicesFilter {
     customer?: string;

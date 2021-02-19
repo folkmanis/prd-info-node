@@ -76,11 +76,12 @@ export class CustomersController {
     // id - either _id or CustomerName
     @Get(':id')
     private async getById(req: Request, res: Response) {
-        const param = req.params.id;
-        const fltr = (/^[a-f\d]{24}$/i).test(param) ? { _id: new ObjectId(param) } : { CustomerName: param };
-        res.json(
-            await customersDAO.getCustomer(fltr)
-        );
+        const idOrName = req.params.id;
+
+        res.json({
+            error: false,
+            data: await customersDAO.getCustomer(idOrName)
+        });
     }
 
 }

@@ -12,6 +12,14 @@ export function xmlToJs<T = { [key: string]: any; }>(xml: string, options: Optio
     return clearObject<T>(obj, options.stringFields);
 }
 
+export function jsToXml(obj: { [key: string]: any; }): string {
+    const objTree = new ObjTree();
+    obj = keyUpperFirstLetter(obj);
+    const xml = objTree.writeXML(obj);
+    return xml;
+    // TODO
+}
+
 function clearObject<T>(
     obj: { [key: string]: any; }, stringFields: string[] = []
 ): T {
@@ -58,6 +66,21 @@ function parseNumbers(ignore: string[]): ([key, value]: [string, any]) => [strin
 
 function keyLowerFirstLetter<T>([key, value]: [string, T]): [string, T] {
     return [key[0].toLowerCase() + key.substr(1), value];
+}
+
+function keyUpperFirstLetter(obj: { [key: string]: any; } | any): { [key: string]: any; } | any {
+    if (obj instanceof Array) {
+        return obj.map(val => keyUpperFirstLetter(val));
+    }
+    if (typeof obj === 'object') {
+        const entries: [string, any][] = Object.entries(obj)
+            .map(([key, value]) => {
+                key = key[0].toUpperCase() + key.substr(1);
+                return [key, keyUpperFirstLetter(value)];
+            });
+        return Object.assign({}, ...entries.map(([k, v]) => ({ [k]: v })));
+    }
+    return obj;
 }
 
 function parseBoolean<T extends string | number>([key, value]: [string, T]): [string, T | boolean] {

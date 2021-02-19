@@ -1,6 +1,6 @@
 import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
-import { Invoice, INVOICE_SCHEMA, InvoiceResponse, InvoicesFilter } from '../interfaces';
+import { Invoice, INVOICE_SCHEMA, InvoiceResponse, InvoicesFilter, InvoiceUpdate } from '../interfaces';
 
 let invoices: Collection<Invoice>;
 const INVOICES_COLLECTION_NAME = 'invoices';
@@ -69,7 +69,7 @@ export class invoicesDAO {
         } catch (error) { return { error }; }
     }
 
-    static async getInvoice(invoiceId: string): Promise<InvoiceResponse> {
+    static async getInvoice(invoiceId: string): Promise<Invoice> {
         const aggr = [{
             $match: { invoiceId }
         }, {
@@ -109,7 +109,8 @@ export class invoicesDAO {
                 customer: { $first: '$customer' },
                 createdDate: { $first: '$createdDate' },
                 jobsId: { $first: '$jobsId' },
-                products: { $push: '$products' }
+                products: { $push: '$products' },
+                paytraq: { $first: '$paytraq' },
             }
         }, {
             $lookup: {
@@ -145,12 +146,8 @@ export class invoicesDAO {
         }];
 
         const result = await invoices.aggregate(aggr).toArray();
-        return {
-            error: !result,
-            data: result[0] || undefined,
-        };
+        return result[0] || undefined;
     }
-
 
     static async insertInvoice(inv: Invoice): Promise<InvoiceResponse> {
         const result = await invoices.insertOne(inv);
@@ -160,6 +157,14 @@ export class invoicesDAO {
             insertedId: result.insertedId,
             data: result.ops.pop(),
         };
+    }
+
+    static async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<number> {
+        const result = await invoices.updateOne(
+            { invoiceId },
+            { $set: update }
+        );
+        return result.modifiedCount;
     }
 
     static async createCollection(conn: MongoClient): Promise<void> {

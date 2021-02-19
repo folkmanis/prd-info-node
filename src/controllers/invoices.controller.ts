@@ -4,8 +4,9 @@ import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
-import { InvoicesFilter } from '../interfaces';
-import { invoicesDAO, PreferencesDAO, jobsDAO, countersDAO } from '../dao';
+import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
+import { invoicesDAO, customersDAO, jobsDAO, countersDAO } from '../dao';
+import { pick } from '../lib/pick';
 
 @Controller('data/invoices')
 @ClassErrorMiddleware(logError)
@@ -17,7 +18,7 @@ import { invoicesDAO, PreferencesDAO, jobsDAO, countersDAO } from '../dao';
 @ClassWrapper(asyncWrapper)
 export class InvoicesController {
 
-    @Post('')
+    @Put('')
     private async newInvoice(req: Request, res: Response) {
         const jobIds: number[] = req.body.selectedJobs;
         const customerId: string = req.body.customerId;
@@ -37,6 +38,16 @@ export class InvoicesController {
         );
     }
 
+    @Post(':id')
+    private async updateInvoice(req: Request, res: Response) {
+        const id: string = req.params.id;
+        const update: InvoiceUpdate = pick(req.body, INVOICE_UPDATE_FIELDS);
+        res.json({
+            error: false,
+            modifiedCount: await invoicesDAO.updateInvoice(id, update),
+        });
+    }
+
     @Get('totals')
     private async getTotals(req: Request, res: Response) {
         const jobsId: number[] = (req.query.jobsId as string).split(',').map(val => +val);
@@ -47,9 +58,15 @@ export class InvoicesController {
 
     @Get(':invoiceId')
     private async getInvoice(req: Request, res: Response) {
-        res.json(
-            await invoicesDAO.getInvoice(req.params.invoiceId as string)
-        );
+        const id: string = req.params.invoiceId;
+        const data = await invoicesDAO.getInvoice(id);
+        const customerInfo = await customersDAO.getCustomer(data.customer);
+        if (!customerInfo) { throw new Error('No data'); }
+
+        res.json({
+            error: false,
+            data: { ...data, customerInfo }
+        });
     }
 
     @Get('')

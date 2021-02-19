@@ -5,7 +5,7 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { PaytraqDAO } from '../dao/paytraqDAO';
 import { logError } from '../lib/errorMiddleware';
-import { RequestOptions } from '../interfaces/paytraq';
+import { PaytraqSale, RequestOptions } from '../interfaces/paytraq';
 import { PaytraqSystemPreference } from '../interfaces/preferences.interface';
 
 @Controller('data/paytraq')
@@ -23,7 +23,8 @@ export class PaytraqController {
         const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
 
         res.json({
-            data: await PaytraqDAO.getClients(options(req), prefs)
+            data: await PaytraqDAO.getClients(options(req), prefs),
+            error: false,
         });
     }
 
@@ -33,7 +34,8 @@ export class PaytraqController {
         const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
 
         res.json({
-            data: await PaytraqDAO.getClient(id, prefs)
+            data: await PaytraqDAO.getClient(id, prefs),
+            error: false,
         });
     }
 
@@ -41,7 +43,8 @@ export class PaytraqController {
     private async getProducts(req: Request, res: Response) {
         const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
         res.json({
-            data: await PaytraqDAO.getProducts(options(req), prefs)
+            data: await PaytraqDAO.getProducts(options(req), prefs),
+            error: false,
         });
     }
 
@@ -51,8 +54,52 @@ export class PaytraqController {
         const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
 
         res.json({
-            data: await PaytraqDAO.getProduct(id, prefs)
+            data: await PaytraqDAO.getProduct(id, prefs),
+            error: false,
         });
+    }
+
+    @Get('sales')
+    private async getSales(req: Request, res: Response) {
+        const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
+
+        res.json({
+            data: await PaytraqDAO.getSales(options(req), prefs),
+            error: false,
+        });
+    }
+
+    @Get('sale/:id')
+    private async getSale(req: Request, res: Response) {
+        const id = +req.params.id;
+        const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
+
+        res.json({
+            data: await PaytraqDAO.getSale(id, prefs),
+            error: false,
+        });
+    }
+
+    @Post('sale')
+    private async postSale(req: Request, res: Response) {
+        const prefs = req.systemPreferences?.get('paytraq') as PaytraqSystemPreference;
+        const data: Partial<PaytraqSale> = req.body.data;
+        if (!data?.sale) {
+            throw new Error('Missing sale data');
+        }
+
+        const resp = await PaytraqDAO.postSale(data, prefs);
+        if (resp.response?.documentID) {
+            res.status(201).send({
+                data: resp,
+                error: false,
+            });
+        } else {
+            throw new Error(JSON.stringify(resp));
+
+        }
+
+
     }
 }
 
