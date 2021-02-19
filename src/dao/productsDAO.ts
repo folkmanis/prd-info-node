@@ -1,5 +1,5 @@
 import {
-    MongoClient, Collection, ObjectId, DeleteWriteOpResultObject,
+    MongoClient, Collection, DeleteWriteOpResultObject,
     FilterQuery, Double, BulkWriteOperation, UpdateQuery, BulkWriteUpdateOneOperation
 } from "mongodb";
 import Logger from '../lib/logger';
@@ -23,9 +23,10 @@ export class productsDAO {
         }
     }
 
-    static async insertNewProduct(prod: ProductNoId): Promise<ProductResult> {
-        const result = await products.insertOne(prod);
-        return { insertedId: result.insertedId, result: result.result, error: !result.result.ok };
+    static async insertNewProduct(prod: ProductNoId): Promise<string | null> {
+        return products.insertOne(prod)
+        .then(result=> products.findOne({_id: result.insertedId}) )
+        .then(result=> result?.name || null)
     }
 
     static async insertNewProducts(prod: ProductNoPrices[]): Promise<ProductResult> {
@@ -60,12 +61,8 @@ export class productsDAO {
     }
 
     // Done!
-    static async getProduct(id: ObjectId): Promise<ProductResult> {
-        const product = await products.findOne({ _id: id });
-        return {
-            data: product || undefined,
-            error: !product
-        };
+    static async getProduct(name: string): Promise<Product | null> {
+        return products.findOne({ name });
     }
 
     static async getCustomerProducts(customerName: string): Promise<ProductResult> {
@@ -121,24 +118,24 @@ export class productsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async deleteProduct(id: ObjectId): Promise<ProductResult> {
-        const result = await products.deleteOne({ _id: id });
+    static async deleteProduct(name: string): Promise<ProductResult> {
+        const result = await products.deleteOne({ name });
         return {
             deletedCount: result.deletedCount,
             error: !result.result.ok,
         };
     }
 
-    static async updateProduct(id: ObjectId, prod: ProductNoId): Promise<ProductResult> {
-        const result = await products.updateOne({ _id: id }, { $set: prod });
+    static async updateProduct(name: string, prod: ProductNoId): Promise<ProductResult> {
+        const result = await products.updateOne({ name }, { $set: prod });
         return {
             modifiedCount: result.modifiedCount,
             error: !result.result.ok,
         };
     }
 
-    static async productPrices(id: ObjectId): Promise<ProductResult> {
-        const result = await products.findOne({ _id: id }, { projection: { prices: 1 } });
+    static async productPrices(name: string): Promise<ProductResult> {
+        const result = await products.findOne({ name }, { projection: { prices: 1 } });
         return {
             error: !result,
             prices: result ? result.prices : [],
@@ -163,9 +160,9 @@ export class productsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async updatePrice(id: ObjectId, customer: string, price: number): Promise<ProductResult> {
+    static async updatePrice(name: string, customer: string, price: number): Promise<ProductResult> {
         const result = await products.updateOne(
-            { _id: id, "prices.customer": customer },
+            { name, "prices.customer": customer },
             {
                 $set: {
                     "prices.$.price": +price
@@ -179,9 +176,9 @@ export class productsDAO {
         };
     }
 
-    static async addPrice(id: ObjectId, customerName: string, price: number): Promise<ProductResult> {
+    static async addPrice(name: string, customerName: string, price: number): Promise<ProductResult> {
         const result = await products.updateOne(
-            { _id: id },
+            { name },
             {
                 $addToSet: {
                     prices: { customerName, price }
@@ -220,9 +217,9 @@ export class productsDAO {
             .catch(error => ({ error }));
     }
 
-    static async deletePrice(id: ObjectId, customerName: string): Promise<ProductResult> {
+    static async deletePrice(name: string, customerName: string): Promise<ProductResult> {
         const result = await products.updateOne(
-            { _id: id },
+            { name },
             {
                 $pull: {
                     prices: {

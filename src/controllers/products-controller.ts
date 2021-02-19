@@ -54,16 +54,20 @@ export class ProductsController {
         res.json(await productsDAO.validate(property));
     }
 
-    @Get(':id/prices')
+    @Get(':name/prices')
     private async getProductPrices(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        res.json(await productsDAO.productPrices(id));
+        const name = req.params.name;
+        res.json(await productsDAO.productPrices(name));
     }
 
-    @Get(':id')
-    private async getById(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        res.json(await productsDAO.getProduct(id));
+    @Get(':name')
+    private async getProduct(req: Request, res: Response) {
+        const name = req.params.name;
+        res.json({
+            error: false,
+            data: await productsDAO.getProduct(name)
+
+        });
     }
 
     @Get('')
@@ -74,13 +78,13 @@ export class ProductsController {
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Put(':id/price/:customer')
+    @Put(':name/price/:customer')
     private async addCustomerPrice(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const name = req.params.name;
         const customer = <string>req.params.customer;
         const price: number = req.body.price;
         if (price !== +price) { throw new Error('nuber required'); }
-        res.json(await productsDAO.addPrice(id, customer, +price));
+        res.json(await productsDAO.addPrice(name, customer, +price));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -91,52 +95,56 @@ export class ProductsController {
             throw new Error('no data');
         }
 
-        const result = await productsDAO.insertNewProduct(prod);
-        req.log.info('product inserted', result);
-        res.json(result);
+        const insertedId = await productsDAO.insertNewProduct(prod);
+        if (!insertedId) { throw `Insert failed ${JSON.stringify(prod)}`; }
+        req.log.info('product inserted', prod);
+        res.json({
+            error: false,
+            insertedId
+        });
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Post(':id/price/:customer')
+    @Post(':name/price/:customer')
     private async setCustomerPrice(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const name = req.params.name;
         const customer = <string>req.params.customer;
         const price: number = req.body.price;
         if (price !== +price) { throw new Error('nuber required'); }
-        res.json(await productsDAO.updatePrice(id, customer, +price));
+        res.json(await productsDAO.updatePrice(name, customer, +price));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Post(':id/prices')
+    @Post(':name/prices')
     private async updatePrices(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const name = req.params.name;
         const product: Pick<Product, 'prices'> = { prices: req.body };
-        res.json({ id, product });
+        res.json({ name, product });
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Post(':id')
+    @Post(':name')
     private async updateProduct(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const name = req.params.name;
         const product: ProductNoId = omit(<Product>req.body, ['_id']);
-        const result = await productsDAO.updateProduct(id, product);
+        const result = await productsDAO.updateProduct(name, product);
         res.json(result);
         req.log.info('product updated', result);
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Delete(':id/price/:customer')
+    @Delete(':name/price/:customer')
     private async deleteCustomerPrice(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
+        const name = req.params.name;
         const customer = <string>req.params.customer;
-        res.json(await productsDAO.deletePrice(id, customer));
+        res.json(await productsDAO.deletePrice(name, customer));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
-    @Delete(':id')
+    @Delete(':name')
     private async deleteProducts(req: Request, res: Response) {
-        const id = new ObjectId(req.params.id);
-        const result = await productsDAO.deleteProduct(id);
+        const name = req.params.name;
+        const result = await productsDAO.deleteProduct(name);
         res.json(result);
         req.log.info('product delete', result);
     }
