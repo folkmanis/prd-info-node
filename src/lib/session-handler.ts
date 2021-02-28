@@ -46,7 +46,6 @@ export class PrdSession {
     }
 
     static injectDB(conn: string): RequestHandler {
-        console.log(conn);
         const sessionStore = MongoStore.create({ mongoUrl: conn, stringify: false });
         Logger.debug("session handler started");
         return session({

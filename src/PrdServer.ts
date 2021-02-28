@@ -30,7 +30,6 @@ export class PrdServer extends Server {
         return MongoClient.connect(uri,
             {
                 poolSize: 50,
-                // authSource: "admin",
                 useUnifiedTopology: true,
                 useNewUrlParser: true,
                 connectTimeoutMS: 5000,
