@@ -75,7 +75,7 @@ export class UsersDAO {
 
     static async addUser(user: User): Promise<UsersResponse> {
         try {
-            const result = await users.insertOne(user, { w: 'majority' });
+            const result = await users.insertOne(user, { writeConcern: { w: 'majority' } });
             return {
                 error: false,
                 insertedCount: result.insertedCount,
@@ -93,7 +93,7 @@ export class UsersDAO {
             return { error };
         }
         try {
-            const resp = await users.updateOne({ username: user.username }, { $set: user }, { w: 'majority' });
+            const resp = await users.updateOne({ username: user.username }, { $set: user }, { writeConcern: { w: 'majority' } });
             return {
                 error: false,
                 modifiedCount: resp.modifiedCount,
@@ -107,7 +107,7 @@ export class UsersDAO {
 
     static async deleteUser(username: string): Promise<UsersResponse> {
         try {
-            const { deletedCount, result } = await users.deleteOne({ username }, { w: 'majority' });
+            const { deletedCount, result } = await users.deleteOne({ username }, { writeConcern: { w: 'majority' } });
             return {
                 error: false,
                 deletedCount,

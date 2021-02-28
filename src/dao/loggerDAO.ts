@@ -31,7 +31,7 @@ export class LoggerDAO {
     }
 
     static write(record: LogRecord) {
-        log.insertOne(record, { w: 0 });
+        log.insertOne(record, { writeConcern: { w: 0 } });
         return;
     }
 

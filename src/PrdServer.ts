@@ -30,7 +30,7 @@ export class PrdServer extends Server {
         return MongoClient.connect(uri,
             {
                 poolSize: 50,
-                authSource: "admin",
+                // authSource: "admin",
                 useUnifiedTopology: true,
                 useNewUrlParser: true,
                 connectTimeoutMS: 5000,
@@ -39,7 +39,7 @@ export class PrdServer extends Server {
         ).catch(err => {
             Logger.error('Error connecting to mongodb', err.stack);
             return process.exit(1);
-        }).then(async client => {
+        }).then(client => {
             if (!client) {
                 Logger.error("No connection to mongod");
                 return process.exit(1);
@@ -47,7 +47,7 @@ export class PrdServer extends Server {
             Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
             this.setupDAO(client); // All DAO initialisation
-            this.app.use(PrdSession.injectDB(client)); // Session handler initialisation
+            this.app.use(PrdSession.injectDB(uri)); // Session handler initialisation
             return client;
         });
     }

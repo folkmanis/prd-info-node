@@ -25,8 +25,8 @@ export class productsDAO {
 
     static async insertNewProduct(prod: ProductNoId): Promise<string | null> {
         return products.insertOne(prod)
-        .then(result=> products.findOne({_id: result.insertedId}) )
-        .then(result=> result?.name || null)
+            .then(result => products.findOne({ _id: result.insertedId }))
+            .then(result => result?.name || null);
     }
 
     static async insertNewProducts(prod: ProductNoPrices[]): Promise<ProductResult> {
@@ -153,7 +153,7 @@ export class productsDAO {
             }
         };
         try {
-            const resp = await products.updateMany(filter, update, { w: 0 });
+            const resp = await products.updateMany(filter, update, { writeConcern: { w: 0 } });
             return {
                 error: false,
             };

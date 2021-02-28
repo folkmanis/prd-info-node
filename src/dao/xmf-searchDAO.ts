@@ -199,7 +199,7 @@ export class xmfSearchDAO {
     static async updateUploadProgress(log: Partial<XmfUploadProgress>): Promise<boolean> {
         if (!log._id) { return false; }
         lastUpdate = new Date(Date.now());
-        return !!(await xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { w: 0 })).result.ok;
+        return !!(await xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { writeConcern: { w: 0 } })).result.ok;
     }
 
     static async getUploadStatus(): Promise<Partial<XmfUploadProgress>[]>;

@@ -3,8 +3,8 @@ import { MongoClient } from 'mongodb';
 import session from 'express-session';
 import Logger from './logger';
 import '../interfaces/session';
-
-const MongoStore = require('connect-mongo')(session);
+import MongoStore from 'connect-mongo';
+// const MongoStore = require('connect-mongo')(session);
 
 type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin';
 
@@ -45,8 +45,9 @@ export class PrdSession {
         };
     }
 
-    static injectDB(conn: MongoClient): RequestHandler {
-        const sessionStore = new MongoStore({ client: conn, stringify: false });
+    static injectDB(conn: string): RequestHandler {
+        console.log(conn);
+        const sessionStore = MongoStore.create({ mongoUrl: conn, stringify: false });
         Logger.debug("session handler started");
         return session({
             secret: 'HGG50EtOT7',
