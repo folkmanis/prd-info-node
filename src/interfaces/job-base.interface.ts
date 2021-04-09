@@ -7,10 +7,11 @@ export type JobProduct = Pick<Product, 'name'> & {
     price: number;
     count: number;
     comment: string;
+    units: string;
 };
 
 export interface JobBase {
-    _id: ObjectId;
+    _id?: ObjectId;
     jobId: number;
     customer: string;
     name: string;
@@ -24,10 +25,10 @@ export interface JobBase {
     jobStatus: {
         generalStatus: number;
     };
-    custCode: string;
+    custCode?: string;
     files?: {
         path: string[];
-        fileNames: string[];
+        fileNames?: string[];
     };
 }
 

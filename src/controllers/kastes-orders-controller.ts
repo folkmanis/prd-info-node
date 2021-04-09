@@ -68,9 +68,10 @@ export class KastesOrderController {
         if (isNaN(jobId)) { throw new Error('jobId not provided'); }
         const pas = req.body as Partial<KastesJob>;
         delete pas.jobId;
-        res.json(
-            await jobsDAO.updateJob(jobId, pas)
-        );
+        res.json({
+            error: false,
+            modifiedCount: await jobsDAO.updateJob(jobId, pas)
+        });
     }
 
 }

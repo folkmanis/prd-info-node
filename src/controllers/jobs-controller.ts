@@ -11,9 +11,11 @@ import {
     JobResponse,
     Customer,
     ProductNoPrices,
-    ProductPriceImport
+    ProductPriceImport,
+    JobBase
 } from '../interfaces';
 import { PreferencesDAO, jobsDAO, customersDAO, productsDAO, fileSystemDAO, countersDAO } from '../dao';
+import { FolderPath } from '../lib/folder-path';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;
@@ -57,16 +59,19 @@ export class JobsController {
         /** jobId validity check */
         if (isNaN(jobId)) { throw new Error('Invalid jobId'); }
 
-        const job = await jobsDAO.getJob(jobId);
+        const jb = await jobsDAO.getJob(jobId);
         /* Job validity check */
-        if (!job) { throw new Error('Job not found'); }
+        if (!jb) { throw new Error('Job not found'); }
+        let job = jb;
+        if (!job.files?.path) {
+            job = await this.addFolderPathToJob(jobId, job);
+        }
 
         const busboy = new Busboy({ headers: req.headers });
         let filename: string;
 
-        if (!job.files?.path) { throw new Error(`Path not set for the job ${job.jobId}`); }
-        const path: string[] = job.files.path;
-        let fileNames = job.files.fileNames || [];
+        const path: string[] = job.files?.path || [];
+        let fileNames = job.files?.fileNames || [];
 
         busboy.on('file', (_, file, fName) => {
             filename = fName;
@@ -100,16 +105,38 @@ export class JobsController {
     @Post(':jobId')
     private async updateJob(req: Request, res: Response) {
         const jobId = +req.params.jobId;
-        const job = req.body as Partial<Job>;
-        req.log.info(`Job ${jobId} updated`, { jobId, ...job });
+        let job = req.body as Partial<Job>;
+        if (req.query.createFolder) {
+            job = await this.addFolderPathToJob(jobId, job);
+        }
         delete job._id;
         delete job.jobId;
-        res.json(
-            await jobsDAO.updateJob(jobId, job)
-        );
+
+        res.json({
+            error: false,
+            modifiedCount: await jobsDAO.updateJob(jobId, job)
+        });
+        req.log.info(`Job ${jobId} updated`, { jobId, ...job });
         if (job.customer && job.products instanceof Array) {
             productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
         }
+    }
+
+    private async addFolderPathToJob<T extends Partial<Job>>(jobId: number, job: T): Promise<T> {
+        const jb = await jobsDAO.getJob(jobId);
+        if (!jb) { throw 'No Job'; }
+        const { code } = await customersDAO.getCustomer(jb.customer) as Customer;
+        const path = FolderPath.toArray({
+            ...jb,
+            custCode: code
+        });
+        return {
+            ...job,
+            files: {
+                ...job?.files,
+                path,
+            }
+        };
     }
 
     @Put('')
@@ -128,10 +155,20 @@ export class JobsController {
             );
         } else {
             job.receivedDate = new Date(req.body.receivedDate || Date.now());
+            const createFolder = req.query.createFolder === 'true';
             job.jobId = await countersDAO.getNextId('lastJobId');
-            res.json(
-                await jobsDAO.insertJob(job)
-            );
+            const { jobId } = await jobsDAO.insertJob(job);
+            console.log(createFolder)
+            if (createFolder) {
+                await jobsDAO.updateJob(
+                    jobId,
+                    await this.addFolderPathToJob(jobId, {})
+                );
+            }
+            res.json({
+                error: false,
+                insertedId: jobId,
+            });
             if (job.customer && job.products instanceof Array) {
                 productsDAO.touchProduct(job.customer, job.products.map(pr => pr.name));
             }

@@ -91,7 +91,7 @@ export class jobsDAO {
                 }
             }
         ];
-        if (query.unwindProducts) {
+        if (query.unwindProducts && +query.unwindProducts === 1) {
             aggr.push({
                 '$unwind': {
                     'path': '$products',
@@ -151,24 +151,21 @@ export class jobsDAO {
         return jobs.findOne({ jobId });
     }
 
-    static async insertJob(job: Job): Promise<JobResponse> {
+    static async insertJob(job: Job): Promise<Job> {
+        job = jobsDAO.validateJob(job);
         if (!job.jobStatus) {
             job.jobStatus = { generalStatus: 10 };
         }
         Logger.info('insert job', job);
-        try {
-            const result = await jobs.insertOne(job).then(
-                result => jobs.findOne(
-                    { _id: result.insertedId },
-                    { projection: { jobId: 1 } }
-                )
-            );
-            return {
-                error: !result,
-                insertedId: result?.jobId || 0,
-            };
-
-        } catch (error) { return { error }; }
+        const result = jobs.insertOne(job)
+            .then(result => jobs.findOne(
+                { _id: result.insertedId },
+            ))
+            .then(newJob => {
+                if (!newJob) { throw 'Job insert failed'; }
+                return newJob;
+            });
+        return result;
     }
 
     static async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
@@ -185,7 +182,7 @@ export class jobsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async updateJob(jobId: number, job: Partial<Job>): Promise<JobResponse> {
+    static async updateJob(jobId: number, job: Partial<Job>): Promise<number> {
         job = jobsDAO.validateJob(job);
         if (job.files?.path) {
             try {
@@ -201,11 +198,8 @@ export class jobsDAO {
             },
             { $set: job }
         );
-        return {
-            error: !result.result.ok,
-            result: result.result,
-            modifiedCount: result.modifiedCount,
-        };
+        return result.modifiedCount;
+
     }
     /**
      * Uzliek darbiem aprēķina numurus. 
@@ -411,10 +405,7 @@ export class jobsDAO {
                 Logger.info(`Updated ${result.modifiedCount} jobs status to jobStatus.generalStatus: 50`);
             }
         }).then(_ => jobs.updateMany(
-            {
-                products: { $exists: true },
-                'products.units': { $exists: false }
-            },
+            { products: { $elemMatch: { name: { $exists: true }, units: { $exists: false } } } },
             {
                 $set: {
                     'products.$[].units': DEFAULT_UNIT
