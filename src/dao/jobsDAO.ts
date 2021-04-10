@@ -1,4 +1,4 @@
-import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery } from "mongodb";
+import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation } from "mongodb";
 import Logger from '../lib/logger';
 import { fileSystemDAO } from './fileSystemDAO';
 import {
@@ -11,7 +11,7 @@ import {
     InvoiceResponse,
     ProductTotals,
     JobsWithoutInvoicesTotals,
-    KastesJob, KastesJobPartial, KastesJobResponse
+    KastesJob, KastesJobPartial, KastesJobResponse, JobProduct
 } from '../interfaces';
 
 let jobs: Collection<Job>;
@@ -200,6 +200,16 @@ export class jobsDAO {
         );
         return result.modifiedCount;
 
+    }
+
+    static async updateJobs(jobsUpdate: Partial<Job>[]): Promise<any> { // debug
+        // TODO
+        const operations: BulkWriteUpdateOneOperation<Job>[] = jobsUpdate.map(job => ({
+            updateOne: this.jobUpdate(job),
+        }));
+        const resp = jobs.bulkWrite(operations);
+        Logger.debug('Jobs update', jobsUpdate);
+        return (await resp).modifiedCount || 0;
     }
     /**
      * Uzliek darbiem aprēķina numurus. 
@@ -419,7 +429,8 @@ export class jobsDAO {
         });
     }
 
-    static validateJob<T extends Partial<Job>>(job: T): T {
+    static validateJob<T extends Partial<Job>>(jobO: T): T {
+        const job = { ...jobO };
         if (typeof job.receivedDate === 'string') {
             job.receivedDate = new Date(job.receivedDate);
         }
@@ -427,6 +438,34 @@ export class jobsDAO {
             job.dueDate = new Date(job.dueDate);
         }
         return job;
+    }
+
+    static jobUpdate(jobO: Partial<Job>): BulkWriteUpdateOperation<Job> {
+        const jobId = jobO.jobId as number;
+        const job = this.validateJob(jobO);
+        delete job.jobId;
+        if (job.products && !(job.products instanceof Array)) {
+            const products: JobProduct = job.products;
+            const idx: number = job.productsIdx ?? 0;
+            Object.assign(
+                job,
+                ...(Object.keys(products) as Array<keyof JobProduct>).map(key => ({ [`products.${idx}.${key}`]: products[key] }))
+            );
+            delete job.products;
+        }
+
+        delete job.productsIdx;
+
+        const update: UpdateQuery<Job> = {
+            $set: { ...job }
+        };
+
+
+        return {
+            filter: { jobId },
+            update,
+            upsert: false,
+        };
     }
 
 }

@@ -122,6 +122,30 @@ export class JobsController {
         }
     }
 
+    @Post()
+    private async updateJobs(req: Request, res: Response) {
+        const jobs = req.body as Partial<Job>[];
+        if (!(jobs instanceof Array)) { // data must be array
+            throw new Error('Invalid data: data must be array');
+        }
+        jobs.forEach(job => {
+            if (typeof job.jobId !== 'number') { // jobId not provided
+                const err = 'Invalid data: jobId not provided';
+                req.log.error(err, job);
+                throw new Error(err);
+            }
+            if (job.products && !(job.products instanceof Array) && typeof job.productsIdx !== 'number') {
+                const err = 'Invalid data: products must contain entire array or must be one element with index provided';
+                req.log.error(err, job);
+                throw new Error(err);
+            }
+        });
+        res.json({
+            error: false,
+            modifiedCount: await jobsDAO.updateJobs(jobs)
+        });
+    }
+
     private async addFolderPathToJob<T extends Partial<Job>>(jobId: number, job: T): Promise<T> {
         const jb = await jobsDAO.getJob(jobId);
         if (!jb) { throw 'No Job'; }
@@ -158,7 +182,7 @@ export class JobsController {
             const createFolder = req.query.createFolder === 'true';
             job.jobId = await countersDAO.getNextId('lastJobId');
             const { jobId } = await jobsDAO.insertJob(job);
-            console.log(createFolder)
+            console.log(createFolder);
             if (createFolder) {
                 await jobsDAO.updateJob(
                     jobId,
