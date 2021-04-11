@@ -140,10 +140,13 @@ export class JobsController {
                 throw new Error(err);
             }
         });
+        const resp = await jobsDAO.updateJobs(jobs);
         res.json({
             error: false,
-            modifiedCount: await jobsDAO.updateJobs(jobs)
+            modifiedCount: resp
         });
+        req.log.info('Jobs update', { jobs, modified: resp });
+
     }
 
     private async addFolderPathToJob<T extends Partial<Job>>(jobId: number, job: T): Promise<T> {

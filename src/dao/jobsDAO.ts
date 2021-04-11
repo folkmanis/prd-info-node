@@ -207,7 +207,6 @@ export class jobsDAO {
             updateOne: this.jobUpdate(job),
         }));
         const resp = await jobs.bulkWrite(operations);
-        Logger.info('Jobs update', { jobsUpdate, modified: resp.modifiedCount });
         return resp.modifiedCount || 0;
     }
     /**
