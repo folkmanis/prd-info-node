@@ -202,14 +202,13 @@ export class jobsDAO {
 
     }
 
-    static async updateJobs(jobsUpdate: Partial<Job>[]): Promise<any> { // debug
-        // TODO
+    static async updateJobs(jobsUpdate: Partial<Job>[]): Promise<number> {
         const operations: BulkWriteUpdateOneOperation<Job>[] = jobsUpdate.map(job => ({
             updateOne: this.jobUpdate(job),
         }));
-        const resp = jobs.bulkWrite(operations);
-        Logger.debug('Jobs update', jobsUpdate);
-        return (await resp).modifiedCount || 0;
+        const resp = await jobs.bulkWrite(operations);
+        Logger.info('Jobs update', { jobsUpdate, modified: resp.modifiedCount });
+        return resp.modifiedCount || 0;
     }
     /**
      * Uzliek darbiem aprēķina numurus. 
@@ -440,9 +439,9 @@ export class jobsDAO {
         return job;
     }
 
-    static jobUpdate(jobO: Partial<Job>): BulkWriteUpdateOperation<Job> {
-        const jobId = jobO.jobId as number;
-        const job = this.validateJob(jobO);
+    static jobUpdate(job0: Partial<Job>): BulkWriteUpdateOperation<Job> {
+        const jobId = job0.jobId as number;
+        const job = this.validateJob(job0);
         delete job.jobId;
         if (job.products && !(job.products instanceof Array)) {
             const products: JobProduct = job.products;
@@ -459,7 +458,6 @@ export class jobsDAO {
         const update: UpdateQuery<Job> = {
             $set: { ...job }
         };
-
 
         return {
             filter: { jobId },

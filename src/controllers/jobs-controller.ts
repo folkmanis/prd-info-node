@@ -122,8 +122,8 @@ export class JobsController {
         }
     }
 
-    @Post()
-    private async updateJobs(req: Request, res: Response) {
+    @Post('')
+    async updateJobs(req: Request, res: Response) {
         const jobs = req.body as Partial<Job>[];
         if (!(jobs instanceof Array)) { // data must be array
             throw new Error('Invalid data: data must be array');
