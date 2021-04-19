@@ -279,35 +279,72 @@ export class jobsDAO {
         const pipeline = [
             {
                 '$match': {
-                    'invoiceId': { '$exists': false },
-                    'jobStatus.generalStatus': { '$lt': 50 }
+                    'invoiceId': {
+                        '$exists': false
+                    },
+                    'jobStatus.generalStatus': {
+                        '$lt': 50
+                    }
                 }
             }, {
                 '$addFields': {
-                    'totals': {
+                    totals: {
                         '$reduce': {
                             'input': '$products',
                             'initialValue': 0,
                             'in': {
-                                '$add': [
-                                    '$$value', {
-                                        '$multiply': ['$$this.count', '$$this.price']
-                                    }
-                                ]
+                                '$add': ['$$value', { '$multiply': ['$$this.count', '$$this.price'] }]
                             }
+                        }
+                    },
+                    'noPrice': {
+                        '$cond': {
+                            'if': { '$isArray': '$products' },
+                            'then': {
+                                '$size': {
+                                    '$filter': {
+                                        'input': '$products',
+                                        'cond': {
+                                            '$or': [
+                                                {
+                                                    '$eq': [
+                                                        '$$this.price', 0
+                                                    ]
+                                                }, {
+                                                    '$eq': [
+                                                        '$$this.price', null
+                                                    ]
+                                                }, {
+                                                    '$eq': [
+                                                        {
+                                                            '$type': '$$this.price'
+                                                        }, 'missing'
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            },
+                            'else': 0
                         }
                     }
                 }
             }, {
                 '$group': {
                     '_id': '$customer',
-                    'jobs': { '$sum': 1 },
-                    'totals': { '$sum': '$totals' }
+                    'jobs': {
+                        '$sum': 1
+                    },
+                    'totals': {
+                        '$sum': '$totals'
+                    },
+                    'noPrice': {
+                        '$sum': '$noPrice'
+                    }
                 }
             }, {
-                '$sort': {
-                    '_id': 1,
-                }
+                '$sort': { '_id': 1, }
             }
         ];
         try {
