@@ -1,6 +1,6 @@
 import { Version } from './interfaces/version.interface';
 
 export const VERSION: Version = {
-    apiBuild: 324,
-    appBuild: 324,
+    apiBuild: 325,
+    appBuild: 325,
 };
