@@ -73,7 +73,10 @@ export class invoicesDAO {
         const aggr = [{
             $match: { invoiceId }
         }, {
-            $unwind: { path: '$products', }
+            $unwind: {
+                path: '$products',
+                preserveNullAndEmptyArrays: true,
+            }
         }, {
             $lookup: {
                 from: 'products',

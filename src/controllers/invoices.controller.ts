@@ -60,12 +60,12 @@ export class InvoicesController {
     private async getInvoice(req: Request, res: Response) {
         const id: string = req.params.invoiceId;
         const data = await invoicesDAO.getInvoice(id);
-        const customerInfo = await customersDAO.getCustomer(data.customer);
-        if (!customerInfo) { throw new Error('No data'); }
+        const customerInfo = data && await customersDAO.getCustomer(data.customer);
+        // if (!customerInfo) { throw new Error('No data'); }
 
         res.json({
             error: false,
-            data: { ...data, customerInfo }
+            data: data ? { ...data, customerInfo } : undefined
         });
     }
 
