@@ -10,3 +10,4 @@ export * from './invoicesDAO';
 export * from './fileSystemDAO';
 export * from './countersDAO';
 export * from './paytraqDAO';
+export * from './sessionsDAO';

@@ -1,12 +1,15 @@
 import crypto from 'crypto';
-import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware, Put } from '@overnightjs/core';
+import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware, Put, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { User } from '../interfaces';
 import { PrdSession } from '../lib/session-handler';
 import { UsersDAO } from '../dao/usersDAO';
+import { SessionsDAO } from '../dao/sessionsDAO';
 import { UsersResponse } from '../interfaces';
+import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/users')
+@ClassErrorMiddleware(logError)
 @ClassMiddleware(PrdSession.validateAdminSession)
 export class UsersController {
 
@@ -59,11 +62,34 @@ export class UsersController {
 
     @Post(':id')
     private async updateUser(req: Request, res: Response) {
-        req.log.info('users update', req.body);
+        req.log.info('user update requested', req.body);
         const user: Partial<User> = { ...req.body, username: req.params.id };
-        const result: UsersResponse = await UsersDAO.updateUser(user);
-        req.log.info('user update', result);
-        res.json(result);
+        let deletedSessions = 0;
+        if (user.sessions instanceof Array) {
+            deletedSessions = await SessionsDAO.deleteUserSessions(
+                req.params.id,
+                user.sessions.map(sess => sess._id)
+            );
+            delete user.sessions;
+        }
+        const modifiedCount = await UsersDAO.updateUser(user);
+        req.log.info('user updated', modifiedCount);
+        res.json({
+            error: false,
+            modifiedCount,
+            deletedSessions,
+        });
+    }
+
+    @Delete('session/:sessionId')
+    private async deleteSession(req: Request, res: Response) {
+        const sessionId = req.params.sessionId;
+
+        res.json({
+            error: false,
+            deletedCount: await SessionsDAO.deleteSession(sessionId),
+        });
+        req.log.info('session delete requested', sessionId);
     }
 
     @Delete(':id')
