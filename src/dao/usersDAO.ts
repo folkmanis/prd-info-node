@@ -86,23 +86,9 @@ export class UsersDAO {
         }
     }
 
-    static async updateUser(user: Partial<User>): Promise<UsersResponse> {
-        if (!user.username) { // Ja nav lietotājvārds, tad neko nedara
-            const error = new Error('User not defined');
-            Logger.error(error.message);
-            return { error };
-        }
-        try {
-            const resp = await users.updateOne({ username: user.username }, { $set: user }, { writeConcern: { w: 'majority' } });
-            return {
-                error: false,
-                modifiedCount: resp.modifiedCount,
-                result: resp.result,
-            };
-        } catch (error) {
-            Logger.error("User update error ", error);
-            return { error };
-        }
+    static async updateUser(user: Partial<User>): Promise<number> {
+        const resp = await users.updateOne({ username: user.username }, { $set: user }, { writeConcern: { w: 'majority' } });
+        return resp.modifiedCount;
     }
 
     static async deleteUser(username: string): Promise<UsersResponse> {

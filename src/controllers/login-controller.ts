@@ -1,29 +1,3 @@
-/**
- * /data/login
- * 
- * POST /data/login/login
- * {
- * username: string;
- * password: string;
- * }
- * 
- * User
- * 
- * 
- * POST /data/login/logout
- * {}
- * 
- * GET /data/login/user
- * export interface User {
- *   id: number;
- *   username: string;
- *   name: string;
- *   admin: boolean;
- *   lastlogin?: Date;
- * } | {}
- *
- */
-
 import crypto from 'crypto';
 import { Controller, Get, Post, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response, Express } from 'express';
