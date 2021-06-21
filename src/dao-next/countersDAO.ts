@@ -1,6 +1,7 @@
-import { MongoClient, Collection, ObjectId, BulkWriteOperation, BulkWriteOpResultObject } from "mongodb";
+import { MongoClient, Collection, Db, ObjectId, BulkWriteOperation, BulkWriteOpResultObject } from "mongodb";
 import { CounterLastId, Counters, JobsSystemPreference } from '../interfaces';
 import Logger from '../lib/logger';
+import { Dao } from '../interfaces/dao.interface';
 
 export const defaultValues: CounterLastId[] = [
     {
@@ -13,18 +14,18 @@ export const defaultValues: CounterLastId[] = [
     }
 ];
 
-let counters: Collection<CounterLastId>;
 
-export class countersDAO {
-    static async injectDB(conn: MongoClient) {
-        if (counters) {
+export class CountersDAO extends Dao {
+    counters!: Collection<CounterLastId>;
+
+    async injectDb(db: Db) {
+        if (this.counters) {
             return;
         }
         try {
-            counters = conn.db() // process.env.DB_BASE as string
-                .collection('counters');
-            countersDAO.insertDefaults(defaultValues);
-            await counters.createIndex(
+            this.counters = db.collection('this.counters');
+            this.insertDefaults(defaultValues);
+            await this.counters.createIndex(
                 { counter: 1 },
                 { unique: true, name: 'counter_1' }
             );
@@ -34,8 +35,8 @@ export class countersDAO {
         }
     }
 
-    static async getNextId(counter: Counters, nums = 1): Promise<number> {
-        const result = (await counters.findOneAndUpdate({
+    async getNextId(counter: Counters, nums = 1): Promise<number> {
+        const result = (await this.counters.findOneAndUpdate({
             counter,
         }, {
             $inc: { lastId: nums }
@@ -50,20 +51,20 @@ export class countersDAO {
     }
 
 
-    private static async insertDefaults(defaults: CounterLastId[]) {
-        const lastIds = await counters.find({}).toArray();
+    private async insertDefaults(defaults: CounterLastId[]) {
+        const lastIds = await this.counters.find({}).toArray();
         const missing: CounterLastId[] = this.filterMissingRecords(defaults, lastIds);
 
         if (!missing.length) { return; }
 
-        await counters.bulkWrite(this.createInsertForMissingRecords(missing));
+        await this.counters.bulkWrite(this.createInsertForMissingRecords(missing));
     }
 
-    static filterMissingRecords(defaults: CounterLastId[], existing: CounterLastId[]): CounterLastId[] {
+    filterMissingRecords(defaults: CounterLastId[], existing: CounterLastId[]): CounterLastId[] {
         return defaults.filter(def => !existing.find(last => last.counter === def.counter));
     }
 
-    static createInsertForMissingRecords(missing: CounterLastId[]): BulkWriteOperation<CounterLastId>[] {
+    createInsertForMissingRecords(missing: CounterLastId[]): BulkWriteOperation<CounterLastId>[] {
         return missing.map(rec => ({
             insertOne: {
                 document: {

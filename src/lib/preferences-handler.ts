@@ -1,9 +1,18 @@
 import { NextFunction, Request, Response } from 'express';
-import { PreferencesDAO } from '../dao/preferencesDAO';
-import { UsersDAO } from '../dao/usersDAO';
-import { User,SystemPreferenceModule } from '../interfaces';
+import { User, SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
 import '../interfaces/session';
+import { DaoIndexMap } from '../dao-next/dao-map';
+import { UsersDao } from '../dao-next/usersDAO';
+import { PreferencesDao } from '../dao-next/preferencesDAO';
+
+let usersDao: UsersDao;
+let preferencesDao: PreferencesDao;
+
+export function insertDao(daoMap: DaoIndexMap) {
+    usersDao = daoMap.getDao(UsersDao);
+    preferencesDao = daoMap.getDao(PreferencesDao);
+}
 
 export class Preferences {
     static async getUserPreferences(req: Request, res: Response, next: NextFunction) {
@@ -17,7 +26,7 @@ export class Preferences {
             return;
         }
         const user = req.session.user as User;
-        const prefs = await UsersDAO.getPreferences(user.username);
+        const prefs = await usersDao.getPreferences(user.username);
         if (!prefs) {
             Logger.error('User preferences not found');
             res.status(501).json('Server error');
@@ -37,7 +46,7 @@ export class Preferences {
             res.status(401).json({});
             return;
         }
-        const sysPref = (await PreferencesDAO.getAllPreferences()).data as SystemPreferenceModule[] | undefined;
+        const sysPref = (await preferencesDao.getAllPreferences()).data as SystemPreferenceModule[] | undefined;
         if (!sysPref) {
             Logger.error('System preferences not found');
             res.status(501).json('Server error');

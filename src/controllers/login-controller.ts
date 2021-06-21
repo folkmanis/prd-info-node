@@ -2,14 +2,18 @@ import crypto from 'crypto';
 import { Controller, Get, Post, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response, Express } from 'express';
 import { logError } from '../lib/errorMiddleware';
-import { UsersDAO } from '../dao/usersDAO';
 import { Login, LoginResponse } from '../interfaces';
 import session from 'express-session';
 import '../interfaces/session';
+import { UsersDao } from '../dao-next/usersDAO';
 
 @ClassErrorMiddleware(logError)
 @Controller('data/login')
 export class LoginController {
+
+    constructor(
+        private usersDao: UsersDao,
+    ) { }
 
     @Post('')
     private async login(req: Request, res: Response) {
@@ -38,7 +42,7 @@ export class LoginController {
             // userDisabled: false,
         };
 
-        const loginResponse = await UsersDAO.login(login);
+        const loginResponse = await this.usersDao.login(login);
 
         if (loginResponse.data) {
             req.log.info('User logged in', { user: loginResponse.data });

@@ -1,8 +1,9 @@
 import { defaultsDeep } from 'lodash';
-import { BulkWriteOperation, Collection, MongoClient } from "mongodb";
+import { BulkWriteOperation, Collection, Db, MongoClient } from "mongodb";
 import { Modules, PreferencesResponse, SystemPreferenceModule, SystemPreferences } from '../interfaces';
 import { flattenObject } from '../lib/flatten-object';
 import Logger, { LogLevels } from '../lib/logger';
+import { Dao } from '../interfaces/dao.interface';
 
 interface BulkUpdateOne {
     updateOne: {
@@ -74,22 +75,19 @@ const defaultPrefs: SystemPreferences = [
     },
     {
         module: 'paytraq',
-        settings: { enabled: false}
+        settings: { enabled: false }
     }
 ];
 
-let preferences: Collection<SystemPreferenceModule>;
 
-export class PreferencesDAO {
-    static async injectDB(conn: MongoClient) {
-        if (preferences) {
-            return;
-        }
+export class PreferencesDao extends Dao {
+
+    preferences!: Collection<SystemPreferenceModule>;
+    async injectDb(db: Db) {
         try {
-            preferences = conn.db(process.env.DB_BASE as string)
-                .collection('preferences');
-            PreferencesDAO.insertDefaults(defaultPrefs);
-            preferences.createIndex(
+            this.preferences = db.collection('preferences');
+            this.insertDefaults(defaultPrefs);
+            this.preferences.createIndex(
                 { module: 1 },
                 { unique: true, name: 'module_1' }
             );
@@ -103,9 +101,9 @@ export class PreferencesDAO {
      * null, ja modulis nav atrasts
      * @param mod Moduļa nosaukums
      */
-    static async getModulePreferences(mod: Modules): Promise<PreferencesResponse> {
+    async getModulePreferences(mod: Modules): Promise<PreferencesResponse> {
         try {
-            const resp = await preferences.findOne({ module: mod }, { projection: { _id: 0 } });
+            const resp = await this.preferences.findOne({ module: mod }, { projection: { _id: 0 } });
             return {
                 error: !!resp ? false : 'Not found',
                 data: resp || undefined,
@@ -116,12 +114,12 @@ export class PreferencesDAO {
     /**
      * Izsniedz visu moduļu preferences
      */
-    static async getAllPreferences(): Promise<PreferencesResponse> {
+    async getAllPreferences(): Promise<PreferencesResponse> {
         //TODO tikai preferences, kuras attiecas uz lietotāju
         try {
             return {
                 error: null,
-                data: await preferences.find({}, { projection: { _id: 0 } }).toArray()
+                data: await this.preferences.find({}, { projection: { _id: 0 } }).toArray()
             };
 
         } catch (error) { return { error }; }
@@ -134,7 +132,7 @@ export class PreferencesDAO {
      * modifiedCount number	- Number of documents modified.
      * @param pref Preferences objekts vai objektu masīvs
      */
-    static async updatePreferences(...pref: SystemPreferenceModule[]): Promise<PreferencesResponse> {
+    async updatePreferences(...pref: SystemPreferenceModule[]): Promise<PreferencesResponse> {
         const update: BulkUpdateOne[] = pref.map(pr => (
             {
                 updateOne: {
@@ -145,7 +143,7 @@ export class PreferencesDAO {
         ));
         Logger.debug('update preferences DAO', JSON.stringify(update));
         try {
-            const updResult = await preferences.bulkWrite(update, { ordered: false });
+            const updResult = await this.preferences.bulkWrite(update, { ordered: false });
             return {
                 error: false,
                 modifiedCount: updResult.modifiedCount,
@@ -156,11 +154,11 @@ export class PreferencesDAO {
      * Atiestata preferences uz noklusējuma vērtībām vienam modulim
      * @param mod Moduļa nosaukums
      */
-    static async setDefaults(mod: Modules): Promise<PreferencesResponse> {
+    async setDefaults(mod: Modules): Promise<PreferencesResponse> {
         const def = defaultPrefs.find(obj => obj.module === mod);
         if (!def) { return { error: 'Module not found' }; }
         try {
-            const result = await preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
+            const result = await this.preferences.updateOne({ module: mod }, { $set: { settings: def.settings } });
             return {
                 error: !result.result.ok,
                 modifiedCount: result.modifiedCount,
@@ -170,8 +168,8 @@ export class PreferencesDAO {
         }
     }
 
-    private static async insertDefaults(def: SystemPreferenceModule[]) {
-        const modules = await preferences.find({}).toArray();
+    private async insertDefaults(def: SystemPreferenceModule[]) {
+        const modules = await this.preferences.find({}).toArray();
         const missing: BulkWriteOperation<SystemPreferenceModule>[] = [];
         for (const mod of def) {
             const modDb = modules.find(md => md.module === mod.module);
@@ -190,7 +188,7 @@ export class PreferencesDAO {
             }
         }
 
-        await preferences.bulkWrite(missing);
+        await this.preferences.bulkWrite(missing);
     }
 
 }

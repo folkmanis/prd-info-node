@@ -5,8 +5,9 @@ import { logError } from '../lib/errorMiddleware';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
-import { invoicesDAO, customersDAO, jobsDAO, countersDAO } from '../dao';
+import { invoicesDAO, customersDAO, jobsDAO } from '../dao';
 import { pick } from '../lib/pick';
+import { CountersDAO } from '../dao-next/countersDAO';
 
 @Controller('data/invoices')
 @ClassErrorMiddleware(logError)
@@ -18,11 +19,15 @@ import { pick } from '../lib/pick';
 @ClassWrapper(asyncWrapper)
 export class InvoicesController {
 
+    constructor(
+        private countersDao: CountersDAO,
+    ) { }
+
     @Put('')
     private async newInvoice(req: Request, res: Response) {
         const jobIds: number[] = req.body.selectedJobs;
         const customerId: string = req.body.customerId;
-        const invoiceId = (await countersDAO.getNextId('lastInvoiceId')).toString().padStart(5, '0');
+        const invoiceId = (await this.countersDao.getNextId('lastInvoiceId')).toString().padStart(5, '0');
         const jobsId = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
         const products = await jobsDAO.getInvoiceTotals(invoiceId);
         res.json(

@@ -1,6 +1,7 @@
 import * as bodyParser from 'body-parser';
 import * as dao from './dao';
-import * as controllers from './controllers';
+import { DaoIndexMap } from './dao-next/dao-map';
+import { createControllers } from './controllers/controllers-index';
 import { Server } from '@overnightjs/core';
 
 import { MongoClient } from 'mongodb';
@@ -9,9 +10,12 @@ import { VersionHandler } from './lib/version-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
 import { Application } from 'express';
 
+import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
+
 export class PrdServer extends Server {
 
     private readonly SERVER_STARTED = 'Server started';
+    private daoMap = new DaoIndexMap();
 
     constructor() {
         super(true);
@@ -27,28 +31,29 @@ export class PrdServer extends Server {
             Logger.error('Mongo environment not defined');  // Inicializācijas laikā lieto statisko objektu
             return process.exit(1);
         }
-        return MongoClient.connect(uri,
-            {
-                poolSize: 50,
-                useUnifiedTopology: true,
-                useNewUrlParser: true,
-                connectTimeoutMS: 5000,
-                wtimeout: 2500,
-            },
-        ).catch(err => {
-            Logger.error('Error connecting to mongodb', err.stack);
-            return process.exit(1);
-        }).then(client => {
-            if (!client) {
-                Logger.error("No connection to mongod");
-                return process.exit(1);
-            }
+        try {
+            const client = await MongoClient.connect(uri,
+                {
+                    poolSize: 50,
+                    useUnifiedTopology: true,
+                    useNewUrlParser: true,
+                    connectTimeoutMS: 5000,
+                    wtimeout: 2500,
+                },
+            );
             Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
             this.setupDAO(client); // All DAO initialisation
+
+            insertPreferencesHandlerDao(this.daoMap);
+
             this.app.use(PrdSession.injectDB(uri)); // Session handler initialisation
             return client;
-        });
+
+        } catch (err) {
+            Logger.error('Error connecting to mongodb', err.stack);
+            return process.exit(1);
+        }
     }
 
     async handleVersion(): Promise<Application> {
@@ -57,17 +62,11 @@ export class PrdServer extends Server {
     }
 
     setupControllers(): void {
-        const ctlrInstances = [];
-        for (const name in controllers) {
-            if (controllers.hasOwnProperty(name)) {
-                const controller = (controllers as any)[name];
-                ctlrInstances.push(new controller());
-            }
-        }
-        super.addControllers(ctlrInstances);
+        super.addControllers(createControllers(this.daoMap));
     }
 
     private setupDAO(client: MongoClient): void {
+        const db = client.db(process.env.DB_BASE as string);
         for (const name in dao) {
             Logger.debug(`dao ${name}`);
             if (dao.hasOwnProperty(name)) {
@@ -77,6 +76,9 @@ export class PrdServer extends Server {
                 }
             }
         }
+        // NEXT
+        this.daoMap.injectDb(db);
+
     }
 
     start(port: number): void {

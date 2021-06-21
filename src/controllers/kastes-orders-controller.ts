@@ -10,7 +10,6 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { KastesDAO } from '../dao/kastesDAO';
 import { jobsDAO } from '../dao/jobsDAO';
-import { UsersDAO } from '../dao/usersDAO';
 import { Veikals, KastesJob, Colors, KastesJobResponse, Product, JobProduct, ColorTotals } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 

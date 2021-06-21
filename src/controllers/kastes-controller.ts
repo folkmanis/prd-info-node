@@ -8,13 +8,13 @@ import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { jobsDAO } from '../dao/jobsDAO';
 import { KastesDAO } from '../dao/kastesDAO';
-import { UsersDAO } from '../dao/usersDAO';
 import { Veikals } from '../interfaces';
 import '../interfaces/session';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
+import { UsersDao } from '../dao-next/usersDAO';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
@@ -25,6 +25,10 @@ import { PrdSession } from '../lib/session-handler';
 ])
 @ClassWrapper(asyncWrapper)
 export class KastesController {
+
+    constructor(
+        private usersDao: UsersDao,
+    ) { }
 
     @Put('')
     private async table(req: Request, res: Response) {
@@ -51,7 +55,7 @@ export class KastesController {
         const username = req.session?.user?.username || '';
         const preferences = req.body;
         res.json(
-            await UsersDAO.updateUserPreferences(username, 'kastes', preferences)
+            await this.usersDao.updateUserPreferences(username, 'kastes', preferences)
         );
     }
 
@@ -92,7 +96,7 @@ export class KastesController {
     private async getPreferences(req: Request, res: Response) {
         const username = req.session?.user?.username || '';
         res.json(
-            await UsersDAO.getUserPreferences(username, 'kastes')
+            await this.usersDao.getUserPreferences(username, 'kastes')
         );
     }
 

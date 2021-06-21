@@ -14,8 +14,9 @@ import {
     ProductPriceImport,
     JobBase
 } from '../interfaces';
-import { PreferencesDAO, jobsDAO, customersDAO, productsDAO, fileSystemDAO, countersDAO } from '../dao';
+import { jobsDAO, customersDAO, productsDAO, fileSystemDAO } from '../dao';
 import { FolderPath } from '../lib/folder-path';
+import { CountersDAO } from '../dao-next/countersDAO';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;
@@ -34,6 +35,10 @@ class JobImportResponse implements JobResponse {
 @ClassWrapper(asyncWrapper)
 @ClassErrorMiddleware(logError)
 export class JobsController {
+
+    constructor(
+        private countersDao: CountersDAO,
+    ) { }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
     @Post('jobimport')
@@ -170,7 +175,7 @@ export class JobsController {
     private async newJob(req: Request, res: Response) {
         const job = req.body as Job | Job[];
         if (job instanceof Array) {
-            let ids = (await countersDAO.getNextId('lastJobId', job.length)) - job.length;
+            let ids = (await this.countersDao.getNextId('lastJobId', job.length)) - job.length;
             res.json(
                 await jobsDAO.insertJobs(
                     job.map(jb => ({
@@ -183,7 +188,7 @@ export class JobsController {
         } else {
             job.receivedDate = new Date(req.body.receivedDate || Date.now());
             const createFolder = req.query.createFolder === 'true';
-            job.jobId = await countersDAO.getNextId('lastJobId');
+            job.jobId = await this.countersDao.getNextId('lastJobId');
             const { jobId } = await jobsDAO.insertJob(job);
             console.log(createFolder);
             if (createFolder) {

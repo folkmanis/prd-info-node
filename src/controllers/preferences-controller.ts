@@ -32,7 +32,7 @@ import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 
 
-import { PreferencesDAO } from '../dao/preferencesDAO';
+import { PreferencesDao } from '../dao-next/preferencesDAO';
 import { Modules, SystemPreferenceModule, SystemPreferences } from '../interfaces';
 
 @Controller('data/preferences')
@@ -42,6 +42,10 @@ import { Modules, SystemPreferenceModule, SystemPreferences } from '../interface
 ])
 @ClassWrapper(asyncWrapper)
 export class PreferencesController {
+
+    constructor(
+        private preferencesDao: PreferencesDao,
+    ) { }
 
     @Middleware(PrdSession.validateModule('admin')) // Mainīt var tikai admins
     @Post(':module')
@@ -53,11 +57,11 @@ export class PreferencesController {
                 settings: req.body.settings,
             };
             res.json(
-                await PreferencesDAO.updatePreferences(pref)
+                await this.preferencesDao.updatePreferences(pref)
             );
         } else {
             res.json(
-                await PreferencesDAO.setDefaults(module)
+                await this.preferencesDao.setDefaults(module)
             );
         }
     }
@@ -67,7 +71,7 @@ export class PreferencesController {
     private async updatePreferences(req: Request, res: Response) {
         const pref = req.body as SystemPreferenceModule[];
         req.log.debug('put preferences update', pref);
-        const result = await PreferencesDAO.updatePreferences(...pref);
+        const result = await this.preferencesDao.updatePreferences(...pref);
         res.json(result);
     }
 
@@ -76,14 +80,14 @@ export class PreferencesController {
         const mod = req.params.module as Modules;
         req.log.debug('get preferences', mod);
         res.json(
-            await PreferencesDAO.getModulePreferences(mod)
+            await this.preferencesDao.getModulePreferences(mod)
         );
     }
 
     @Get('')
     private async getAllPreferences(req: Request, res: Response) {
         res.json(
-            await PreferencesDAO.getAllPreferences()
+            await this.preferencesDao.getAllPreferences()
         );
     }
 

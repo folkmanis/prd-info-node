@@ -3,7 +3,7 @@ import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware, 
 import { Request, Response } from 'express';
 import { User } from '../interfaces';
 import { PrdSession } from '../lib/session-handler';
-import { UsersDAO } from '../dao/usersDAO';
+import { UsersDao } from '../dao-next/usersDAO';
 import { SessionsDAO } from '../dao/sessionsDAO';
 import { UsersResponse } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
@@ -13,6 +13,10 @@ import { logError } from '../lib/errorMiddleware';
 @ClassMiddleware(PrdSession.validateAdminSession)
 export class UsersController {
 
+    constructor(
+        private usersDao: UsersDao,
+    ) { }
+
     @Get(':id')
     private async getUser(req: Request, res: Response) {
         const username: string = req.params.id;
@@ -20,7 +24,7 @@ export class UsersController {
 
         const result: UsersResponse = {
             error: false,
-            data: await UsersDAO.getUser(username),
+            data: await this.usersDao.getUser(username),
         };
         res.json(result);
 
@@ -29,7 +33,7 @@ export class UsersController {
     @Get()
     private async getList(req: Request, res: Response) {
         req.log.info('users/list');
-        const resp: UsersResponse = await UsersDAO.list().then(data => ({
+        const resp: UsersResponse = await this.usersDao.list().then(data => ({
             error: false,
             data,
         }));
@@ -44,7 +48,7 @@ export class UsersController {
         user.password = hashPassword(req.body.password);
         req.log.info('users add', req.body);
 
-        const result = await UsersDAO.addUser(user);
+        const result = await this.usersDao.addUser(user);
 
         req.log.info('user added', result);
         res.json(result);
@@ -55,7 +59,7 @@ export class UsersController {
         if (!req.body.password) { throw new Error('Password not set'); }
 
         const user = { username: req.params.id as string, password: hashPassword(req.body.password) };
-        const result = await UsersDAO.updateUser(user);
+        const result = await this.usersDao.updateUser(user);
         res.json(result);
         req.log.info('password updated', result);
     }
@@ -72,7 +76,7 @@ export class UsersController {
             );
             delete user.sessions;
         }
-        const modifiedCount = await UsersDAO.updateUser(user);
+        const modifiedCount = await this.usersDao.updateUser(user);
         req.log.info('user updated', modifiedCount);
         res.json({
             error: false,
@@ -95,7 +99,7 @@ export class UsersController {
     @Delete(':id')
     private async deleteUser(req: Request, res: Response) {
         const username = req.params.id;
-        const result = await UsersDAO.deleteUser(username);
+        const result = await this.usersDao.deleteUser(username);
         res.json(result);
         req.log.info('user delete', result);
     }

@@ -1,12 +1,13 @@
-import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
+import { MongoClient, Collection, ObjectId, FilterQuery, Db } from "mongodb";
 import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse } from '../interfaces';
 import Logger from '../lib/logger';
+import { Dao } from '../interfaces/dao.interface';
 
-let users: Collection<User>;
 
-export class UsersDAO {
+export class UsersDao extends Dao {
+    users!: Collection<User>;
 
-    static projection = {
+    private readonly projection = {
         _id: 0,
         username: 1,
         name: 1,
@@ -17,24 +18,21 @@ export class UsersDAO {
     };
 
 
-    static async injectDB(conn: MongoClient) {
-        if (users) {
-            return;
-        }
+    async injectDb(db: Db) {
         try {
-            users = conn.db(process.env.DB_BASE as string).collection("users");
-            Logger.debug("users collection injected");
+            this.users = db.collection("this.users");
+            Logger.debug("this.users collection injected");
         } catch (e) {
             Logger.error(`usersDAO: unable to connect`, e);
         }
     }
 
-    static async list(): Promise<User[]> {
-        return await users.find({})
-            .project(UsersDAO.projection).toArray();
+    async list(): Promise<User[]> {
+        return await this.users.find({})
+            .project(this.projection).toArray();
     }
 
-    static async getUser(username: string): Promise<User | undefined> {
+    async getUser(username: string): Promise<User | undefined> {
         const pipeline = [
             {
                 '$match': { username }
@@ -70,12 +68,12 @@ export class UsersDAO {
             _id: 0,
             password: 0,
         };
-        return users.aggregate(pipeline).toArray().then(usr => usr[0]);
+        return this.users.aggregate(pipeline).toArray().then(usr => usr[0]);
     }
 
-    static async addUser(user: User): Promise<UsersResponse> {
+    async addUser(user: User): Promise<UsersResponse> {
         try {
-            const result = await users.insertOne(user, { writeConcern: { w: 'majority' } });
+            const result = await this.users.insertOne(user, { writeConcern: { w: 'majority' } });
             return {
                 error: false,
                 insertedCount: result.insertedCount,
@@ -86,14 +84,14 @@ export class UsersDAO {
         }
     }
 
-    static async updateUser(user: Partial<User>): Promise<number> {
-        const resp = await users.updateOne({ username: user.username }, { $set: user }, { writeConcern: { w: 'majority' } });
+    async updateUser(user: Partial<User>): Promise<number> {
+        const resp = await this.users.updateOne({ username: user.username }, { $set: user }, { writeConcern: { w: 'majority' } });
         return resp.modifiedCount;
     }
 
-    static async deleteUser(username: string): Promise<UsersResponse> {
+    async deleteUser(username: string): Promise<UsersResponse> {
         try {
-            const { deletedCount, result } = await users.deleteOne({ username }, { writeConcern: { w: 'majority' } });
+            const { deletedCount, result } = await this.users.deleteOne({ username }, { writeConcern: { w: 'majority' } });
             return {
                 error: false,
                 deletedCount,
@@ -105,15 +103,15 @@ export class UsersDAO {
         }
     }
 
-    static async login(login: Login): Promise<LoginResponse> {
+    async login(login: Login): Promise<LoginResponse> {
         const filter: FilterQuery<User> = {
             ...login,
             userDisabled: { $not: { $eq: true } },
         };
-        const updResp = await users.findOneAndUpdate(
+        const updResp = await this.users.findOneAndUpdate(
             filter,
             { $set: { last_login: new Date() } },
-            { projection: UsersDAO.projection }
+            { projection: this.projection }
         );
         return {
             error: !updResp.ok,
@@ -121,8 +119,8 @@ export class UsersDAO {
         };
     }
 
-    static async getPreferences(username: string): Promise<UserPreferences | null> {
-        const user = await UsersDAO.getUser(username);
+    async getPreferences(username: string): Promise<UserPreferences | null> {
+        const user = await this.getUser(username);
         if (!user) {
             return null;
         } else {
@@ -134,7 +132,7 @@ export class UsersDAO {
      * @param username Lietotājvārds
      * @param mod Modulis
      */
-    static async getUserPreferences(username: string, mod: string): Promise<{ error: any;[key: string]: any; }> {
+    async getUserPreferences(username: string, mod: string): Promise<{ error: any;[key: string]: any; }> {
         const pipeline = [{
             $match: { username }
         }, {
@@ -147,7 +145,7 @@ export class UsersDAO {
         try {
             return {
                 error: null,
-                userPreferences: (await users.aggregate<{ [key: string]: any; }>(pipeline).toArray())[0],
+                userPreferences: (await this.users.aggregate<{ [key: string]: any; }>(pipeline).toArray())[0],
             };
         } catch (error) { return { error }; }
     }
@@ -157,9 +155,9 @@ export class UsersDAO {
      * @param mod Modulis
      * @param val Moduļa iestatījumi
      */
-    static async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
+    async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
         try {
-            const updRes = await users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
+            const updRes = await this.users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
             return {
                 error: null,
                 modifiedCount: updRes.modifiedCount,
