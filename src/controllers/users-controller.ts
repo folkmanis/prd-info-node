@@ -1,12 +1,10 @@
+import { ClassErrorMiddleware, ClassMiddleware, Controller, Delete, Get, Post, Put } from '@overnightjs/core';
 import crypto from 'crypto';
-import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware, Put, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { User } from '../interfaces';
-import { PrdSession } from '../lib/session-handler';
-import { UsersDao } from '../dao-next/usersDAO';
-import { SessionsDAO } from '../dao/sessionsDAO';
-import { UsersResponse } from '../interfaces';
+import { SessionsDao, UsersDao } from '../dao';
+import { User, UsersResponse } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
+import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/users')
 @ClassErrorMiddleware(logError)
@@ -15,6 +13,7 @@ export class UsersController {
 
     constructor(
         private usersDao: UsersDao,
+        private sessionsDao: SessionsDao,
     ) { }
 
     @Get(':id')
@@ -70,7 +69,7 @@ export class UsersController {
         const user: Partial<User> = { ...req.body, username: req.params.id };
         let deletedSessions = 0;
         if (user.sessions instanceof Array) {
-            deletedSessions = await SessionsDAO.deleteUserSessions(
+            deletedSessions = await this.sessionsDao.deleteUserSessions(
                 req.params.id,
                 user.sessions.map(sess => sess._id)
             );
@@ -91,7 +90,7 @@ export class UsersController {
 
         res.json({
             error: false,
-            deletedCount: await SessionsDAO.deleteSession(sessionId),
+            deletedCount: await this.sessionsDao.deleteSession(sessionId),
         });
         req.log.info('session delete requested', sessionId);
     }

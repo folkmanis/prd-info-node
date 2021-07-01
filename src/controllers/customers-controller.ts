@@ -5,9 +5,8 @@ import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
-import { customersDAO } from '../dao/customersDAO';
-import { xmfSearchDAO } from '../dao/xmf-searchDAO';
 import { Customer } from '../interfaces';
+import { CustomersDao, XmfSearchDao } from '../dao';
 
 @Controller('data/customers')
 @ClassMiddleware([
@@ -17,11 +16,17 @@ import { Customer } from '../interfaces';
 ])
 @ClassWrapper(asyncWrapper)
 export class CustomersController {
+
+    constructor(
+        private customersDao: CustomersDao,
+        private xmfDao: XmfSearchDao,
+    ) { }
+
     @Get('')
     private async getCustomers(req: Request, res: Response) {
         req.log.debug('customers list requested');
         res.json({
-            data: await customersDAO.getCustomers(Boolean(req.query.disabled)),
+            data: await this.customersDao.getCustomers(Boolean(req.query.disabled)),
             error: null,
         });
     }
@@ -33,7 +38,7 @@ export class CustomersController {
             return;
         }
         const customer: Customer = req.body;
-        const result = await customersDAO.insertCustomer(customer);
+        const result = await this.customersDao.insertCustomer(customer);
         res.json(result);
     }
 
@@ -41,7 +46,7 @@ export class CustomersController {
     private async updateCustomer(req: Request, res: Response) {
         const _id = new ObjectId(req.params.id);
         delete req.body._id;
-        const result = await customersDAO.updateCustomer(_id, req.body as Partial<Customer>);
+        const result = await this.customersDao.updateCustomer(_id, req.body as Partial<Customer>);
         res.json(result);
     }
 
@@ -54,7 +59,7 @@ export class CustomersController {
         }
         res.json(
             {
-                result: await customersDAO.deleteCustomer(id),
+                result: await this.customersDao.deleteCustomer(id),
                 error: null,
             }
         );
@@ -63,14 +68,14 @@ export class CustomersController {
     @Put('update-from-xmf')
     private async updateFromXnf(req: Request, res: Response) {
         res.json(
-            await xmfSearchDAO.customersToCustomersDb('customers')
+            await this.xmfDao.customersToCustomersDb('customers')
         );
     }
 
     @Get('validate/:property')
     private async validate(req: Request, res: Response) {
         const property: keyof Customer = req.params.property as keyof Customer;
-        res.json(await customersDAO.validate(property));
+        res.json(await this.customersDao.validate(property));
     }
 
     // id - either _id or CustomerName
@@ -80,7 +85,7 @@ export class CustomersController {
 
         res.json({
             error: false,
-            data: await customersDAO.getCustomer(idOrName)
+            data: await this.customersDao.getCustomer(idOrName)
         });
     }
 

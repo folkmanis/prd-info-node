@@ -1,6 +1,6 @@
 import * as bodyParser from 'body-parser';
-import * as dao from './dao';
-import { DaoIndexMap } from './dao-next/dao-map';
+import { DaoIndexMap } from './dao/dao-map';
+import { LoggerDao } from './dao';
 import { createControllers } from './controllers/controllers-index';
 import { Server } from '@overnightjs/core';
 
@@ -41,9 +41,11 @@ export class PrdServer extends Server {
                     wtimeout: 2500,
                 },
             );
-            Logger.addTransport(new MongoLog(client)); // Loggerim pievieno arī mongo izvadi
             Logger.debug('Mongo connected');
             this.setupDAO(client); // All DAO initialisation
+            Logger.addTransport(
+                new MongoLog(this.daoMap.getDao(LoggerDao))
+            ); // Loggerim pievieno arī mongo izvadi
 
             insertPreferencesHandlerDao(this.daoMap);
 
@@ -66,17 +68,9 @@ export class PrdServer extends Server {
     }
 
     private setupDAO(client: MongoClient): void {
+
         const db = client.db(process.env.DB_BASE as string);
-        for (const name in dao) {
-            Logger.debug(`dao ${name}`);
-            if (dao.hasOwnProperty(name)) {
-                const element = (dao as any)[name];
-                if (element.injectDB instanceof Function) {
-                    element.injectDB(client);
-                }
-            }
-        }
-        // NEXT
+
         this.daoMap.injectDb(db);
 
     }

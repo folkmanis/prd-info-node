@@ -1,6 +1,5 @@
-import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation } from "mongodb";
+import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation, Db } from "mongodb";
 import Logger from '../lib/logger';
-import { fileSystemDAO } from './fileSystemDAO';
 import {
     Job,
     JobResponse,
@@ -13,26 +12,28 @@ import {
     JobsWithoutInvoicesTotals,
     KastesJob, KastesJobPartial, KastesJobResponse, JobProduct
 } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 
-let jobs: Collection<Job>;
 const JOBS_COLLECTION_NAME = 'jobs';
 const DEFAULT_UNIT = 'gab.';
 
-export class jobsDAO {
-    static async injectDB(conn: MongoClient): Promise<void> {
-        if (jobs) { return; }
+export class JobsDao extends Dao {
+
+    jobs!: Collection<Job>;
+
+    async injectDb(db: Db): Promise<void> {
+        if (this.jobs) { return; }
         try {
-            jobs = conn.db(process.env.DB_BASE as string)
-                .collection(JOBS_COLLECTION_NAME);
+            this.jobs = db.collection(JOBS_COLLECTION_NAME);
         } catch (err) {
             Logger.error('Customers DAO', err);
         }
-        await this.createCollection(conn);
+        await this.createCollection(db);
         await this.upgradeDb();
-        jobsDAO.createIndexes();
+        this.createIndexes();
     }
 
-    static async getJobs(query: JobQueryFilter): Promise<JobResponse> {
+    async getJobs(query: JobQueryFilter): Promise<JobResponse> {
         const filter: FilterQuery<Job> = {};
         if (query.fromDate) {
             filter.receivedDate = { $gte: new Date(query.fromDate) };
@@ -100,7 +101,7 @@ export class jobsDAO {
                 }
             });
         }
-        const result = jobs.aggregate(aggr);
+        const result = this.jobs.aggregate(aggr);
 
         return {
             data: await result.toArray(),
@@ -108,7 +109,7 @@ export class jobsDAO {
         };
     }
 
-    static async getKastesJobs(veikali: boolean = false): Promise<KastesJobResponse> {
+    async getKastesJobs(veikali: boolean = false): Promise<KastesJobResponse> {
         const pipeline = [
             { $match: { 'category': 'perforated paper' } },
             {
@@ -139,7 +140,7 @@ export class jobsDAO {
             }
         ];
         try {
-            const result = await jobs.aggregate<KastesJobPartial>(pipeline).toArray();
+            const result = await this.jobs.aggregate<KastesJobPartial>(pipeline).toArray();
             return {
                 error: false,
                 data: result,
@@ -147,18 +148,18 @@ export class jobsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async getJob(jobId: number): Promise<Job | null> {
-        return jobs.findOne({ jobId });
+    async getJob(jobId: number): Promise<Job | null> {
+        return this.jobs.findOne({ jobId });
     }
 
-    static async insertJob(job: Job): Promise<Job> {
-        job = jobsDAO.validateJob(job);
+    async insertJob(job: Job): Promise<Job> {
+        job = this.validateJob(job);
         if (!job.jobStatus) {
             job.jobStatus = { generalStatus: 10 };
         }
         Logger.info('insert job', job);
-        const result = jobs.insertOne(job)
-            .then(result => jobs.findOne(
+        const result = this.jobs.insertOne(job)
+            .then(result => this.jobs.findOne(
                 { _id: result.insertedId },
             ))
             .then(newJob => {
@@ -168,12 +169,12 @@ export class jobsDAO {
         return result;
     }
 
-    static async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
+    async insertJobs(insertJobs: Job[]): Promise<JobResponse> {
         Logger.info('insert jobs many', insertJobs);
         if (!(insertJobs && insertJobs.length > 0)) { return { error: null, insertedCount: 0 }; }
-        insertJobs.forEach(job => job = jobsDAO.validateJob(job));
+        insertJobs.forEach(job => job = this.validateJob(job));
         try {
-            const { insertedCount, insertedIds } = await jobs.insertMany(insertJobs);
+            const { insertedCount, insertedIds } = await this.jobs.insertMany(insertJobs);
             return {
                 error: false,
                 insertedCount,
@@ -182,16 +183,9 @@ export class jobsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async updateJob(jobId: number, job: Partial<Job>): Promise<number> {
-        job = jobsDAO.validateJob(job);
-        if (job.files?.path) {
-            try {
-                await fileSystemDAO.createFolder(job.files.path);
-            } catch (error) {
-                job.files = undefined;
-            }
-        }
-        const result = await jobs.updateOne(
+    async updateJob(jobId: number, job: Partial<Job>): Promise<number> {
+        job = this.validateJob(job);
+        const result = await this.jobs.updateOne(
             {
                 jobId,
                 invoiceId: { $exists: false }
@@ -202,11 +196,11 @@ export class jobsDAO {
 
     }
 
-    static async updateJobs(jobsUpdate: Partial<Job>[]): Promise<number> {
+    async updateJobs(jobsUpdate: Partial<Job>[]): Promise<number> {
         const operations: BulkWriteUpdateOneOperation<Job>[] = jobsUpdate.map(job => ({
             updateOne: this.jobUpdate(job),
         }));
-        const resp = await jobs.bulkWrite(operations);
+        const resp = await this.jobs.bulkWrite(operations);
         return resp.modifiedCount || 0;
     }
     /**
@@ -216,7 +210,7 @@ export class jobsDAO {
      * @param jobIds Darbu numuri
      * @param invoiceId Aprēķina numurs
      */
-    static async setInvoice(
+    async setInvoice(
         jobIds: number[],
         customerId: string,
         invoiceId: string
@@ -234,10 +228,10 @@ export class jobsDAO {
                 },
             },
         };
-        return jobs
+        return this.jobs
             .updateMany(filter, update)
             .then(() => {
-                return jobs.find(
+                return this.jobs.find(
                     { invoiceId },
                     {
                         projection: { jobId: 1, _id: 0 },
@@ -249,7 +243,7 @@ export class jobsDAO {
             });
     }
 
-    static async getInvoiceTotals(invoiceId: string): Promise<InvoiceProduct[]> {
+    async getInvoiceTotals(invoiceId: string): Promise<InvoiceProduct[]> {
         const aggr = [
             {
                 $match: { 'invoiceId': invoiceId, }
@@ -272,10 +266,10 @@ export class jobsDAO {
                 }
             }
         ];
-        return jobs.aggregate<InvoiceProduct>(aggr).toArray();
+        return this.jobs.aggregate<InvoiceProduct>(aggr).toArray();
     }
 
-    static async jobsWithoutInvoiceTotals(): Promise<JobResponse> {
+    async jobsWithoutInvoiceTotals(): Promise<JobResponse> {
         const pipeline = [
             {
                 '$match': {
@@ -348,7 +342,7 @@ export class jobsDAO {
             }
         ];
         try {
-            const resp = await jobs.aggregate<JobsWithoutInvoicesTotals>(pipeline).toArray();
+            const resp = await this.jobs.aggregate<JobsWithoutInvoicesTotals>(pipeline).toArray();
             return {
                 error: false,
                 jobsWithoutInvoicesTotals: resp,
@@ -356,7 +350,7 @@ export class jobsDAO {
         } catch (error) { return { error }; }
     }
 
-    static async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {
+    async getJobsTotals(jobsId: number[]): Promise<InvoiceResponse> {
         const aggr = [
             {
                 '$match': { 'jobId': { '$in': jobsId } }
@@ -381,13 +375,13 @@ export class jobsDAO {
             }
         ];
         return {
-            totals: await jobs.aggregate<ProductTotals>(aggr).toArray(),
+            totals: await this.jobs.aggregate<ProductTotals>(aggr).toArray(),
             error: null,
         };
     }
 
-    static createIndexes(): void {
-        jobs.createIndexes([
+    createIndexes(): void {
+        this.jobs.createIndexes([
             {
                 key: { jobId: 1 },
                 unique: true,
@@ -407,19 +401,18 @@ export class jobsDAO {
         ]);
     }
 
-    static async createCollection(conn: MongoClient): Promise<void> {
+    async createCollection(db: Db): Promise<void> {
         try {
-            await conn.db(process.env.DB_BASE as string)
-                .createCollection(JOBS_COLLECTION_NAME, {
-                    validator: {
-                        $jsonSchema: JOBS_SCHEMA,
-                    }
-                });
+            await db.createCollection(JOBS_COLLECTION_NAME, {
+                validator: {
+                    $jsonSchema: JOBS_SCHEMA,
+                }
+            });
         } catch (_) { return; }
     }
 
-    static async upgradeDb(): Promise<void> {
-        return await jobs.updateMany(
+    async upgradeDb(): Promise<void> {
+        return await this.jobs.updateMany(
             {
                 jobStatus: { $exists: false },
                 invoiceId: { $exists: false },
@@ -435,7 +428,7 @@ export class jobsDAO {
             }
 
         }).then(_ =>
-            jobs.updateMany(
+            this.jobs.updateMany(
                 {
                     invoiceId: { $exists: true },
                 },
@@ -449,7 +442,7 @@ export class jobsDAO {
             if (result.modifiedCount > 0) {
                 Logger.info(`Updated ${result.modifiedCount} jobs status to jobStatus.generalStatus: 50`);
             }
-        }).then(_ => jobs.updateMany(
+        }).then(_ => this.jobs.updateMany(
             { products: { $elemMatch: { name: { $exists: true }, units: { $exists: false } } } },
             {
                 $set: {
@@ -464,7 +457,7 @@ export class jobsDAO {
         });
     }
 
-    static validateJob<T extends Partial<Job>>(jobO: T): T {
+    validateJob<T extends Partial<Job>>(jobO: T): T {
         const job = { ...jobO };
         if (typeof job.receivedDate === 'string') {
             job.receivedDate = new Date(job.receivedDate);
@@ -475,7 +468,7 @@ export class jobsDAO {
         return job;
     }
 
-    static jobUpdate(job0: Partial<Job>): BulkWriteUpdateOperation<Job> {
+    jobUpdate(job0: Partial<Job>): BulkWriteUpdateOperation<Job> {
         const jobId = job0.jobId as number;
         const job = this.validateJob(job0);
         delete job.jobId;

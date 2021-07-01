@@ -1,24 +1,26 @@
-import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
+import { Collection, Db } from "mongodb";
+import { Invoice, InvoiceResponse, InvoicesFilter, InvoiceUpdate, INVOICE_SCHEMA } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 import Logger from '../lib/logger';
-import { Invoice, INVOICE_SCHEMA, InvoiceResponse, InvoicesFilter, InvoiceUpdate } from '../interfaces';
 
-let invoices: Collection<Invoice>;
 const INVOICES_COLLECTION_NAME = 'invoices';
 
-export class invoicesDAO {
-    static async injectDB(conn: MongoClient): Promise<void> {
-        if (invoices) { return; }
+export class InvoicesDao extends Dao {
+
+    invoices!: Collection<Invoice>;
+
+    async injectDb(db: Db): Promise<void> {
+        if (this.invoices) { return; }
         try {
-            invoices = conn.db(process.env.DB_BASE as string)
-                .collection(INVOICES_COLLECTION_NAME);
+            this.invoices = db.collection(INVOICES_COLLECTION_NAME);
         } catch (err) {
             Logger.error('Invoices DAO', err);
         }
-        await invoicesDAO.createCollection(conn);
-        invoicesDAO.createIndexes();
+        await this.createCollection(db);
+        this.createIndexes();
     }
 
-    static async getInvoices(filter?: InvoicesFilter): Promise<InvoiceResponse> {
+    async getInvoices(filter?: InvoicesFilter): Promise<InvoiceResponse> {
         let pipeline: any[] = [
             {
                 '$sort': { 'invoiceId': -1 }
@@ -61,7 +63,7 @@ export class invoicesDAO {
             }
         ];
         try {
-            const result = await invoices.aggregate(pipeline).toArray();
+            const result = await this.invoices.aggregate(pipeline).toArray();
             return {
                 error: null,
                 data: result,
@@ -69,7 +71,7 @@ export class invoicesDAO {
         } catch (error) { return { error }; }
     }
 
-    static async getInvoice(invoiceId: string): Promise<Invoice> {
+    async getInvoice(invoiceId: string): Promise<Invoice> {
         const aggr = [{
             $match: { invoiceId }
         }, {
@@ -148,12 +150,12 @@ export class invoicesDAO {
             $unset: '_id'
         }];
 
-        const result = await invoices.aggregate(aggr).toArray();
+        const result = await this.invoices.aggregate(aggr).toArray();
         return result[0] || undefined;
     }
 
-    static async insertInvoice(inv: Invoice): Promise<InvoiceResponse> {
-        const result = await invoices.insertOne(inv);
+    async insertInvoice(inv: Invoice): Promise<InvoiceResponse> {
+        const result = await this.invoices.insertOne(inv);
         return {
             error: !result.result.ok,
             result: result.result,
@@ -162,27 +164,26 @@ export class invoicesDAO {
         };
     }
 
-    static async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<number> {
-        const result = await invoices.updateOne(
+    async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<number> {
+        const result = await this.invoices.updateOne(
             { invoiceId },
             { $set: update }
         );
         return result.modifiedCount;
     }
 
-    static async createCollection(conn: MongoClient): Promise<void> {
+    private async createCollection(db: Db): Promise<void> {
         try {
-            await conn.db(process.env.DB_BASE as string)
-                .createCollection(INVOICES_COLLECTION_NAME, {
-                    validator: {
-                        $jsonSchema: INVOICE_SCHEMA,
-                    }
-                });
+            await db.createCollection(INVOICES_COLLECTION_NAME, {
+                validator: {
+                    $jsonSchema: INVOICE_SCHEMA,
+                }
+            });
         } catch (_) { return; }
     }
 
-    static createIndexes(): void {
-        invoices.createIndexes(
+    private createIndexes(): void {
+        this.invoices.createIndexes(
             [
                 {
                     key: { invoiceId: 1 },

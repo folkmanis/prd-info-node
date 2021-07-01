@@ -25,26 +25,30 @@ import { ArchiveSearchParams, UserPreferences } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
-import { xmfSearchDAO } from '../dao/xmf-searchDAO';
+import { XmfSearchDao } from '../dao';
 
 @Controller('data/xmf-archive')
 @ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-search')])
 @ClassWrapper(asyncWrapper)
 export class XmfSearchController {
 
+    constructor(
+        private xmfSearchDao: XmfSearchDao,
+    ) { }
+
     @Get()
     private async search(req: Request, res: Response) {
         const query = req.query.query ? JSON.parse(req.query.query as string) : {};
         query.q && query.q.length > 0 && req.log.info("XMF search");
         res.json(
-            await xmfSearchDAO.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start as string, req.query.limit as string | undefined)
+            await this.xmfSearchDao.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start as string, req.query.limit as string | undefined)
         );
     }
 
     @Get('customers')
     private async getCustomers(req: Request, res: Response) {
         req.log.debug('xmfCustomers customers');
-        res.json(await xmfSearchDAO.getCustomers());
+        res.json(await this.xmfSearchDao.getCustomers());
     }
 
 }

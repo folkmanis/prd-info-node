@@ -1,23 +1,25 @@
-import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery } from "mongodb";
+import { MongoClient, Collection, ObjectId, DeleteWriteOpResultObject, FilterQuery, Db } from "mongodb";
 import Logger from '../lib/logger';
 import { Customer, CustomerResult } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 
-let customers: Collection<Customer>;
 const CUSTOMERS_COLLECTION_NAME = 'customers';
 
-export class customersDAO {
-    static async injectDB(conn: MongoClient): Promise<void> {
-        if (customers) { return; }
+export class CustomersDao extends Dao {
+
+    private customers!: Collection<Customer>;
+
+    async injectDb(db: Db): Promise<void> {
+        if (this.customers) { return; }
         try {
-            customers = conn.db(process.env.DB_BASE as string)
-                .collection(CUSTOMERS_COLLECTION_NAME);
+            this.customers = db.collection(CUSTOMERS_COLLECTION_NAME);
         } catch (err) {
             Logger.error('Customers DAO', err);
         }
-        customersDAO.createIndexes();
+        this.createIndexes();
     }
 
-    static async getCustomers(disabled?: boolean): Promise<Customer[]> {
+    async getCustomers(disabled?: boolean): Promise<Customer[]> {
         const query: FilterQuery<Customer> = {};
         if (!disabled) {
             query.$or = [
@@ -25,7 +27,7 @@ export class customersDAO {
                 { disabled: false },
             ];
         }
-        return await customers.find(query)
+        return await this.customers.find(query)
             .project({
                 _id: 1,
                 "CustomerName": 1,
@@ -36,17 +38,17 @@ export class customersDAO {
             .toArray();
     }
 
-    static async getCustomer(idOrName: string): Promise<Customer | undefined> {
+    async getCustomer(idOrName: string): Promise<Customer | undefined> {
         const fltr = (/^[a-f\d]{24}$/i).test(idOrName) ? { _id: new ObjectId(idOrName) } : { CustomerName: idOrName };
 
-        return await customers.findOne(fltr) || undefined;
+        return await this.customers.findOne(fltr) || undefined;
     }
 
-    static async insertCustomer(customer: Customer): Promise<CustomerResult> {
+    async insertCustomer(customer: Customer): Promise<CustomerResult> {
         try {
             if (!customer.CustomerName) { throw new Error('CustomerName not provided'); }
-            const insertResult = await customers.findOneAndDelete({ CustomerName: customer.CustomerName })
-                .then(() => customers.insertOne(customer));
+            const insertResult = await this.customers.findOneAndDelete({ CustomerName: customer.CustomerName })
+                .then(() => this.customers.insertOne(customer));
             Logger.info('Customer created', insertResult.insertedId);
             return {
                 error: !insertResult.result.ok,
@@ -58,9 +60,9 @@ export class customersDAO {
         }
     }
 
-    static async insertCustomers(cust: Customer[]): Promise<CustomerResult> {
+    async insertCustomers(cust: Customer[]): Promise<CustomerResult> {
         if (!(cust && cust.length)) { return { error: null, insertedCount: 0 }; }
-        return customers.insertMany(cust)
+        return this.customers.insertMany(cust)
             .then(
                 resp => ({
                     error: !resp.result.ok,
@@ -69,9 +71,9 @@ export class customersDAO {
             ).catch(error => ({ error }));
     }
 
-    static async deleteCustomer(id: string): Promise<CustomerResult> {
+    async deleteCustomer(id: string): Promise<CustomerResult> {
         try {
-            const result = await customers.deleteOne({ _id: new ObjectId(id) });
+            const result = await this.customers.deleteOne({ _id: new ObjectId(id) });
             Logger.info(`Customer ${id} delete request`, result.result);
             return {
                 error: !result.result.ok,
@@ -84,9 +86,9 @@ export class customersDAO {
         }
     }
 
-    static async updateCustomer(_id: ObjectId, customer: Partial<Customer>): Promise<CustomerResult> {
+    async updateCustomer(_id: ObjectId, customer: Partial<Customer>): Promise<CustomerResult> {
         try {
-            const result = await customers.updateOne(
+            const result = await this.customers.updateOne(
                 { _id },
                 { $set: customer },
                 { upsert: false }
@@ -101,12 +103,12 @@ export class customersDAO {
         }
     }
 
-    static async findOneCustomer(filter: FilterQuery<Customer>): Promise<Customer | null> {
-        return await customers.findOne(filter);
+    async findOneCustomer(filter: FilterQuery<Customer>): Promise<Customer | null> {
+        return await this.customers.findOne(filter);
     }
 
-    static async validate<K extends keyof Customer>(property: K): Promise<CustomerResult> {
-        const result = await customers.find({})
+    async validate<K extends keyof Customer>(property: K): Promise<CustomerResult> {
+        const result = await this.customers.find({})
             .project({ _id: 0, [property]: 1 })
             .map(data => data[property])
             .toArray();
@@ -117,8 +119,8 @@ export class customersDAO {
         };
     }
 
-    private static createIndexes() {
-        customers.createIndexes([
+    private createIndexes() {
+        this.customers.createIndexes([
             {
                 key: {
                     'CustomerName': 1

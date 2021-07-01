@@ -1,39 +1,10 @@
-/*
-/data/preferences
-GET single
-module: string
-{module, settings: {key: value}} | {}
-
-GET all
-{module, settings: {key: value}}[]
-
-PUT update
-viens modulis vai masīvs no vairākiem moduļiem
-preferences: {
-    module: string
-    settings: {key: value}
-} |
-preferences: {
-    module: string
-    settings: {key: value}
-} []
-
-POST defaults
-atiestata vienu moduli
-{module: string}
-response {updated: 0 | 1}
-
-*/
-
-import { Controller, ClassMiddleware, Middleware, Post, ClassWrapper, Get, Delete, Put } from '@overnightjs/core';
+import { ClassMiddleware, ClassWrapper, Controller, Get, Middleware, Post } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { PreferencesDao } from '../dao';
+import { Modules, SystemPreferenceModule } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
-
-
-import { PreferencesDao } from '../dao-next/preferencesDAO';
-import { Modules, SystemPreferenceModule, SystemPreferences } from '../interfaces';
+import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/preferences')
 @ClassMiddleware([
@@ -86,9 +57,10 @@ export class PreferencesController {
 
     @Get('')
     private async getAllPreferences(req: Request, res: Response) {
-        res.json(
-            await this.preferencesDao.getAllPreferences()
-        );
+        res.json({
+            error: null,
+            data: await this.preferencesDao.getAllPreferences()
+        });
     }
 
 }

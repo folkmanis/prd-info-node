@@ -1,27 +1,31 @@
-/**
- * /data/xmf-upload/
- */
-
 import { ClassMiddleware, Controller, Get, Post } from '@overnightjs/core';
 import Busboy from "busboy";
 import { Request, Response } from 'express';
 import fs from 'fs';
 import { ObjectId } from 'mongodb';
 import { file as tmpFile, FileResult } from 'tmp-promise';
-import { xmfSearchDAO } from '../dao/xmf-searchDAO';
+import { XmfSearchDao } from '../dao';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
 import { FileParser, UploadProgressTracker } from '../lib/upload-parser';
 
 @Controller('data/xmf-upload')
-@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-upload')])
+@ClassMiddleware([
+    Preferences.getUserPreferences,
+    PrdSession.validateSession,
+    PrdSession.validateModule('xmf-upload')
+])
 // @ClassWrapper(asyncWrapper)
 export class XmfUploadController {
+
+    constructor(
+        private xmfSearchDao: XmfSearchDao,
+    ) { }
 
     @Post('file')
     private async file(req: Request, res: Response) {
         let parser: FileParser;
-        let tracker: UploadProgressTracker = new UploadProgressTracker();
+        let tracker: UploadProgressTracker = new UploadProgressTracker(this.xmfSearchDao);
         let tempFile: FileResult;
         let result: {
             filename?: string,
@@ -41,7 +45,7 @@ export class XmfUploadController {
             req.log.info('xmf-archive upload', result);
         });
         busboy.on('finish', async () => {
-            parser = new FileParser(tempFile, tracker);
+            parser = new FileParser(tempFile, tracker, this.xmfSearchDao);
             res.json(result);
             parser.start();
         }
@@ -54,7 +58,7 @@ export class XmfUploadController {
     private async status(req: Request, res: Response) {
         const id = req.query.id && new ObjectId(req.query.id as string) || undefined;
         res.json(
-            await xmfSearchDAO.getUploadStatus(id)
+            await this.xmfSearchDao.getUploadStatus(id)
         );
     }
 }

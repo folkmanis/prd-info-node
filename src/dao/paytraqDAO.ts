@@ -5,17 +5,22 @@ import { RequestOptions, PaytraqClients, PaytraqClient, PaytraqProduct, PaytraqP
 import { PaytraqConnectionParams, PaytraqSystemPreference } from '../interfaces/preferences.interface';
 import { xmlToJs, Options, jsToXml } from '../lib/xml-converter';
 import { method } from 'lodash';
+import { Dao } from '../interfaces/dao.interface';
 
 const CLIENT_OPTIONS: Options = { stringFields: ['RegNumber', 'Zip', 'Phone'] };
 const SALE_OPTIONS: Options = { stringFields: ['DocumentRef', 'ClientName', 'WarehouseName', 'Zip', 'Phone'] };
 
 const RX_INTERVAL = 1000; // minimum 500 ms between requests;
 
-export class PaytraqDAO {
+export class PaytraqDao extends Dao {
 
-    private static reqTime: number = 0;
+    private reqTime: number = 0;
 
-    static async getClients(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqClients> {
+    async injectDb() {
+        return;
+    }
+
+    async getClients(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqClients> {
         const url = new ApiURLWithQuery(params, query, 'clients');
 
         return this.delay()
@@ -24,7 +29,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs<PaytraqClients>(xml, { ...CLIENT_OPTIONS, forceArray: ['Client'] }));
     }
 
-    static async getClient(clientId: number, params: PaytraqSystemPreference): Promise<PaytraqClient> {
+    async getClient(clientId: number, params: PaytraqSystemPreference): Promise<PaytraqClient> {
         const url = new ApiURL(params, 'client', clientId.toString());
 
         return this.delay()
@@ -33,7 +38,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs<PaytraqClient>(xml, CLIENT_OPTIONS));
     }
 
-    static async getProducts(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqProducts> {
+    async getProducts(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqProducts> {
         const url = new ApiURLWithQuery(params, query, 'products');
 
         return this.delay()
@@ -42,7 +47,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs<PaytraqProducts>(xml, { forceArray: ['Product'] }));
     }
 
-    static async getProduct(productId: number, params: PaytraqSystemPreference): Promise<PaytraqProduct> {
+    async getProduct(productId: number, params: PaytraqSystemPreference): Promise<PaytraqProduct> {
         const url = new ApiURL(params, 'product', productId.toString());
         return this.delay()
             .then(httpsGetPromise(url))
@@ -50,7 +55,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs<PaytraqProduct>(xml));
     }
 
-    static async getSales(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqSales> {
+    async getSales(query: RequestOptions, params: PaytraqSystemPreference): Promise<PaytraqSales> {
         const url = new ApiURLWithQuery(params, query, 'sales');
 
         return this.delay()
@@ -59,7 +64,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs<PaytraqSales>(xml, { ...SALE_OPTIONS, forceArray: ['Sale'] }));
     }
 
-    static async getSale(saleId: number, params: PaytraqSystemPreference): Promise<PaytraqSale> {
+    async getSale(saleId: number, params: PaytraqSystemPreference): Promise<PaytraqSale> {
         const url = new ApiURL(params, 'sale', saleId.toString());
 
         return this.delay()
@@ -71,7 +76,7 @@ export class PaytraqDAO {
             ));
     }
 
-    static async postSale(sale: Partial<PaytraqSale>, params: PaytraqSystemPreference): Promise<{ [key: string]: any; }> {
+    async postSale(sale: Partial<PaytraqSale>, params: PaytraqSystemPreference): Promise<{ [key: string]: any; }> {
         const url = new ApiURL(params, 'sale');
         // const url = new URL('https://httpbin.org/post');
         const xml = jsToXml(sale);
@@ -81,7 +86,7 @@ export class PaytraqDAO {
             .then(xml => xmlToJs(xml));
     }
 
-    static async delay(): Promise<void> {
+    async delay(): Promise<void> {
         let remain = this.reqTime - Date.now() + RX_INTERVAL;
         remain = remain > 0 ? remain : 0;
         this.reqTime = Date.now();

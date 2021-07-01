@@ -1,17 +1,11 @@
-import {
-    Controller, ClassMiddleware,
-    Post, Put, Get, Delete,
-    ClassWrapper, ClassErrorMiddleware
-} from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Post } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { ObjectId, Timestamp } from 'mongodb';
+import { JobsDao, KastesDao } from '../dao';
+import { Colors, ColorTotals, JobProduct, KastesJob, KastesJobResponse } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
-import { PrdSession } from '../lib/session-handler';
-import { Preferences } from '../lib/preferences-handler';
-import { KastesDAO } from '../dao/kastesDAO';
-import { jobsDAO } from '../dao/jobsDAO';
-import { Veikals, KastesJob, Colors, KastesJobResponse, Product, JobProduct, ColorTotals } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
+import { Preferences } from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/kastes-orders')
 @ClassErrorMiddleware(logError)
@@ -23,14 +17,19 @@ import { logError } from '../lib/errorMiddleware';
 @ClassWrapper(asyncWrapper)
 export class KastesOrderController {
 
+    constructor(
+        private jobsDao: JobsDao,
+        private kastesDao: KastesDao,
+    ) { }
+
     @Get(':id')
     private async getOrder(req: Request, res: Response) {
         const jobId = +req.params.id;
         const result: Promise<KastesJobResponse> = Promise.all([
-            jobsDAO.getJob(jobId),
-            KastesDAO.colorTotals(jobId),
-            KastesDAO.apjomiTotals(jobId),
-            KastesDAO.veikali(jobId),
+            this.jobsDao.getJob(jobId),
+            this.kastesDao.colorTotals(jobId),
+            this.kastesDao.apjomiTotals(jobId),
+            this.kastesDao.veikaliList(jobId),
         ])
             .then(([job, colorTotals, apjomiTotals, veikali]) => ({
                 error: false,
@@ -56,7 +55,7 @@ export class KastesOrderController {
     async getKastesJobs(req: Request, res: Response) {
         const veikali: boolean = req.query.veikali === '1';
         res.json(
-            await jobsDAO.getKastesJobs(veikali)
+            await this.jobsDao.getKastesJobs(veikali)
         );
     }
 
@@ -69,7 +68,7 @@ export class KastesOrderController {
         delete pas.jobId;
         res.json({
             error: false,
-            modifiedCount: await jobsDAO.updateJob(jobId, pas)
+            modifiedCount: await this.jobsDao.updateJob(jobId, pas)
         });
     }
 

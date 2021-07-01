@@ -1,13 +1,12 @@
-import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Post, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { CountersDao, CustomersDao, InvoicesDao, JobsDao } from '../dao';
+import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
-import { PrdSession } from '../lib/session-handler';
-import { Preferences } from '../lib/preferences-handler';
-import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
-import { invoicesDAO, customersDAO, jobsDAO } from '../dao';
 import { pick } from '../lib/pick';
-import { CountersDAO } from '../dao-next/countersDAO';
+import { Preferences } from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/invoices')
 @ClassErrorMiddleware(logError)
@@ -20,7 +19,10 @@ import { CountersDAO } from '../dao-next/countersDAO';
 export class InvoicesController {
 
     constructor(
-        private countersDao: CountersDAO,
+        private jobsDao: JobsDao,
+        private invoicesDao: InvoicesDao,
+        private countersDao: CountersDao,
+        private customersDao: CustomersDao,
     ) { }
 
     @Put('')
@@ -28,10 +30,10 @@ export class InvoicesController {
         const jobIds: number[] = req.body.selectedJobs;
         const customerId: string = req.body.customerId;
         const invoiceId = (await this.countersDao.getNextId('lastInvoiceId')).toString().padStart(5, '0');
-        const jobsId = await jobsDAO.setInvoice(jobIds, customerId, invoiceId);
-        const products = await jobsDAO.getInvoiceTotals(invoiceId);
+        const jobsId = await this.jobsDao.setInvoice(jobIds, customerId, invoiceId);
+        const products = await this.jobsDao.getInvoiceTotals(invoiceId);
         res.json(
-            await invoicesDAO.insertInvoice(
+            await this.invoicesDao.insertInvoice(
                 {
                     invoiceId,
                     customer: customerId,
@@ -49,7 +51,7 @@ export class InvoicesController {
         const update: InvoiceUpdate = pick(req.body, INVOICE_UPDATE_FIELDS);
         res.json({
             error: false,
-            modifiedCount: await invoicesDAO.updateInvoice(id, update),
+            modifiedCount: await this.invoicesDao.updateInvoice(id, update),
         });
     }
 
@@ -57,15 +59,15 @@ export class InvoicesController {
     private async getTotals(req: Request, res: Response) {
         const jobsId: number[] = (req.query.jobsId as string).split(',').map(val => +val);
         res.json(
-            await jobsDAO.getJobsTotals(jobsId)
+            await this.jobsDao.getJobsTotals(jobsId)
         );
     }
 
     @Get(':invoiceId')
     private async getInvoice(req: Request, res: Response) {
         const id: string = req.params.invoiceId;
-        const data = await invoicesDAO.getInvoice(id);
-        const customerInfo = data && await customersDAO.getCustomer(data.customer);
+        const data = await this.invoicesDao.getInvoice(id);
+        const customerInfo = data && await this.customersDao.getCustomer(data.customer);
         // if (!customerInfo) { throw new Error('No data'); }
 
         res.json({
@@ -80,7 +82,7 @@ export class InvoicesController {
             customer: req.query.customer as string
         };
         res.json(
-            await invoicesDAO.getInvoices(filter)
+            await this.invoicesDao.getInvoices(filter)
         );
     }
 

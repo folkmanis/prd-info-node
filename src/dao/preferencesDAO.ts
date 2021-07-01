@@ -83,6 +83,7 @@ const defaultPrefs: SystemPreferences = [
 export class PreferencesDao extends Dao {
 
     preferences!: Collection<SystemPreferenceModule>;
+
     async injectDb(db: Db) {
         try {
             this.preferences = db.collection('preferences');
@@ -91,7 +92,6 @@ export class PreferencesDao extends Dao {
                 { module: 1 },
                 { unique: true, name: 'module_1' }
             );
-            Logger.debug('Preferences DAO started');
         } catch (e) {
             Logger.error('Preferences DAO error', e);
         }
@@ -114,15 +114,9 @@ export class PreferencesDao extends Dao {
     /**
      * Izsniedz visu moduļu preferences
      */
-    async getAllPreferences(): Promise<PreferencesResponse> {
+    async getAllPreferences(): Promise<SystemPreferenceModule[]> {
         //TODO tikai preferences, kuras attiecas uz lietotāju
-        try {
-            return {
-                error: null,
-                data: await this.preferences.find({}, { projection: { _id: 0 } }).toArray()
-            };
-
-        } catch (error) { return { error }; }
+        return await this.preferences.find({}, { projection: { _id: 0 } }).toArray();
     }
     /**
      * Nomaina vienam vai vairākiem moduļiem preferences

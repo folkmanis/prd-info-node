@@ -1,10 +1,10 @@
-import { ArchiveJob, XmfUploadProgress } from '../interfaces/xmf-archive.interface';
-import { xmfSearchDAO } from '../dao/xmf-searchDAO';
-import Logger from './logger';
-import { ObjectId } from 'mongodb';
-import { file as tmpFile, FileResult } from 'tmp-promise';
-import readline, { ReadLine } from 'readline';
 import fs from 'fs';
+import { ObjectId } from 'mongodb';
+import readline, { ReadLine } from 'readline';
+import { FileResult } from 'tmp-promise';
+import { XmfSearchDao } from '../dao';
+import { ArchiveJob, XmfUploadProgress } from '../interfaces/xmf-archive.interface';
+import Logger from './logger';
 
 const WRITE_CHUNK_SIZE = 100;
 
@@ -115,7 +115,10 @@ class DataArray extends Data {
 }
 
 class UploadParser {
-    constructor(private tracker: UploadProgressTracker) { }
+
+    constructor(
+        private tracker: UploadProgressTracker,
+    ) { }
 
     private data = new DataObject();
     private isfirst = true; // kamēr nav pievienots neviens elements
@@ -240,6 +243,11 @@ export class UploadProgressTracker {
             processed: 0,
         }
     };
+
+    constructor(
+        private xmfDao: XmfSearchDao,
+    ) { }
+
     /**
      * Procesēta jauna rindiņa
      */
@@ -270,7 +278,7 @@ export class UploadProgressTracker {
         this.progress = { ...this.progress, ...inf };
         this.progress.started = new Date(Date.now());
         this.progress.state = 'uploading';
-        this.progress._id = (await xmfSearchDAO.startUploadProgress(this.progress)) || undefined;
+        this.progress._id = (await this.xmfDao.startUploadProgress(this.progress)) || undefined;
         return this.progress._id;
     }
     /**
@@ -298,7 +306,7 @@ export class UploadProgressTracker {
      */
     async save(): Promise<boolean> {
         if (!this.progress._id) { return false; }
-        return await xmfSearchDAO.updateUploadProgress(this.progress);
+        return await this.xmfDao.updateUploadProgress(this.progress);
     }
     /**
      * Ieraksta skaitītāja stāvokli un papildina ar finished lauku
@@ -309,7 +317,7 @@ export class UploadProgressTracker {
         this.state = 'finished';
         Logger.info('xmf-upload', this.progress);
         if (!this.progress._id) { return false; }
-        return await xmfSearchDAO.updateUploadProgress(this.progress);
+        return await this.xmfDao.updateUploadProgress(this.progress);
     }
 
 }
@@ -319,6 +327,7 @@ export class FileParser {
     constructor(
         private file: FileResult,
         private tracker: UploadProgressTracker,
+        private xmfDao: XmfSearchDao,
     ) { }
 
     lineReader!: ReadLine;
@@ -346,10 +355,10 @@ export class FileParser {
                 WRITE_CHUNK_SIZE * n,
                 WRITE_CHUNK_SIZE * (n + 1)
             );
-            const resp = await xmfSearchDAO.insertJob(chunk);
+            const resp = await this.xmfDao.insertJob(chunk);
             this.tracker.updateCount(resp);
         }
-        const resp = await xmfSearchDAO.insertJob(
+        const resp = await this.xmfDao.insertJob(
             buffer.slice(WRITE_CHUNK_SIZE * chunks)
         );
         this.tracker.updateCount(resp);

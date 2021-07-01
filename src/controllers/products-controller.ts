@@ -1,13 +1,12 @@
-import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Delete, Get, Middleware, Post, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { omit } from 'lodash';
+import { ProductsDao } from '../dao';
+import { Product, ProductNoId } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
-import { PrdSession } from '../lib/session-handler';
 import { Preferences } from '../lib/preferences-handler';
-import { ObjectId } from 'mongodb';
-import { productsDAO } from '../dao/productsDAO';
-import { Product, ProductNoId } from '../interfaces';
-import { omit } from 'lodash';
+import { PrdSession } from '../lib/session-handler';
 
 
 @Controller('data/products')
@@ -20,10 +19,15 @@ import { omit } from 'lodash';
 @ClassWrapper(asyncWrapper)
 
 export class ProductsController {
+
+    constructor(
+        private productsDao: ProductsDao,
+    ) { }
+
     @Get('prices/customer/:customer')
     private async getCustomerPrices(req: Request, res: Response) {
         res.json(
-            await productsDAO.getCustomerProducts(req.params.customer)
+            await this.productsDao.getCustomerProducts(req.params.customer)
         );
     }
 
@@ -34,7 +38,7 @@ export class ProductsController {
             res.status(404).json({ error: 'invalid request' });
         } else {
             res.json(
-                await productsDAO.getProducts(category)
+                await this.productsDao.getProducts(category)
             );
         }
     }
@@ -45,19 +49,19 @@ export class ProductsController {
             customerName: string;
             product: string;
         }[];
-        res.json(await productsDAO.getCustomersProducts(filter));
+        res.json(await this.productsDao.getCustomersProducts(filter));
     }
 
     @Get('validate/:property')
     private async validate(req: Request, res: Response) {
         const property: keyof Product = req.params.property as keyof Product;
-        res.json(await productsDAO.validate(property));
+        res.json(await this.productsDao.validate(property));
     }
 
     @Get(':name/prices')
     private async getProductPrices(req: Request, res: Response) {
         const name = req.params.name;
-        res.json(await productsDAO.productPrices(name));
+        res.json(await this.productsDao.productPrices(name));
     }
 
     @Get(':name')
@@ -65,7 +69,7 @@ export class ProductsController {
         const name = req.params.name;
         res.json({
             error: false,
-            data: await productsDAO.getProduct(name)
+            data: await this.productsDao.getProduct(name)
 
         });
     }
@@ -73,7 +77,7 @@ export class ProductsController {
     @Get('')
     private async getAllProducts(req: Request, res: Response) {
         res.json(
-            await productsDAO.getProducts()
+            await this.productsDao.getProducts()
         );
     }
 
@@ -84,7 +88,7 @@ export class ProductsController {
         const customer = <string>req.params.customer;
         const price: number = req.body.price;
         if (price !== +price) { throw new Error('nuber required'); }
-        res.json(await productsDAO.addPrice(name, customer, +price));
+        res.json(await this.productsDao.addPrice(name, customer, +price));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -95,7 +99,7 @@ export class ProductsController {
             throw new Error('no data');
         }
 
-        const insertedId = await productsDAO.insertNewProduct(prod);
+        const insertedId = await this.productsDao.insertNewProduct(prod);
         if (!insertedId) { throw `Insert failed ${JSON.stringify(prod)}`; }
         req.log.info('product inserted', prod);
         res.json({
@@ -111,7 +115,7 @@ export class ProductsController {
         const customer = <string>req.params.customer;
         const price: number = req.body.price;
         if (price !== +price) { throw new Error('nuber required'); }
-        res.json(await productsDAO.updatePrice(name, customer, +price));
+        res.json(await this.productsDao.updatePrice(name, customer, +price));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
@@ -127,7 +131,7 @@ export class ProductsController {
     private async updateProduct(req: Request, res: Response) {
         const name = req.params.name;
         const product: ProductNoId = omit(<Product>req.body, ['_id']);
-        const result = await productsDAO.updateProduct(name, product);
+        const result = await this.productsDao.updateProduct(name, product);
         res.json(result);
         req.log.info('product updated', result);
     }
@@ -137,14 +141,14 @@ export class ProductsController {
     private async deleteCustomerPrice(req: Request, res: Response) {
         const name = req.params.name;
         const customer = <string>req.params.customer;
-        res.json(await productsDAO.deletePrice(name, customer));
+        res.json(await this.productsDao.deletePrice(name, customer));
     }
 
     @Middleware(PrdSession.validateModule('jobs-admin'))
     @Delete(':name')
     private async deleteProducts(req: Request, res: Response) {
         const name = req.params.name;
-        const result = await productsDAO.deleteProduct(name);
+        const result = await this.productsDao.deleteProduct(name);
         res.json(result);
         req.log.info('product delete', result);
     }

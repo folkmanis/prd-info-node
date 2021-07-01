@@ -4,7 +4,7 @@ import { Preferences } from '../lib/preferences-handler';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { PrdSession } from '../lib/session-handler';
-import { MaterialsDao } from '../dao-next/materialsDAO';
+import { MaterialsDao } from '../dao';
 
 @Controller('data/materials')
 @ClassErrorMiddleware(logError)

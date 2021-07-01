@@ -14,16 +14,20 @@ _id: dienas YYYY-m-d
 
 */
 
-import { Controller, Get, Post, Delete, Wrapper, ClassWrapper, ClassMiddleware } from '@overnightjs/core';
+import { ClassMiddleware, ClassWrapper, Controller, Get } from '@overnightjs/core';
 import { Request, Response } from 'express';
+import { LoggerDao } from '../dao';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
-import { LoggerDAO } from '../dao/loggerDAO';
 
 @Controller('data/log')
 @ClassMiddleware(PrdSession.validateAdminSession)
 @ClassWrapper(asyncWrapper)
 export class LogController {
+
+    constructor(
+        private logDao: LoggerDao,
+    ) { }
 
     @Get('entries')
     private async getEntries(req: Request, res: Response) {
@@ -36,7 +40,7 @@ export class LogController {
             dateFrom: query.dateFrom ? new Date(query.dateFrom) : new Date(0),
         };
         res.json(
-            await LoggerDAO.read(params)
+            await this.logDao.read(params)
         );
         req.log.debug('Syslog retrieved', params);
     }
@@ -44,14 +48,14 @@ export class LogController {
     @Get('infos')
     private async getInfos(req: Request, res: Response) {
         res.json(
-            { data: await LoggerDAO.infos() }
+            { data: await this.logDao.infos() }
         );
     }
 
     @Get('dates-groups')
     private async getDatesGroups(req: Request, res: Response) {
         res.json(
-            { data: await LoggerDAO.datesGroup(req.query) }
+            { data: await this.logDao.datesGroup(req.query) }
         );
     }
 }

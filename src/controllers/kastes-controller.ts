@@ -6,15 +6,13 @@ import {
 } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
-import { jobsDAO } from '../dao/jobsDAO';
-import { KastesDAO } from '../dao/kastesDAO';
 import { Veikals } from '../interfaces';
 import '../interfaces/session';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
-import { UsersDao } from '../dao-next/usersDAO';
+import { UsersDao, KastesDao, JobsDao } from '../dao';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
@@ -28,6 +26,8 @@ export class KastesController {
 
     constructor(
         private usersDao: UsersDao,
+        private kastesDao: KastesDao,
+        private jobsDao: JobsDao,
     ) { }
 
     @Put('')
@@ -36,14 +36,14 @@ export class KastesController {
         const pasutijums = +req.body.orderId;
         if (isNaN(pasutijums)) { throw new Error('jobId not provided'); }
         const lastModified = new Date();
-        const resp = await KastesDAO.veikaliAdd(pasutijums, veikali
+        const resp = await this.kastesDao.veikaliAdd(pasutijums, veikali
             .map(vk => ({
                 ...vk,
                 pasutijums,
                 lastModified,
             }))
         );
-        await jobsDAO.updateJob(pasutijums, { isLocked: true });
+        await this.jobsDao.updateJob(pasutijums, { isLocked: true });
         res.json(resp);
         req.log.info('kastes order table inserted', resp);
     }
@@ -65,7 +65,7 @@ export class KastesController {
         const kods = req.body.kods;
         req.log.info('set kastes label', { pasutijumsId, kods });
         res.json(
-            await KastesDAO.setLabel(pasutijumsId, kods)
+            await this.kastesDao.setLabel(pasutijumsId, kods)
         );
     }
 
@@ -74,7 +74,7 @@ export class KastesController {
         const { veikali } = req.body as { veikali: Veikals[]; };
         if (!veikali) { throw new Error('invalid data'); }
         res.json(
-            await KastesDAO.updateVeikali(veikali)
+            await this.kastesDao.updateVeikali(veikali)
         );
     }
 
@@ -88,7 +88,7 @@ export class KastesController {
         req.log.info('post gatavs', params);
         // const { field, id, kaste, yesno } = req.body;
         res.json(
-            await KastesDAO.setGatavs(params)
+            await this.kastesDao.setGatavs(params)
         );
     }
 
@@ -104,7 +104,7 @@ export class KastesController {
     async getApjomi(req: Request, res: Response) {
         const pasutijumsId = +(req.query.pasutijumsId || 0);
         res.json(
-            await KastesDAO.kastesApjomi(pasutijumsId)
+            await this.kastesDao.kastesApjomi(pasutijumsId)
         );
     }
 
@@ -113,7 +113,7 @@ export class KastesController {
         const kaste = req.query.kaste ? +req.query.kaste : 0;
         const id = new ObjectId(req.params.id);
         res.json(
-            await KastesDAO.getKaste(id, kaste)
+            await this.kastesDao.getKaste(id, kaste)
         );
     }
 
@@ -122,7 +122,7 @@ export class KastesController {
         req.log.debug('get kastes', req.query.pasutijumsId);
         const pasutijumsId = +(req.query.pasutijumsId || 0);
         res.json(
-            await KastesDAO.kastesList(pasutijumsId)
+            await this.kastesDao.kastesList(pasutijumsId)
         );
     }
 
@@ -134,7 +134,7 @@ export class KastesController {
         const pasutijumsId = +req.query.pasutijumsId;
         req.log.info('delete kastes requested', pasutijumsId);
         res.json(
-            await KastesDAO.deleteKastes(pasutijumsId)
+            await this.kastesDao.deleteKastes(pasutijumsId)
         );
     }
 

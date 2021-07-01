@@ -2,9 +2,9 @@ import { NextFunction, Request, Response } from 'express';
 import { User, SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
 import '../interfaces/session';
-import { DaoIndexMap } from '../dao-next/dao-map';
-import { UsersDao } from '../dao-next/usersDAO';
-import { PreferencesDao } from '../dao-next/preferencesDAO';
+import { DaoIndexMap } from '../dao/dao-map';
+import { UsersDao } from '../dao/usersDAO';
+import { PreferencesDao } from '../dao/preferencesDAO';
 
 let usersDao: UsersDao;
 let preferencesDao: PreferencesDao;
@@ -46,7 +46,7 @@ export class Preferences {
             res.status(401).json({});
             return;
         }
-        const sysPref = (await preferencesDao.getAllPreferences()).data as SystemPreferenceModule[] | undefined;
+        const sysPref = await preferencesDao.getAllPreferences();
         if (!sysPref) {
             Logger.error('System preferences not found');
             res.status(501).json('Server error');

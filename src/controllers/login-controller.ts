@@ -1,11 +1,11 @@
+import { ClassErrorMiddleware, Controller, Get, Post } from '@overnightjs/core';
 import crypto from 'crypto';
-import { Controller, Get, Post, ClassErrorMiddleware } from '@overnightjs/core';
-import { Request, Response, Express } from 'express';
-import { logError } from '../lib/errorMiddleware';
-import { Login, LoginResponse } from '../interfaces';
+import { Request, Response } from 'express';
 import session from 'express-session';
+import { UsersDao } from '../dao';
+import { Login, LoginResponse } from '../interfaces';
 import '../interfaces/session';
-import { UsersDao } from '../dao-next/usersDAO';
+import { logError } from '../lib/errorMiddleware';
 
 @ClassErrorMiddleware(logError)
 @Controller('data/login')

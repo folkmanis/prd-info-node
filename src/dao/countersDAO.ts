@@ -15,21 +15,17 @@ export const defaultValues: CounterLastId[] = [
 ];
 
 
-export class CountersDAO extends Dao {
+export class CountersDao extends Dao {
     counters!: Collection<CounterLastId>;
 
     async injectDb(db: Db) {
-        if (this.counters) {
-            return;
-        }
         try {
-            this.counters = db.collection('this.counters');
+            this.counters = db.collection('counters');
             this.insertDefaults(defaultValues);
             await this.counters.createIndex(
                 { counter: 1 },
                 { unique: true, name: 'counter_1' }
             );
-            Logger.debug('Preferences DAO started');
         } catch (e) {
             Logger.error('Preferences DAO error', e);
         }

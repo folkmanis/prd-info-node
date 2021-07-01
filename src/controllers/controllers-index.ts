@@ -1,6 +1,6 @@
 import { Type } from '../interfaces/type';
 import { Dao } from '../interfaces/dao.interface';
-import { DaoIndexMap } from '../dao-next/dao-map';
+import { DaoIndexMap } from '../dao/dao-map';
 
 import { UsersController } from './users-controller';
 import { LoginController } from './login-controller';
@@ -41,7 +41,6 @@ export function createControllers(daoMap: DaoIndexMap): any[] {
 
 function controllerFactory<T>(type: Type<T>, daoMap: DaoIndexMap): T {
     const deps: Type<Dao>[] = Reflect.getMetadata('design:paramtypes', type) || [];
-    console.log(deps);
     const params = deps.map(dep => getDep(daoMap, dep));
     return new type(...params);
 }

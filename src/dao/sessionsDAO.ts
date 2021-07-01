@@ -1,29 +1,29 @@
 import { Session } from '../interfaces/session.interface';
-import { MongoClient, Collection, ObjectId, FilterQuery } from "mongodb";
+import { MongoClient, Collection, Db, ObjectId, FilterQuery } from "mongodb";
 import Logger from '../lib/logger';
+import { Dao } from '../interfaces/dao.interface';
 
-let sessions: Collection<Session>;
 
-export class SessionsDAO {
-    static async injectDB(conn: MongoClient) {
-        if (sessions) {
-            return;
-        }
+export class SessionsDao extends Dao {
+
+    private sessions!: Collection<Session>;
+
+    async injectDb(db: Db) {
         try {
-            sessions = conn.db(process.env.DB_BASE as string).collection('sessions');
+            this.sessions = db.collection('sessions');
             Logger.debug('sessions collection injected');
         } catch (error) {
             Logger.error('sessionDAO: unable to connect', error.message);
         }
     }
 
-    static async deleteSession(sessionId: string): Promise<number> {
-        const resp = await sessions.deleteOne({ _id: sessionId });
+    async deleteSession(sessionId: string): Promise<number> {
+        const resp = await this.sessions.deleteOne({ _id: sessionId });
         return resp.deletedCount || 0;
     }
 
-    static async deleteUserSessions(userId: string, sessionIds: string[]): Promise<number> {
-        const resp = await sessions.deleteMany({
+    async deleteUserSessions(userId: string, sessionIds: string[]): Promise<number> {
+        const resp = await this.sessions.deleteMany({
             'session.user.username': userId,
             _id: {
                 $nin: sessionIds,

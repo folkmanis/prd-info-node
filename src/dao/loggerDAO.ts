@@ -1,5 +1,6 @@
-import { MongoClient, Collection, IndexSpecification, FilterQuery } from 'mongodb';
+import { MongoClient, Collection, IndexSpecification, FilterQuery, Db } from 'mongodb';
 import { LogRecord, LogReadResponse, DatesGroup } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 
 const indexes: IndexSpecification[] = [
     {
@@ -15,27 +16,28 @@ const indexes: IndexSpecification[] = [
 
 let log: Collection<LogRecord>;
 
-export class LoggerDAO {
-    static async injectDB(conn: MongoClient, params = {
-        collection: 'log'
-    }) {
+export class LoggerDao extends Dao {
+
+    private readonly collectionName = 'log';
+
+    async injectDb(db: Db) {
         if (log) {
             return;
         }
         try {
-            log = conn.db(process.env.DB_BASE as string).collection(params.collection);
-            LoggerDAO.createIndexes();
+            log = db.collection(this.collectionName);
+            this.createIndexes();
         } catch (e) {
             console.error(e);
         }
     }
 
-    static write(record: LogRecord) {
+    write(record: LogRecord) {
         log.insertOne(record, { writeConcern: { w: 0 } });
         return;
     }
 
-    static async read(params: {
+    async read(params: {
         limit: number,
         start: number,
         level?: number,
@@ -59,7 +61,7 @@ export class LoggerDAO {
 
     }
 
-    static async infos(): Promise<string[]> {
+    async infos(): Promise<string[]> {
         return (await log.aggregate<{ _id: string; }>([
             {
                 $sort: { info: 1 }
@@ -70,7 +72,7 @@ export class LoggerDAO {
         ]).toArray()).map(obj => obj._id.toString());
     }
 
-    static async datesGroup(params: { level?: string, start?: string, end?: string; }): Promise<DatesGroup[]> {
+    async datesGroup(params: { level?: string, start?: string, end?: string; }): Promise<DatesGroup[]> {
         const pipeline: Array<any> = [];
         if (params.start) {
             pipeline.push({ $match: { timestamp: { $gte: new Date(params.start), } } });
@@ -98,7 +100,7 @@ export class LoggerDAO {
         return await log.aggregate<DatesGroup>(pipeline).toArray();
     }
 
-    private static async createIndexes(): Promise<boolean> {
+    private async createIndexes(): Promise<boolean> {
         try {
             const updresp = await log.createIndexes(indexes);
             return !!updresp.ok;

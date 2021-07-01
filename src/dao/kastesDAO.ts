@@ -1,55 +1,50 @@
-import { MongoClient, Collection, ObjectId, ObjectID, BulkWriteOperation } from "mongodb";
-import Logger from '../lib/logger';
-import {
-    Veikals,
-    KastesResponse, KastesJobResponse,
-    ColorTotals, ApjomiTotals
-} from '../interfaces';
 import { omit } from 'lodash';
+import { BulkWriteOperation, Collection, Db, ObjectId, ObjectID } from "mongodb";
+import { ApjomiTotals, ColorTotals, KastesResponse, Veikals } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
+import Logger from '../lib/logger';
 
 
-let veikali: Collection<Veikals>; // Veikalu piegādes kopējais saraksts
 
-export class KastesDAO {
+export class KastesDao extends Dao {
 
-    static async injectDB(conn: MongoClient) {
-        if (!veikali) {
-            try {
-                veikali = conn.db(process.env.DB_BASE as string)
-                    .collection('kastes-kastes');
-                veikali.updateMany(
-                    {
-                        lastModified: { $exists: false, }
-                    },
-                    {
-                        $currentDate: {
-                            lastModified: true,
-                        }
+    veikali!: Collection<Veikals>;
+
+    async injectDb(db: Db) {
+        try {
+            this.veikali = db.collection('kastes-kastes');
+            this.veikali.updateMany(
+                {
+                    lastModified: { $exists: false, }
+                },
+                {
+                    $currentDate: {
+                        lastModified: true,
                     }
-                );
-                veikali.createIndexes([
+                }
+            );
+            this.veikali.createIndexes([
+                {
+                    key:
                     {
-                        key:
-                        {
-                            pasutijums: 1,
-                            kods: 1
-                        },
-                        name: 'pasutijums_1',
+                        pasutijums: 1,
+                        kods: 1
                     },
-                    {
-                        key: {
-                            lastModified: 1,
-                        }
+                    name: 'pasutijums_1',
+                },
+                {
+                    key: {
+                        lastModified: 1,
                     }
-                ]);
-            } catch (e) {
-                Logger.error('kastesDAO: unable to connect kastes-kastes', e);
-            }
+                }
+            ]);
+        } catch (e) {
+            Logger.error('kastesDAO: unable to connect kastes-kastes', e);
         }
 
     }
 
-    static async colorTotals(pasutijums: number): Promise<ColorTotals[]> {
+    async colorTotals(pasutijums: number): Promise<ColorTotals[]> {
         const pipeline = [
             { '$match': { pasutijums } },
             { '$unwind': { 'path': '$kastes', } },
@@ -74,10 +69,10 @@ export class KastesDAO {
             { '$unwind': { 'path': '$totals' } },
             { '$replaceRoot': { 'newRoot': '$totals' } }
         ];
-        return veikali.aggregate<ColorTotals>(pipeline).toArray();
+        return this.veikali.aggregate<ColorTotals>(pipeline).toArray();
     }
 
-    static async apjomiTotals(pasutijums: number): Promise<ApjomiTotals[]> {
+    async apjomiTotals(pasutijums: number): Promise<ApjomiTotals[]> {
         const pipeline = [
             { '$match': { pasutijums } },
             { '$unwind': { 'path': '$kastes' } },
@@ -96,19 +91,19 @@ export class KastesDAO {
                 }
             }
         ];
-        return veikali.aggregate<ApjomiTotals>(pipeline).toArray();
+        return this.veikali.aggregate<ApjomiTotals>(pipeline).toArray();
     }
 
-    static async veikali(pasutijums: number): Promise<Veikals[]> {
-        return veikali.find({ pasutijums }).toArray();
+    async veikaliList(pasutijums: number): Promise<Veikals[]> {
+        return this.veikali.find({ pasutijums }).toArray();
     }
     /**
      * Pievieno pakošanas sarakstu
      * @param kastes Pakošanas saraksts
      */
-    static async veikaliAdd(orderId: number, kastes: Veikals[]): Promise<KastesResponse> {
+    async veikaliAdd(orderId: number, kastes: Veikals[]): Promise<KastesResponse> {
         try {
-            const insertResp = await veikali.insertMany(kastes);
+            const insertResp = await this.veikali.insertMany(kastes);
             return {
                 error: false,
                 insertedCount: insertResp.insertedCount,
@@ -119,7 +114,7 @@ export class KastesDAO {
         }
     }
 
-    static async updateVeikali(kastes: Veikals[]): Promise<KastesResponse> {
+    async updateVeikali(kastes: Veikals[]): Promise<KastesResponse> {
         Logger.info('veikals update requested', { kastes });
         try {
             const ops: BulkWriteOperation<Veikals>[] = kastes.map(k => ({
@@ -131,7 +126,7 @@ export class KastesDAO {
                     }
                 }
             }));
-            const result = await veikali.bulkWrite(ops);
+            const result = await this.veikali.bulkWrite(ops);
             Logger.info('veikals update success', result);
             return { error: false, modifiedCount: result.modifiedCount, result: result.result };
         } catch (error) {
@@ -140,7 +135,7 @@ export class KastesDAO {
         }
     }
 
-    static async kastesApjomi(pas: number): Promise<KastesResponse> {
+    async kastesApjomi(pas: number): Promise<KastesResponse> {
         const pipeline: Array<any> = [{
             $match: { pasutijums: pas }
         }, {
@@ -161,7 +156,7 @@ export class KastesDAO {
         try {
             return {
                 error: false,
-                apjomi: (await veikali.aggregate<{ total: number; }>(pipeline).toArray()).map(tot => tot.total),
+                apjomi: (await this.veikali.aggregate<{ total: number; }>(pipeline).toArray()).map(tot => tot.total),
             };
         } catch (error) { return { error }; }
         ;
@@ -170,15 +165,15 @@ export class KastesDAO {
      * Atrod vienu ierakstu no datubāzes pēc tā ID
      * @param _id Ieraksta ID
      */
-    static async getVeikals(_id: ObjectId): Promise<Veikals | null> {
-        return await veikali.findOne({ _id });
+    async getVeikals(_id: ObjectId): Promise<Veikals | null> {
+        return await this.veikali.findOne({ _id });
     };
     /**
      * Izvērsts saraksts ar pakojumu pa veikaliem
      * @param pasutijums pasūtījuma ID
      * @param apjoms skaits vienā kastē (ja nav norādīts, meklēs visus)
      */
-    static async kastesList(pasutijums: number): Promise<KastesResponse> {
+    async kastesList(pasutijums: number): Promise<KastesResponse> {
         const kastesPipeline: Array<any> = [{
             $match: {
                 pasutijums
@@ -197,7 +192,7 @@ export class KastesDAO {
         try {
             return {
                 error: false,
-                data: await veikali.aggregate(kastesPipeline).toArray(),
+                data: await this.veikali.aggregate(kastesPipeline).toArray(),
             };
         } catch (error) {
             return { error };
@@ -208,7 +203,7 @@ export class KastesDAO {
      * @param _id Piegādes ieraksta _id
      * @param kaste Kastas kārtas numurs
      */
-    static async getKaste(_id: ObjectId, kaste: number): Promise<KastesResponse> {
+    async getKaste(_id: ObjectId, kaste: number): Promise<KastesResponse> {
         const pipeline = [{
             $match: { _id }
         }, {
@@ -221,7 +216,7 @@ export class KastesDAO {
             $match: { kaste }
         }];
         try {
-            const res = await veikali.aggregate(pipeline).toArray();
+            const res = await this.veikali.aggregate(pipeline).toArray();
             return {
                 error: false,
                 data: res[0],
@@ -235,12 +230,12 @@ export class KastesDAO {
      * @param yesno Gatavība jā/nē
      * @param paka Pakas numurs uz veikalu
      */
-    static async setGatavs({ id, kaste, yesno, }: { id: ObjectID, kaste: number, yesno: boolean; }): Promise<KastesResponse> {
+    async setGatavs({ id, kaste, yesno, }: { id: ObjectID, kaste: number, yesno: boolean; }): Promise<KastesResponse> {
         // TODO
 
         Logger.debug('set gatavs dao', { id, kaste, yesno, });
         try {
-            const resp = await veikali.updateOne(
+            const resp = await this.veikali.updateOne(
                 { _id: id },
                 {
                     $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${yesno} }`),
@@ -254,9 +249,9 @@ export class KastesDAO {
         } catch (error) { return { error }; }
     }
 
-    static async setLabel(pasutijumsId: number, kods: number | string): Promise<KastesResponse> {
+    async setLabel(pasutijumsId: number, kods: number | string): Promise<KastesResponse> {
         try {
-            const data = (await veikali.aggregate([{
+            const data = (await this.veikali.aggregate([{
                 $unwind: {
                     path: '$kastes',
                     includeArrayIndex: 'kaste',
@@ -275,7 +270,7 @@ export class KastesDAO {
             if (!data) {
                 return { error: false, modifiedCount: 0, };
             } else {
-                const resp = await veikali.updateOne(
+                const resp = await this.veikali.updateOne(
                     {
                         pasutijums: pasutijumsId,
                         $or: [
@@ -299,9 +294,9 @@ export class KastesDAO {
 
     }
 
-    static async deleteKastes(jobId: number): Promise<KastesResponse> {
+    async deleteKastes(jobId: number): Promise<KastesResponse> {
         try {
-            const resp = veikali.deleteMany({ pasutijums: jobId });
+            const resp = this.veikali.deleteMany({ pasutijums: jobId });
             return {
                 error: false,
                 deletedCount: (await resp).deletedCount,

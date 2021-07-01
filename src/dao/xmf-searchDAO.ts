@@ -1,59 +1,49 @@
-import { MongoClient, Collection, ObjectId } from "mongodb";
+import { Collection, Db, ObjectId } from "mongodb";
 import {
-    UserPreferences,
-    ArchiveJob,
-    ArchiveSearchParams,
-    ArchiveJobSorted,
-    FacetResult,
-    XmfUploadProgress,
-    XmfArchiveResponse,
+    ArchiveJob, ArchiveJobSorted, ArchiveSearchParams, FacetResult, UserPreferences, XmfArchiveResponse, XmfUploadProgress
 } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 import Logger from '../lib/logger';
 
-let archives: Collection<Partial<ArchiveJob>>; // galvenā datubāze
-let archSorted: Collection<ArchiveJobSorted>; // šķirota datubāzes kopija
-let xmfUploadProgress: Collection<Partial<XmfUploadProgress>>; // augšupielādes atskaite
 
-let lastUpdate: Date | undefined; // datums, kad bijušas pēdējās izmaiņas datubāzē
-let sortedDbDate: Date | undefined; // šķirotās datubāzes laiks
+export class XmfSearchDao extends Dao {
 
-export class xmfSearchDAO {
+    private archives!: Collection<Partial<ArchiveJob>>; // galvenā datubāze
+    private archSorted!: Collection<ArchiveJobSorted>; // šķirota datubāzes kopija
+    private xmfUploadProgress!: Collection<Partial<XmfUploadProgress>>; // augšupielādes atskaite
 
-    static async injectDB(conn: MongoClient) {
-        if (!archives) {
-            try {
-                archives = conn.db(process.env.DB_BASE as string)
-                    .collection('xmfarchives');
-            } catch (e) {
-                Logger.error(`xmfSearchDAO: unable to connect`, e);
-            }
+    private lastUpdate: Date | undefined; // datums, kad bijušas pēdējās izmaiņas datubāzē
+    private sortedDbDate: Date | undefined; // šķirotās datubāzes laiks
+
+    async injectDb(db: Db) {
+        try {
+            this.archives = db.collection('xmfarchives');
+        } catch (e) {
+            Logger.error(`xmfSearchDAO: unable to connect`, e);
         }
-        if (!xmfUploadProgress) {
-            try {
-                xmfUploadProgress = conn.db(process.env.DB_BASE as string)
-                    .collection('xmf-upload-progress');
-            } catch (e) {
-                Logger.error(`xmfSearchDAO: unable to connect`, e);
-            }
+
+        try {
+            this.xmfUploadProgress = db.collection('xmf-upload-progress');
+        } catch (e) {
+            Logger.error(`xmfSearchDAO: unable to connect`, e);
         }
-        if (!archSorted) {
-            try {
-                archSorted = conn.db(process.env.DB_BASE as string)
-                    .collection('xmfArchiveSorted');
-            } catch (e) {
-                Logger.error(`xmfSearchDAO: unable to connect`, e);
-            }
+
+        try {
+            this.archSorted = db.collection('xmfArchiveSorted');
+        } catch (e) {
+            Logger.error(`xmfSearchDAO: unable to connect`, e);
         }
-        await xmfSearchDAO.sortedDb();
+
+        await this.sortedDb();
     }
 
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<XmfArchiveResponse>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: string, lim?: string): Promise<XmfArchiveResponse>;
-    static async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: string, lim = '100'): Promise<XmfArchiveResponse> {
-        await xmfSearchDAO.sortedDb();
-        const filter = xmfSearchDAO.getFilter(search, userPreferences.customers);
+    async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences): Promise<XmfArchiveResponse>;
+    async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start: string, lim?: string): Promise<XmfArchiveResponse>;
+    async findJobs(search: ArchiveSearchParams, userPreferences: UserPreferences, start?: string, lim = '100'): Promise<XmfArchiveResponse> {
+        await this.sortedDb();
+        const filter = this.getFilter(search, userPreferences.customers);
         Logger.debug(JSON.stringify(filter));
-        const findRes = archSorted.find(filter);
+        const findRes = this.archSorted.find(filter);
         const data = await findRes
             .skip(+(start || 0))
             .limit(+lim)
@@ -89,7 +79,7 @@ export class xmfSearchDAO {
                 }
             }
         ];
-        const facet = (await archSorted.aggregate<FacetResult>(pipeline).toArray())[0];
+        const facet = (await this.archSorted.aggregate<FacetResult>(pipeline).toArray())[0];
         return {
             error: false,
             count,
@@ -99,7 +89,7 @@ export class xmfSearchDAO {
 
     }
 
-    static async insertJob(jobs: ArchiveJob | ArchiveJob[]): Promise<{ modified: number, upserted: number; }> {
+    async insertJob(jobs: ArchiveJob | ArchiveJob[]): Promise<{ modified: number, upserted: number; }> {
         if (!(jobs instanceof Array)) { jobs = [jobs]; }
         if (jobs.length === 0) { return { modified: 0, upserted: 0 }; }
         const update = jobs.map(job => ({
@@ -113,8 +103,8 @@ export class xmfSearchDAO {
             }
         }));
         try {
-            const updResult = await archives.bulkWrite(update);
-            archives.createIndexes([
+            const updResult = await this.archives.bulkWrite(update);
+            this.archives.createIndexes([
                 { key: { JDFJobID: 1 }, name: 'JDFJobID' },
                 {
                     key: {
@@ -147,7 +137,7 @@ export class xmfSearchDAO {
         }
     }
 
-    static async getCustomers(): Promise<XmfArchiveResponse> {
+    async getCustomers(): Promise<XmfArchiveResponse> {
         const pipeline = [{
             $group: {
                 _id: "$CustomerName"
@@ -160,12 +150,12 @@ export class xmfSearchDAO {
         try {
             return {
                 error: false,
-                xmfCustomers: (await archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id),
+                xmfCustomers: (await this.archives.aggregate<{ _id: string; }>(pipeline).toArray()).map(res => res._id),
             };
         } catch (error) { return { error }; }
     }
 
-    static async customersToCustomersDb(dbName: string) {
+    async customersToCustomersDb(dbName: string) {
         const pipeline: any[] = [{
             $group: {
                 _id: "$CustomerName"
@@ -188,34 +178,34 @@ export class xmfSearchDAO {
                 whenNotMatched: 'insert'
             }
         }];
-        return await archives.aggregate(pipeline).toArray();
+        return await this.archives.aggregate(pipeline).toArray();
     }
 
-    static async startUploadProgress(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
+    async startUploadProgress(log: Partial<XmfUploadProgress>): Promise<ObjectId | null> {
         if (log._id) { return null; }
-        return (await xmfUploadProgress.insertOne(log)).insertedId;
+        return (await this.xmfUploadProgress.insertOne(log)).insertedId;
     }
 
-    static async updateUploadProgress(log: Partial<XmfUploadProgress>): Promise<boolean> {
+    async updateUploadProgress(log: Partial<XmfUploadProgress>): Promise<boolean> {
         if (!log._id) { return false; }
-        lastUpdate = new Date(Date.now());
-        return !!(await xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { writeConcern: { w: 0 } })).result.ok;
+        this.lastUpdate = new Date();
+        return !!(await this.xmfUploadProgress.updateOne({ _id: log._id }, { $set: log }, { writeConcern: { w: 0 } })).result.ok;
     }
 
-    static async getUploadStatus(): Promise<Partial<XmfUploadProgress>[]>;
-    static async getUploadStatus(_id: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | null>;
-    static async getUploadStatus(_id?: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
+    async getUploadStatus(): Promise<Partial<XmfUploadProgress>[]>;
+    async getUploadStatus(_id: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | null>;
+    async getUploadStatus(_id?: ObjectId | undefined): Promise<Partial<XmfUploadProgress> | Partial<XmfUploadProgress>[] | null> {
         if (!_id) {
-            return await xmfUploadProgress.find(
+            return await this.xmfUploadProgress.find(
                 {},
                 { sort: [['_id', -1]] }
             ).toArray();
         } else {
-            return await xmfUploadProgress.findOne({ _id });
+            return await this.xmfUploadProgress.findOne({ _id });
         }
     }
 
-    private static getFilter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any; } {
+    private getFilter(search: ArchiveSearchParams, customers: string[]): { [key: string]: any; } {
         const filter: { [key: string]: any; } = {};
         filter.CustomerName = {
             $in:
@@ -237,16 +227,16 @@ export class xmfSearchDAO {
         return filter;
     }
     /** Izveido šķiroto kolekciju, ja vajag */
-    private static async sortedDb(): Promise<void> {
-        if (await xmfSearchDAO.isSortedDb()) { return; }
-        const { projection, sort } = xmfSearchDAO.getProjection();
-        await archives.aggregate([])
+    private async sortedDb(): Promise<void> {
+        if (await this.isSortedDb()) { return; }
+        const { projection, sort } = this.getProjection();
+        await this.archives.aggregate([])
             .sort(sort)
             .project(projection)
             .out('xmfArchiveSorted')
             .toArray();
-        sortedDbDate = projection.lastUpdate;
-        archSorted.createIndexes([
+        this.sortedDbDate = projection.lastUpdate;
+        this.archSorted.createIndexes([
             {
                 key: {
                     'Archives.yearIndex': -1,
@@ -256,7 +246,7 @@ export class xmfSearchDAO {
             },
         ]);
     }
-    private static getProjection() {
+    private getProjection() {
         return {
             projection: {
                 _id: 0,
@@ -277,16 +267,16 @@ export class xmfSearchDAO {
         };
     }
     /** Vai šķirotā datubāze ir jaunākā versija */
-    private static async isSortedDb(): Promise<boolean> {
-        if (!lastUpdate) {
-            lastUpdate = (await xmfUploadProgress.findOne({}, {
+    private async isSortedDb(): Promise<boolean> {
+        if (!this.lastUpdate) {
+            this.lastUpdate = (await this.xmfUploadProgress.findOne({}, {
                 projection: { _id: 0, finished: 1, }, sort: { finished: -1 }
             }))?.finished || new Date(0);
         }
-        if (!sortedDbDate) {
-            sortedDbDate = (await archSorted.findOne({}))?.lastUpdate || new Date(0);
+        if (!this.sortedDbDate) {
+            this.sortedDbDate = (await this.archSorted.findOne({}))?.lastUpdate || new Date(0);
         }
-        return sortedDbDate.getTime() > lastUpdate.getTime();
+        return this.sortedDbDate.getTime() > this.lastUpdate.getTime();
     }
 
 }

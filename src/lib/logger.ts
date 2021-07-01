@@ -1,24 +1,17 @@
 import { NextFunction, Request, Response } from 'express';
 import { MongoClient } from 'mongodb';
-import { LoggerDAO as mongoLoggerDAO} from '../dao/loggerDAO';
 import { LogRecord } from '../interfaces';
+import { LoggerDao } from '../dao';
 
-/**
- * Izvades kanāls
- */
 interface Transport {
     minlevel: number, // minimālais svarīguma līmenis
     write: (rec: LogRecord) => void, // izvades funkcija
 }
-/**
- * Loga līmeņi
- */
+
 export enum LogLevels {
     ERROR = 10, WARN = 20, INFO = 30, VERBOSE = 40, DEBUG = 50, SILLY = 60
 }
-/**
- * Statiskā klase darbībai ar logu
- */
+
 export default class Logger {
     static transports: Transport[] = []; // Izvades kanāli
     /**
@@ -95,11 +88,11 @@ export class Console implements Transport {
 export class MongoLog implements Transport {
     minlevel: LogLevels = LogLevels.INFO;
 
-    constructor(private conn: MongoClient) {
-        mongoLoggerDAO.injectDB(this.conn);
-    }
+    constructor(
+        private logDao: LoggerDao
+    ) { }
 
     async write(rec: LogRecord): Promise<void> {
-        return mongoLoggerDAO.write(rec);
+        return this.logDao.write(rec);
     }
 }
