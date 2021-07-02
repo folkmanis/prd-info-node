@@ -17,7 +17,6 @@ export class MaterialsDao extends Dao {
             Logger.error('Materials DAO', err.message);
             return;
         }
-        Logger.info('Materials DB set');
     }
 }
 

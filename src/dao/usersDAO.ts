@@ -21,7 +21,6 @@ export class UsersDao extends Dao {
     async injectDb(db: Db) {
         try {
             this.users = db.collection("users");
-            Logger.debug("this.users collection injected");
         } catch (e) {
             Logger.error(`usersDAO: unable to connect`, e);
         }

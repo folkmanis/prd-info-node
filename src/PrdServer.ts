@@ -19,8 +19,8 @@ export class PrdServer extends Server {
 
     constructor() {
         super(true);
-        Logger.addTransport(new Console());  // Pievieno konsoles izvadi Logger objektam
-        this.app.use(Logger.handler); // Logger funkcijas būs pieejamas kā req.log
+        Logger.addTransport(new Console());
+        this.app.use(Logger.handler()); // Logger funkcijas būs pieejamas kā req.log
         this.app.set('trust proxy', true);
         this.app.use(bodyParser.json({ limit: process.env.BODY_SIZE_LIMIT }));
         this.app.use(bodyParser.urlencoded({ extended: true }));
@@ -38,7 +38,9 @@ export class PrdServer extends Server {
                     useUnifiedTopology: true,
                     useNewUrlParser: true,
                     connectTimeoutMS: 5000,
-                    wtimeout: 2500,
+                    writeConcern: {
+                        wtimeout: 2500,
+                    }
                 },
             );
             Logger.debug('Mongo connected');
