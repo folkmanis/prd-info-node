@@ -6,7 +6,7 @@ import '../interfaces/session';
 import MongoStore from 'connect-mongo';
 // const MongoStore = require('connect-mongo')(session);
 
-type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin';
+type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin' | 'calculations';
 
 export class PrdSession {
 
