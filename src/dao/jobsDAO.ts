@@ -243,6 +243,17 @@ export class JobsDao extends Dao {
             });
     }
 
+    async unsetInvoices(invoiceId: string): Promise<number> {
+        const resp = await this.jobs.updateMany(
+            { invoiceId },
+            {
+                $unset: { invoiceId: '' },
+                $set: { 'jobStatus.generalStatus': 40 }
+            },
+        );
+        return resp.modifiedCount;
+    }
+
     async getInvoiceTotals(invoiceId: string): Promise<InvoiceProduct[]> {
         const aggr = [
             {

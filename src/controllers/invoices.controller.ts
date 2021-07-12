@@ -1,4 +1,4 @@
-import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Post, Put } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Delete, Get, Post, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { CountersDao, CustomersDao, InvoicesDao, JobsDao } from '../dao';
 import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
@@ -52,6 +52,17 @@ export class InvoicesController {
         res.json({
             error: false,
             modifiedCount: await this.invoicesDao.updateInvoice(id, update),
+        });
+    }
+
+    @Delete(':id')
+    private async deleteInvoice(req: Request, res: Response) {
+        const invoiceId: string = req.params.id;
+        const modifiedCount = await this.jobsDao.unsetInvoices(invoiceId);
+        res.json({
+            error: false,
+            deletedCount: await this.invoicesDao.deleteInvoice(invoiceId),
+            modifiedCount,
         });
     }
 

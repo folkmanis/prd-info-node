@@ -172,6 +172,11 @@ export class InvoicesDao extends Dao {
         return result.modifiedCount;
     }
 
+    async deleteInvoice(invoiceId: string): Promise<number> {
+        const result = await this.invoices.deleteOne({ invoiceId });
+        return result.deletedCount || 0;
+    }
+
     private async createCollection(db: Db): Promise<void> {
         try {
             await db.createCollection(INVOICES_COLLECTION_NAME, {
