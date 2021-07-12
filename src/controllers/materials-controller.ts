@@ -74,7 +74,7 @@ export class MaterialsController {
     async getMaterials(req: Request, res: Response) {
         res.json({
             error: false,
-            data: await this.materialsDao.getMaterials(),
+            data: await this.materialsDao.getMaterials(req.query),
         });
     }
 

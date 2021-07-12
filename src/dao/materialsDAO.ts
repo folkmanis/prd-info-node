@@ -20,7 +20,16 @@ export class MaterialsDao extends Dao {
         this.createIndexes();
     }
 
-    getMaterials(filter: FilterQuery<Material> = {}): Promise<Partial<Material[]>> {
+    getMaterials({ name, categories }: { name?: string, categories?: string; }): Promise<Partial<Material[]>> {
+        const filter: FilterQuery<Material> = {};
+        if (categories) {
+            filter.category = {
+                $in: categories.split(',')
+            };
+        }
+        if (name) {
+            filter.name = name && new RegExp(name, 'gi');
+        }
         return this.materials
             .find(filter)
             .sort({ category: 1, name: 1 })
