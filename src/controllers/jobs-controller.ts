@@ -155,7 +155,7 @@ export class JobsController {
 
     }
 
-    private async addFolderPathToJob<T extends Partial<Job>>(jobId: number, job: T): Promise<T> {
+    private async addFolderPathToJob<T extends Partial<Job>>(jobId: number, job: T): Promise<T & Pick<Job, 'files'>> {
         const jb = await this.jobsDao.getJob(jobId);
         if (!jb) { throw 'No Job'; }
         const { code } = await this.customersDao.getCustomer(jb.customer) as Customer;
@@ -194,13 +194,13 @@ export class JobsController {
             const { jobId } = await this.jobsDao.insertJob(job);
             if (req.query.createFolder === 'true') {
 
-                const jobWithPath = await this.addFolderPathToJob(jobId, {});
-                await this.fileSystem.createFolder(job.files!.path);
+                const jobPath = await this.addFolderPathToJob(jobId, {});
+                await this.fileSystem.createFolder(jobPath.files!.path);
 
 
                 await this.jobsDao.updateJob(
                     jobId,
-                    await this.addFolderPathToJob(jobId, {})
+                    jobPath
                 );
             }
             res.json({
