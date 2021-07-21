@@ -1,12 +1,13 @@
 import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Delete, Get, Post, Put } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { CountersDao, CustomersDao, InvoicesDao, JobsDao } from '../dao';
-import { InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
+import { Invoice, InvoicesFilter, InvoiceUpdate, INVOICE_UPDATE_FIELDS } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { pick } from '../lib/pick';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
+import { InvoiceReport } from '../lib/invoice-report';
 
 @Controller('data/invoices')
 @ClassErrorMiddleware(logError)
@@ -74,16 +75,47 @@ export class InvoicesController {
         );
     }
 
+    private async invoiceWithCustomerInfo(id: string): Promise<Invoice | undefined> {
+        const data = await this.invoicesDao.getInvoice(id);
+        const customerInfo = data && await this.customersDao.getCustomer(data.customer);
+        if (data) {
+            return {
+                ...data,
+                customerInfo,
+                total: data.products.reduce((acc, curr) => acc + curr.total, 0),
+            };
+        }
+    }
+
+    @Get('report_:invoiceId.pdf')
+    private async getInvoiceReport(req: Request, res: Response) {
+        const data = await this.invoiceWithCustomerInfo(req.params.invoiceId);
+        if (!data) {
+            res.json({ error: false, data });
+            return;
+        }
+
+        const pdf = new InvoiceReport(data).open();
+        res.contentType('application/pdf');
+        pdf.pipe(res);
+        pdf.end();
+    }
+
+    @Put('report')
+    private async prepareReport(req: Request, res: Response) {
+        const pdf = new InvoiceReport(req.body).open();
+        res.contentType('application/pdf');
+        pdf.pipe(res);
+        pdf.end();
+    }
+
     @Get(':invoiceId')
     private async getInvoice(req: Request, res: Response) {
         const id: string = req.params.invoiceId;
-        const data = await this.invoicesDao.getInvoice(id);
-        const customerInfo = data && await this.customersDao.getCustomer(data.customer);
-        // if (!customerInfo) { throw new Error('No data'); }
 
         res.json({
             error: false,
-            data: data ? { ...data, customerInfo } : undefined
+            data: await this.invoiceWithCustomerInfo(id),
         });
     }
 

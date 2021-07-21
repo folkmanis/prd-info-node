@@ -37,7 +37,8 @@ export class CountersDao extends Dao {
         }, {
             $inc: { lastId: nums }
         }, {
-            returnOriginal: false,
+            returnDocument: 'after',
+            // returnOriginal: false,
         })).value;
 
         if (!result?.lastId) { throw new Error('nextId missing'); }

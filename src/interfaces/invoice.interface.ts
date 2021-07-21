@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Customer } from './customers.interface';
+import { JobBase } from './job-base.interface';
 import { Job } from './job.interface';
 import { Product } from './products.interface';
 import { ResponseBase } from './response-base.interface';
@@ -13,6 +14,8 @@ export interface Invoice {
     products: InvoiceProduct[];
     comment?: string;
     paytraq?: PaytraqInvoice;
+    jobs?: JobBase[];
+    total?: number;
 }
 
 export interface PaytraqInvoice {
@@ -22,7 +25,7 @@ export interface PaytraqInvoice {
 
 export const INVOICE_UPDATE_FIELDS = ['comment', 'paytraq'] as const;
 
-export type InvoiceUpdate = Partial<Pick<Invoice, typeof INVOICE_UPDATE_FIELDS[number]>>
+export type InvoiceUpdate = Partial<Pick<Invoice, typeof INVOICE_UPDATE_FIELDS[number]>>;
 
 export interface InvoicesFilter {
     customer?: string;
@@ -69,3 +72,5 @@ export const INVOICE_SCHEMA: { [key: string]: any; } = {
         },
     }
 };
+
+export type InvoiceForReport = Pick<Invoice, 'invoiceId' | 'customer' | 'createdDate' | 'jobs' | 'products' | 'total' | 'customerInfo'>;
