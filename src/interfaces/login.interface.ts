@@ -7,5 +7,5 @@ export interface Login {
 }
 
 export interface LoginResponse extends ResponseBase<User> {
-data: User | undefined;
+    data: User | undefined;
 }

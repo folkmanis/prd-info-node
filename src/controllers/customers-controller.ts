@@ -1,5 +1,4 @@
-
-import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete, Put } from '@overnightjs/core';
+import { Controller, ClassMiddleware, Post, ClassWrapper, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
@@ -7,8 +6,10 @@ import { Preferences } from '../lib/preferences-handler';
 import { ObjectId } from 'mongodb';
 import { Customer } from '../interfaces';
 import { CustomersDao, XmfSearchDao } from '../dao';
+import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/customers')
+@ClassErrorMiddleware(logError)
 @ClassMiddleware([
     Preferences.getUserPreferences,
     PrdSession.validateSession,
@@ -24,10 +25,10 @@ export class CustomersController {
 
     @Get('')
     private async getCustomers(req: Request, res: Response) {
-        req.log.debug('customers list requested');
+
         res.json({
             data: await this.customersDao.getCustomers(Boolean(req.query.disabled)),
-            error: null,
+            error: false,
         });
     }
 
@@ -60,7 +61,7 @@ export class CustomersController {
         res.json(
             {
                 result: await this.customersDao.deleteCustomer(id),
-                error: null,
+                error: false,
             }
         );
     }

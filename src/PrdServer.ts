@@ -11,6 +11,8 @@ import Logger, { Console, MongoLog } from './lib/logger';
 import { Application } from 'express';
 
 import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
+import { messageHandler } from './lib/message-handler';
+import { MessagesDao } from './dao/messagesDAO';
 
 export class PrdServer extends Server {
 
@@ -67,6 +69,10 @@ export class PrdServer extends Server {
 
     setupControllers(): void {
         super.addControllers(createControllers(this.daoMap));
+    }
+
+    setMessaging() {
+        this.app.use(messageHandler(this.daoMap.getDao(MessagesDao)));
     }
 
     private setupDAO(client: MongoClient): void {

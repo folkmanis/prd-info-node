@@ -1,8 +1,9 @@
 import { LogLevels } from '../lib/logger';
 import { ResponseBase } from './response-base.interface';
 
-export const MODULES = ['kastes', 'system', 'jobs', 'paytraq'] as const;
-export type Modules = typeof MODULES[number];
+const MODULES_KEYS = ['kastes', 'system', 'jobs', 'paytraq', 'calculations', 'admin', 'xmf-search', 'xmf-upload'] as const;
+export const MODULES: string[] = [...MODULES_KEYS];
+export type Modules = typeof MODULES_KEYS[number];
 
 export type SystemPreferences = Array<SystemPreferenceModule>;
 

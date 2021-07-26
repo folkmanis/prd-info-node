@@ -1,4 +1,7 @@
+
 declare namespace Express {
+
+
     export interface Request {
         userPreferences?: {
             customers: string[],
@@ -12,11 +15,22 @@ declare namespace Express {
         systemPreferences?: Map<string, { [key: string]: any; }>;
         version?: Version;
     }
-    interface Response {
-        result: { [key: string]: any; };
+
+    type Modules = 'kastes' | 'system' | 'jobs' | 'paytraq' | 'calculations' | 'admin' | 'xmf-search' | 'xmf-upload';
+
+    export interface Response {
+        result?: { [key: string]: any; };
+        message?: {
+            timestamp: Date;
+            module: Modules;
+        };
     }
+
     interface Version {
         apiBuild: number;
         appBuild: number;
     }
+
 }
+
+

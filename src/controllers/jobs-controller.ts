@@ -1,12 +1,13 @@
 import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Middleware, Post, Put } from '@overnightjs/core';
 import Busboy from "busboy";
 import { Request, Response } from 'express';
-import { CountersDao, CustomersDao, FileSystemDao, JobsDao, ProductsDao } from '../dao';
+import { CountersDao, CustomersDao, FileSystemDao, JobsDao, ProductsDao, MessagesDao } from '../dao';
 import {
     Customer, Job,
     JobQueryFilter,
     JobResponse, ProductNoPrices,
-    ProductPriceImport
+    ProductPriceImport,
+    JobMessage,
 } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
@@ -117,12 +118,15 @@ export class JobsController {
 
         delete job._id;
         delete job.jobId;
-
+        const modifiedCount = await this.jobsDao.updateJob(jobId, job);
         res.json({
             error: false,
-            modifiedCount: await this.jobsDao.updateJob(jobId, job)
+            modifiedCount,
         });
-        req.log.info(`Job ${jobId} updated`, { jobId, ...job });
+        // req.log.info(`Job ${jobId} updated`, { jobId, ...job });
+
+        res.message = new JobMessage(jobId, 'update');
+
         if (job.customer && job.products instanceof Array) {
             this.productsDao.touchProduct(job.customer, job.products.map(pr => pr.name));
         }
