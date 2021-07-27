@@ -21,7 +21,7 @@ import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/log')
-@ClassMiddleware(PrdSession.validateAdminSession)
+@ClassMiddleware(PrdSession.validateModule('admin'))
 @ClassWrapper(asyncWrapper)
 export class LogController {
 

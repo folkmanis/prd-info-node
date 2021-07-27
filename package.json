@@ -33,6 +33,7 @@
     "@types/tmp": "^0.2.1",
     "body-parser": "^1.19.0",
     "busboy": "^0.3.1",
+    "chokidar": "^3.5.2",
     "connect-mongo": "^4.4.1",
     "date-fns": "^2.22.1",
     "dotenv": "^10.0.0",

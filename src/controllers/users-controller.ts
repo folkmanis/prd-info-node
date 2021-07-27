@@ -4,11 +4,15 @@ import { Request, Response } from 'express';
 import { SessionsDao, UsersDao } from '../dao';
 import { User, UsersResponse } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
+import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
 
 @Controller('data/users')
 @ClassErrorMiddleware(logError)
-@ClassMiddleware(PrdSession.validateAdminSession)
+@ClassMiddleware([
+    Preferences.getUserPreferences,
+    PrdSession.validateModule('admin'),
+])
 export class UsersController {
 
     constructor(

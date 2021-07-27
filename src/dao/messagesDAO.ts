@@ -19,11 +19,11 @@ export class MessagesDao extends Dao {
         this.createIndexes();
     }
 
-    async getMessages(from: Date, modules?: Modules[]): Promise<MessageBase[]> {
+    async getMessages(from: Date, modules: Modules[]): Promise<MessageBase[]> {
         let filter: FilterQuery<MessageBase> = {
             timestamp: { $gt: from },
         };
-        if (modules?.length) {
+        if (modules.length > 0) {
             filter = {
                 ...filter,
                 module: { $in: modules },
@@ -43,7 +43,7 @@ export class MessagesDao extends Dao {
                 key: {
                     timestamp: 1
                 },
-                expireAfterSeconds: 60 * 5,
+                expireAfterSeconds: 60 * 60 * 24,
             },
             {
                 key: {

@@ -23,9 +23,8 @@ export class MessagesController {
 
     @Get('')
     async getMessages(req: Request, res: Response) {
-        const fromDate: Date = new Date(+(req.query.from as string) || Date.now());
-        const modules: Modules[] | undefined = (req.query.modules as string | undefined)?.split(',')
-            .filter(m => MODULES.includes(m as Modules)) as Modules[];
+        const fromDate: Date = new Date(+(req.query.from as string) || 0);
+        const modules: Modules[] = req.userPreferences?.modules || [];
         res.json({
             error: false,
             data: await this.messagesDao.getMessages(fromDate, modules),

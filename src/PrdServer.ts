@@ -1,6 +1,6 @@
 import * as bodyParser from 'body-parser';
 import { DaoIndexMap } from './dao/dao-map';
-import { LoggerDao } from './dao';
+import { FileSystemDao, LoggerDao, UsersDao } from './dao';
 import { createControllers } from './controllers/controllers-index';
 import { Server } from '@overnightjs/core';
 
@@ -13,11 +13,12 @@ import { Application } from 'express';
 import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
 import { messageHandler } from './lib/message-handler';
 import { MessagesDao } from './dao/messagesDAO';
+import { startFtpWatcher } from './lib/ftp-watcher';
 
 export class PrdServer extends Server {
 
     private readonly SERVER_STARTED = 'Server started';
-    private daoMap = new DaoIndexMap();
+    private daoMap;
 
     constructor() {
         super(true);
@@ -26,6 +27,11 @@ export class PrdServer extends Server {
         this.app.set('trust proxy', true);
         this.app.use(bodyParser.json({ limit: process.env.BODY_SIZE_LIMIT }));
         this.app.use(bodyParser.urlencoded({ extended: true }));
+
+        this.daoMap = new DaoIndexMap();
+
+        this.setMessaging();
+        this.startFtpWatch();
     }
 
     async connectDB(uri: string | undefined): Promise<MongoClient> {
@@ -49,7 +55,7 @@ export class PrdServer extends Server {
             this.setupDAO(client); // All DAO initialisation
             Logger.addTransport(
                 new MongoLog(this.daoMap.getDao(LoggerDao))
-            ); // Loggerim pievieno arī mongo izvadi
+            );
 
             insertPreferencesHandlerDao(this.daoMap);
 
@@ -71,8 +77,15 @@ export class PrdServer extends Server {
         super.addControllers(createControllers(this.daoMap));
     }
 
-    setMessaging() {
+    private setMessaging() {
         this.app.use(messageHandler(this.daoMap.getDao(MessagesDao)));
+    }
+
+    private startFtpWatch() {
+        startFtpWatcher({
+            fileSystemDao: this.daoMap.getDao(FileSystemDao),
+            messagesDao: this.daoMap.getDao(MessagesDao),
+        });
     }
 
     private setupDAO(client: MongoClient): void {

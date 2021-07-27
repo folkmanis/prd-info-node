@@ -1,11 +1,12 @@
 
 declare namespace Express {
 
+    type Modules = 'kastes' | 'system' | 'jobs' | 'paytraq' | 'calculations' | 'admin' | 'xmf-search' | 'xmf-upload' | 'jobs-admin';
 
     export interface Request {
         userPreferences?: {
             customers: string[],
-            modules: string[],
+            modules: Modules[],
         };
         log: {
             debug: (message: string, metadata?: any) => void,
@@ -16,13 +17,13 @@ declare namespace Express {
         version?: Version;
     }
 
-    type Modules = 'kastes' | 'system' | 'jobs' | 'paytraq' | 'calculations' | 'admin' | 'xmf-search' | 'xmf-upload';
 
     export interface Response {
         result?: { [key: string]: any; };
         message?: {
             timestamp: Date;
             module: Modules;
+            seenBy: string[];
         };
     }
 

@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId, FilterQuery, Db } from "mongodb";
-import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse } from '../interfaces';
+import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse, MessageBase, Modules, Message } from '../interfaces';
 import Logger from '../lib/logger';
 import { Dao } from '../interfaces/dao.interface';
 
@@ -7,28 +7,30 @@ import { Dao } from '../interfaces/dao.interface';
 export class UsersDao extends Dao {
     users!: Collection<User>;
 
-    private readonly projection = {
-        _id: 0,
-        username: 1,
-        name: 1,
-        admin: 1,
-        last_login: 1,
-        preferences: 1,
-        userDisabled: 1,
-    };
-
 
     async injectDb(db: Db) {
         try {
             this.users = db.collection("users");
         } catch (e) {
             Logger.error(`usersDAO: unable to connect`, e);
+            return;
         }
+        this.createIndexes();
     }
 
     async list(): Promise<User[]> {
+        const projection = {
+            _id: 0,
+            username: 1,
+            name: 1,
+            admin: 1,
+            last_login: 1,
+            preferences: 1,
+            userDisabled: 1,
+        };
         return await this.users.find({})
-            .project(this.projection).toArray();
+            .project(projection)
+            .toArray();
     }
 
     async getUser(username: string): Promise<User | undefined> {
@@ -63,10 +65,6 @@ export class UsersDao extends Dao {
                 }
             }
         ];
-        const projection = {
-            _id: 0,
-            password: 0,
-        };
         return this.users.aggregate(pipeline).toArray().then(usr => usr[0]);
     }
 
@@ -107,10 +105,21 @@ export class UsersDao extends Dao {
             ...login,
             userDisabled: { $not: { $eq: true } },
         };
+        const projection = {
+            _id: 0,
+            username: 1,
+            name: 1,
+            admin: 1,
+            last_login: 1,
+            preferences: 1,
+            userDisabled: 1,
+            messages: 1,
+        };
+
         const updResp = await this.users.findOneAndUpdate(
             filter,
             { $set: { last_login: new Date() } },
-            { projection: this.projection }
+            { projection }
         );
         return {
             error: !updResp.ok,
@@ -163,5 +172,30 @@ export class UsersDao extends Dao {
             };
         } catch (error) { return { error }; }
 
+    }
+
+    async setMessage(module: Modules, message: Message<any>): Promise<number> {
+        const resp = await this.users.updateMany(
+            {
+                'preferences.modules': module,
+            },
+            {
+                $push: {
+                    messages: message
+                }
+            }
+        );
+
+        return resp.modifiedCount;
+    }
+
+    private createIndexes() {
+        this.users.createIndexes([
+            {
+                key: { username: 1 },
+                name: 'username',
+                unique: true,
+            },
+        ]);
     }
 }

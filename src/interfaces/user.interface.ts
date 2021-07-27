@@ -1,4 +1,6 @@
 import { ResponseBase } from './response-base.interface';
+import { Message } from './message.interface';
+import { Modules } from './preferences.interface';
 
 export interface User {
     username: string,
@@ -9,11 +11,12 @@ export interface User {
     userDisabled: boolean,
     preferences: UserPreferences,
     sessions: UserSession[];
+    messages: Message<any>[];
 }
 
 export interface UserPreferences {
     customers: string[],
-    modules: string[],
+    modules: Modules[],
 }
 
 export interface UserSession {

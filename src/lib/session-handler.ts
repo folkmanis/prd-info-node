@@ -23,24 +23,12 @@ export class PrdSession {
         }
     }
 
-    static validateAdminSession(req: Request, res: Response, next: NextFunction) {
-        if (req.session && req.session.user && req.session.user.admin) {
-            next();
-        } else {
-            Logger.error('Admin not logged in');
-            res.status(401).json(new Error('Admin not logged in'));
-        }
-    }
-    /**
-     * Pārbauda, vai lietotājam ir pieeja attiecīgajam modulim
-     * @param mod Moduļa nosaukums, kuram pārbauda pieeju
-     */
     static validateModule(mod: Modules): RequestHandler {
         return (req: Request, res: Response, next: NextFunction) => {
             if (req.userPreferences?.modules?.includes(mod)) {
                 next();
             } else {
-                res.json({});
+                res.status(401).json({});
             }
         };
     }
