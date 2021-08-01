@@ -3,13 +3,13 @@ import Logger from '../lib/logger';
 import path from 'path';
 import { Dao, FsOperations } from '../interfaces';
 import { Db } from 'mongodb';
-import chokidar from 'chokidar';
+import chokidar, { FSWatcher } from 'chokidar';
 
 
 export class FileSystemDao extends Dao {
 
     protected readonly rootPath = process.env.JOBS_INPUT as string;
-    protected readonly ftpPath = process.env.FTP_FOLDER as string;
+    readonly ftpPath = process.env.FTP_FOLDER as string;
 
     async injectDb(_: Db) { }
 
@@ -29,29 +29,14 @@ export class FileSystemDao extends Dao {
         file.pipe(createWriteStream(fullPath));
     }
 
-    startFtpWatch(callback: (operation: FsOperations, path: string[], stats?: Stats) => void) {
-        const watcher = chokidar.watch(this.ftpPath, {
+    startFtpWatch(): FSWatcher {
+        return chokidar.watch(this.ftpPath, {
             ignored: /(^|[\/\\])\../, // ignore dotfiles
             persistent: true,
             ignoreInitial: true,
             usePolling: true,
         });
-        watcher
-            .on('add', this.ftpCallback('add', callback))
-            .on('addDir', this.ftpCallback('addDir', callback))
-            .on('change', this.ftpCallback('change', callback))
-            .on('unlink', this.ftpCallback('unlink', callback))
-            .on('ready', () => callback('ready', this.ftpPath.split('/')));
     }
 
-    private ftpCallback(event: FsOperations, callback: (operation: FsOperations, path: string[], stats?: Stats) => void) {
-        return (path: string, stats?: Stats) => {
-            callback(
-                event,
-                path.slice(this.ftpPath.length + 1).split('/'),
-                stats,
-            );
-        };
-    }
 
 }

@@ -19,17 +19,47 @@ export class MessagesDao extends Dao {
         this.createIndexes();
     }
 
-    async getMessages(from: Date, modules: Modules[]): Promise<MessageBase[]> {
-        let filter: FilterQuery<MessageBase> = {
-            timestamp: { $gt: from },
-        };
+    async getMessages(from: Date, to: Date, modules: Modules[], username: string): Promise<MessageBase[]> {
+        const pipeline: any[] = [
+            {
+                $match: {
+                    timestamp: {
+                        $gt: from,
+                        $lte: to
+                    },
+                }
+            },
+            {
+                $sort: {
+                    timestamp: -1
+                }
+            },
+            {
+                $addFields: {
+                    seen: {
+                        $in: [username, '$seenBy']
+                    },
+                    deleted: {
+                        $in: [username, '$deletedBy']
+                    }
+                }
+            },
+            {
+                $project: {
+                    seenBy: 0,
+                    deletedBy: 0,
+                }
+            },
+        ];
         if (modules.length > 0) {
-            filter = {
-                ...filter,
-                module: { $in: modules },
-            };
+            pipeline.push({
+                $match: {
+                    module: { $in: modules }
+                }
+            });
         }
-        return this.collection.find(filter).toArray();
+
+        return this.collection.aggregate(pipeline).toArray();
     }
 
     async add(msg: MessageBase): Promise<boolean> {
@@ -37,11 +67,23 @@ export class MessagesDao extends Dao {
         return resp.insertedCount > 0;
     }
 
+    async allMessagesRead(user: string): Promise<number> {
+        const resp = await this.collection.updateMany(
+            {},
+            {
+                $addToSet: {
+                    seenBy: user,
+                }
+            }
+        );
+        return resp.modifiedCount;
+    }
+
     private createIndexes() {
         this.collection.createIndexes([
             {
                 key: {
-                    timestamp: 1
+                    timestamp: -1
                 },
                 expireAfterSeconds: 60 * 60 * 24,
             },

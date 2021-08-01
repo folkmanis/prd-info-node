@@ -125,7 +125,7 @@ export class JobsController {
         });
         // req.log.info(`Job ${jobId} updated`, { jobId, ...job });
 
-        res.message = new JobMessage('jobUpdate', { jobId, operation: 'update' });
+        res.message = new JobMessage({ action: 'jobUpdate', jobId, operation: 'update' });
 
         if (job.customer && job.products instanceof Array) {
             this.productsDao.touchProduct(job.customer, job.products.map(pr => pr.name));

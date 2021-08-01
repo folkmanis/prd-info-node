@@ -1,19 +1,40 @@
-import { ClassErrorMiddleware, Controller, Get, Post } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassWrapper, Controller, Get, Post, Middleware } from '@overnightjs/core';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import session from 'express-session';
-import { UsersDao } from '../dao';
-import { Login, LoginResponse } from '../interfaces';
-import '../interfaces/session';
+import { asyncWrapper } from '../lib/asyncWrapper';
+import { MessagesDao, UsersDao } from '../dao';
+import { Login, LoginResponse, Modules } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
+import { Preferences } from '../lib/preferences-handler';
+import { PrdSession } from '../lib/session-handler';
 
 @ClassErrorMiddleware(logError)
 @Controller('data/login')
+@ClassWrapper(asyncWrapper)
 export class LoginController {
 
     constructor(
         private usersDao: UsersDao,
+        private messagesDao: MessagesDao,
     ) { }
+
+    @Post('messages/allRead')
+    async allMessagesRead(req: Request, res: Response) {
+
+        if (!req.session.user) {
+            res.json({
+                error: false,
+                modifiedCount: 0,
+            });
+            return;
+        }
+
+        res.json({
+            error: false,
+            modifiedCount: await this.messagesDao.allMessagesRead(req.session.user.username),
+        });
+    }
 
     @Post('')
     private async login(req: Request, res: Response) {
@@ -71,6 +92,22 @@ export class LoginController {
         });
     }
 
+    @Middleware([
+        Preferences.getUserPreferences,
+        PrdSession.validateSession,
+    ])
+    @Get('messages')
+    async getMessages(req: Request, res: Response) {
+        const fromDate: Date = new Date(+(req.query.from as string) || 0);
+        const toDate: Date = new Date();
+        const modules: Modules[] = req.userPreferences?.modules || [];
+        res.json({
+            error: false,
+            timestamp: toDate,
+            data: await this.messagesDao.getMessages(fromDate, toDate, modules, req.session.user?.username || ''),
+        });
+    }
+
     @Get('')
     private user(req: Request, res: Response) {
         if (req.session && req.session.user) {
@@ -85,5 +122,6 @@ export class LoginController {
             });
         }
     }
+
 
 }

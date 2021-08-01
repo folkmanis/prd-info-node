@@ -24,6 +24,8 @@ declare namespace Express {
             timestamp: Date;
             module: Modules;
             seenBy: string[];
+            deletedBy: string[];
+            alert: boolean;
         };
     }
 
