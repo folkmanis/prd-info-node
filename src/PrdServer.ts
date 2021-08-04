@@ -11,8 +11,9 @@ import Logger, { Console, MongoLog } from './lib/logger';
 import { Application } from 'express';
 
 import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
-import { messageHandler } from './lib/message-handler';
+import { notificationHandler } from './lib/message-handler';
 import { MessagesDao } from './dao/messagesDAO';
+import { NotificationsDao } from './dao/notificationsDAO';
 import { startFtpWatcher } from './lib/ftp-watcher';
 
 export class PrdServer extends Server {
@@ -78,13 +79,14 @@ export class PrdServer extends Server {
     }
 
     private setMessaging() {
-        this.app.use(messageHandler(this.daoMap.getDao(MessagesDao)));
+        this.app.use(notificationHandler(this.daoMap.getDao(NotificationsDao)));
     }
 
     private startFtpWatch() {
         startFtpWatcher({
             fileSystemDao: this.daoMap.getDao(FileSystemDao),
             messagesDao: this.daoMap.getDao(MessagesDao),
+            notificationsDao: this.daoMap.getDao(NotificationsDao),
         });
     }
 

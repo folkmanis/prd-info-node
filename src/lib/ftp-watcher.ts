@@ -3,28 +3,30 @@ import path from 'path';
 import { FileSystemDao } from '../dao/fileSystemDAO';
 import { MessagesDao } from '../dao/messagesDAO';
 import Logger from './logger';
-import { JobMessage, FsOperations } from '../interfaces';
-import { FSWatcher } from 'chokidar';
+import { JobMessage, FsOperations, SystemNotification } from '../interfaces';
+import { NotificationsDao } from '../dao/notificationsDAO';
 
 interface Params {
     fileSystemDao: FileSystemDao;
     messagesDao: MessagesDao;
+    notificationsDao: NotificationsDao;
 }
 
-export function startFtpWatcher({ fileSystemDao, messagesDao }: Params) {
+export function startFtpWatcher({ fileSystemDao, messagesDao, notificationsDao }: Params) {
 
     const offset = fileSystemDao.ftpPath.length + 1;
 
     const callbackFn = (operation: FsOperations, isAlert = true) => {
-        return (path: string, stats?: Stats) => {
+        return async (path: string, stats?: Stats) => {
             Logger.info(operation, { path, stats });
-            messagesDao.add(
+            const messageId = await messagesDao.add(
                 new JobMessage({
                     action: 'ftpUpload',
                     operation,
                     path: path?.slice(offset).split('/')
                 }, isAlert)
             );
+            notificationsDao.add(new SystemNotification({ operation: 'ftpWatcher', id: messageId }));
         };
     };
 

@@ -17,6 +17,7 @@ import { XmfSearchDao } from './xmf-searchDAO';
 import { LoggerDao } from './loggerDAO';
 import { SessionsDao } from './sessionsDAO';
 import { MessagesDao } from './messagesDAO';
+import { NotificationsDao } from './notificationsDAO';
 
 
 const DAOS: Type<Dao>[] = [
@@ -35,6 +36,7 @@ const DAOS: Type<Dao>[] = [
     LoggerDao,
     SessionsDao,
     MessagesDao,
+    NotificationsDao,
 ];
 
 export class DaoIndexMap extends Map<Type<Dao>, Dao> {

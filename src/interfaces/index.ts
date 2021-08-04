@@ -15,3 +15,4 @@ export * from './job-base.interface';
 export * from './counters.interface';
 export * from './message.interface';
 export * from './dao.interface';
+export * from './notification.interface';

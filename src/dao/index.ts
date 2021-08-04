@@ -13,3 +13,4 @@ export * from './xmf-searchDAO';
 export * from './loggerDAO';
 export * from './sessionsDAO';
 export * from './messagesDAO';
+export * from './notificationsDAO';

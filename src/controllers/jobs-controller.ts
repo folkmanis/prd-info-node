@@ -14,6 +14,7 @@ import { logError } from '../lib/errorMiddleware';
 import { FolderPath } from '../lib/folder-path';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
+import { JobsNotification } from '../interfaces';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;
@@ -125,7 +126,7 @@ export class JobsController {
         });
         // req.log.info(`Job ${jobId} updated`, { jobId, ...job });
 
-        res.message = new JobMessage({ action: 'jobUpdate', jobId, operation: 'update' });
+        res.notification = new JobsNotification({ jobId, operation: 'update' });
 
         if (job.customer && job.products instanceof Array) {
             this.productsDao.touchProduct(job.customer, job.products.map(pr => pr.name));

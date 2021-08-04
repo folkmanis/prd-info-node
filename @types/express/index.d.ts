@@ -20,12 +20,10 @@ declare namespace Express {
 
     export interface Response {
         result?: { [key: string]: any; };
-        message?: {
+        notification?: {
             timestamp: Date;
             module: Modules;
-            seenBy: string[];
-            deletedBy: string[];
-            alert: boolean;
+            payload: any;
         };
     }
 

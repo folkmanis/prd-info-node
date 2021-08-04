@@ -62,9 +62,9 @@ export class MessagesDao extends Dao {
         return this.collection.aggregate(pipeline).toArray();
     }
 
-    async add(msg: MessageBase): Promise<boolean> {
+    async add(msg: MessageBase): Promise<ObjectId> {
         const resp = await this.collection.insertOne(msg);
-        return resp.insertedCount > 0;
+        return resp.insertedId;
     }
 
     async allMessagesRead(user: string): Promise<number> {
@@ -85,12 +85,16 @@ export class MessagesDao extends Dao {
                 key: {
                     timestamp: -1
                 },
-                expireAfterSeconds: 60 * 60 * 24,
             },
             {
                 key: {
                     action: 1
                 },
+            },
+            {
+                key: {
+                    module: 1
+                }
             }
         ]);
     }
