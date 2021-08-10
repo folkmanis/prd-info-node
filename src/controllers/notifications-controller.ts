@@ -1,11 +1,10 @@
-import { Controller, ClassMiddleware, Post, ClassWrapper, Middleware, Get, Delete, Put, ClassErrorMiddleware } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { Preferences } from '../lib/preferences-handler';
+import { NotificationsDao } from '../dao';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
+import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
-import { NotificationsDao } from '../dao';
-import { NotificationBase, Modules } from '../interfaces';
 
 @Controller('data/notifications')
 @ClassErrorMiddleware(logError)
@@ -22,7 +21,7 @@ export class NotificationsController {
 
     @Get('')
     async getMessages(req: Request, res: Response) {
-        const fromDate: Date = new Date(+(req.query.from as string) ?? Date.now());
+        const fromDate: Date = req.query.from ? new Date(+req.query.from) : new Date();
         const toDate: Date = new Date();
         const modules: string[] = (req.query.modules as string)?.split(',') || [];
         res.json({

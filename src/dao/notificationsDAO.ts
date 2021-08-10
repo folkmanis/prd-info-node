@@ -1,6 +1,6 @@
-import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject } from 'mongodb';
+import { Collection, Db, FilterQuery } from 'mongodb';
+import { Dao, NotificationBase } from '../interfaces';
 import Logger from '../lib/logger';
-import { Dao, NotificationBase, Modules, MessageBase } from '../interfaces';
 
 export class NotificationsDao extends Dao {
     private collection!: Collection<NotificationBase>;

@@ -1,5 +1,4 @@
-import { Request, Response, NextFunction, RequestHandler } from 'express';
-import { MessagesDao } from '../dao/messagesDAO';
+import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { NotificationsDao } from '../dao/notificationsDAO';
 
 export function notificationHandler(dao: NotificationsDao): RequestHandler {

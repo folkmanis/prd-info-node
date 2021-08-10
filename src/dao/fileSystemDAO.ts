@@ -1,9 +1,9 @@
-import { promises as fsPromises, createWriteStream, Stats } from 'fs';
-import Logger from '../lib/logger';
-import path from 'path';
-import { Dao, FsOperations } from '../interfaces';
-import { Db } from 'mongodb';
 import chokidar, { FSWatcher } from 'chokidar';
+import { createWriteStream, promises as fsPromises } from 'fs';
+import { Db } from 'mongodb';
+import path from 'path';
+import { Dao } from '../interfaces';
+import Logger from '../lib/logger';
 
 
 export class FileSystemDao extends Dao {
@@ -35,6 +35,10 @@ export class FileSystemDao extends Dao {
             persistent: true,
             ignoreInitial: true,
             usePolling: true,
+            awaitWriteFinish: {
+                stabilityThreshold: 3000,
+                pollInterval: 500,
+            }
         });
     }
 

@@ -14,14 +14,20 @@ _id: dienas YYYY-m-d
 
 */
 
-import { ClassMiddleware, ClassWrapper, Controller, Get } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get } from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { LoggerDao } from '../dao';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { PrdSession } from '../lib/session-handler';
+import { Preferences } from '../lib/preferences-handler';
+import { logError } from '../lib/errorMiddleware';
 
 @Controller('data/log')
-@ClassMiddleware(PrdSession.validateModule('admin'))
+@ClassErrorMiddleware(logError)
+@ClassMiddleware([
+    Preferences.getUserPreferences,
+    PrdSession.validateModule('admin')
+])
 @ClassWrapper(asyncWrapper)
 export class LogController {
 

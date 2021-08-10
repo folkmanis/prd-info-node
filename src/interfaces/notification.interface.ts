@@ -35,8 +35,8 @@ export class SystemNotification extends NotificationBase<'system'> {
 
     constructor(
         public payload: {
-            operation: 'ftpWatcher';
-            id: ObjectId;
+            operation: 'messages' | 'ftpWatcher';
+            id?: ObjectId;
         }
     ) {
         super();

@@ -1,4 +1,4 @@
-import { ClassErrorMiddleware, ClassMiddleware, Controller, Delete, Get, Post, Put } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Delete, Get, Post, Put } from '@overnightjs/core';
 import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { SessionsDao, UsersDao } from '../dao';
@@ -6,6 +6,7 @@ import { User, UsersResponse } from '../interfaces';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
+import { asyncWrapper } from '../lib/asyncWrapper';
 
 @Controller('data/users')
 @ClassErrorMiddleware(logError)
@@ -13,6 +14,7 @@ import { PrdSession } from '../lib/session-handler';
     Preferences.getUserPreferences,
     PrdSession.validateModule('admin'),
 ])
+@ClassWrapper(asyncWrapper)
 export class UsersController {
 
     constructor(

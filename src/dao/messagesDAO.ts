@@ -1,7 +1,7 @@
-import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject } from 'mongodb';
-import Logger from '../lib/logger';
-import { Message, MessageBase, Modules } from '../interfaces';
+import { Collection, Db, ObjectId } from 'mongodb';
+import { MessageBase, Modules } from '../interfaces';
 import { Dao } from '../interfaces/dao.interface';
+import Logger from '../lib/logger';
 
 
 export class MessagesDao extends Dao {
@@ -27,6 +27,9 @@ export class MessagesDao extends Dao {
                         $gt: from,
                         $lte: to
                     },
+                    deletedBy: {
+                        $ne: username,
+                    }
                 }
             },
             {
@@ -67,12 +70,12 @@ export class MessagesDao extends Dao {
         return resp.insertedId;
     }
 
-    async allMessagesRead(user: string): Promise<number> {
+    async markAs(prop: 'seenBy' | 'deletedBy', user: string, filter: { _id?: ObjectId; } = {}): Promise<number> {
         const resp = await this.collection.updateMany(
-            {},
+            filter,
             {
                 $addToSet: {
-                    seenBy: user,
+                    [prop]: user,
                 }
             }
         );
@@ -85,6 +88,7 @@ export class MessagesDao extends Dao {
                 key: {
                     timestamp: -1
                 },
+                expireAfterSeconds: 60 * 60 * 24 * 7,
             },
             {
                 key: {

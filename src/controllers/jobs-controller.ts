@@ -1,20 +1,18 @@
 import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Middleware, Post, Put } from '@overnightjs/core';
 import Busboy from "busboy";
 import { Request, Response } from 'express';
-import { CountersDao, CustomersDao, FileSystemDao, JobsDao, ProductsDao, MessagesDao } from '../dao';
+import { CountersDao, CustomersDao, FileSystemDao, JobsDao, ProductsDao } from '../dao';
 import {
     Customer, Job,
     JobQueryFilter,
-    JobResponse, ProductNoPrices,
-    ProductPriceImport,
-    JobMessage,
+    JobResponse, JobsNotification, ProductNoPrices,
+    ProductPriceImport
 } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { FolderPath } from '../lib/folder-path';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
-import { JobsNotification } from '../interfaces';
 
 class JobImportResponse implements JobResponse {
     insertedCustomers = 0;

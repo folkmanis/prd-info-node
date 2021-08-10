@@ -10,7 +10,6 @@ export abstract class MessageBase {
     timestamp: Date;
     seenBy: string[] = [];
     deletedBy: string[] = [];
-    alert = false;
 
     constructor() {
         this.timestamp = new Date;
@@ -42,10 +41,8 @@ export class JobMessage<T extends JobActions> extends MessageBase {
 
     constructor(
         public data: JobOrFtp<T>,
-        alert = false,
     ) {
         super();
-        this.alert = alert; // || (data.action === 'ftpUpload' && data.operation !== 'ready');
     }
 
 }
