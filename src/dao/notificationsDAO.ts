@@ -14,12 +14,15 @@ export class NotificationsDao extends Dao {
         }
     }
 
-    async getAll(from: Date, to: Date, modules: string[]): Promise<NotificationBase[]> {
+    async getAll(from: Date, to: Date, modules: string[], instanceId: string | undefined): Promise<NotificationBase[]> {
         let filter: FilterQuery<NotificationBase> = {
             timestamp: {
                 $gt: from,
                 $lte: to
             },
+            instanceId: {
+                $ne: instanceId,
+            }
         };
         if (modules.length > 0) {
             filter = {

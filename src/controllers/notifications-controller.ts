@@ -27,7 +27,7 @@ export class NotificationsController {
         res.json({
             error: false,
             timestamp: toDate,
-            data: await this.notificationsDao.getAll(fromDate, toDate, modules),
+            data: await this.notificationsDao.getAll(fromDate, toDate, modules, req.instanceId),
         });
     }
 

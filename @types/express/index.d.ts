@@ -15,6 +15,7 @@ declare namespace Express {
         };
         systemPreferences?: Map<string, { [key: string]: any; }>;
         version?: Version;
+        instanceId?: string;
     }
 
 
@@ -22,6 +23,7 @@ declare namespace Express {
         result?: { [key: string]: any; };
         notification?: {
             timestamp: Date;
+            instanceId: string | undefined,
             module: Modules;
             payload: any;
         };

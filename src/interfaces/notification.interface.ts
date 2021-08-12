@@ -7,6 +7,7 @@ export abstract class NotificationBase<T extends Modules = any> {
     abstract payload: any;
 
     timestamp: Date;
+    instanceId: string | undefined;
 
     constructor() {
         this.timestamp = new Date();

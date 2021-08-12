@@ -1,4 +1,3 @@
-import * as bodyParser from 'body-parser';
 import { DaoIndexMap } from './dao/dao-map';
 import { FileSystemDao, LoggerDao, UsersDao } from './dao';
 import { createControllers } from './controllers/controllers-index';
@@ -8,13 +7,14 @@ import { MongoClient } from 'mongodb';
 import { PrdSession } from './lib/session-handler';
 import { VersionHandler } from './lib/version-handler';
 import Logger, { Console, MongoLog } from './lib/logger';
-import { Application } from 'express';
+import { Application, json, urlencoded } from 'express';
 
 import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
 import { notificationHandler } from './lib/message-handler';
 import { MessagesDao } from './dao/messagesDAO';
 import { NotificationsDao } from './dao/notificationsDAO';
 import { startFtpWatcher } from './lib/ftp-watcher';
+import { parseInstanceId } from './lib/instance-id-parser';
 
 export class PrdServer extends Server {
 
@@ -26,8 +26,9 @@ export class PrdServer extends Server {
         Logger.addTransport(new Console());
         this.app.use(Logger.handler()); // Logger funkcijas būs pieejamas kā req.log
         this.app.set('trust proxy', true);
-        this.app.use(bodyParser.json({ limit: process.env.BODY_SIZE_LIMIT }));
-        this.app.use(bodyParser.urlencoded({ extended: true }));
+        this.app.use(json({ limit: process.env.BODY_SIZE_LIMIT }));
+        this.app.use(urlencoded({ extended: true }));
+        this.app.use(parseInstanceId());
 
         this.daoMap = new DaoIndexMap();
 
@@ -37,7 +38,7 @@ export class PrdServer extends Server {
 
     async connectDB(uri: string | undefined): Promise<MongoClient> {
         if (!uri) {
-            Logger.error('Mongo environment not defined');  // Inicializācijas laikā lieto statisko objektu
+            Logger.error('Mongo environment not defined');
             return process.exit(1);
         }
         try {
