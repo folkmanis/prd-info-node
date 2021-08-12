@@ -10,6 +10,7 @@ export interface User {
     last_login: Date,
     userDisabled: boolean,
     preferences: UserPreferences,
+    userPreferences: ModuleUserPreferences[];
     sessions: UserSession[];
     messages: Message<any>[];
 }
@@ -25,6 +26,11 @@ export interface UserSession {
         date: Date;
         ip: string;
     };
+}
+
+export interface ModuleUserPreferences {
+    module: Modules;
+    options?: any;
 }
 
 

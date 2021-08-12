@@ -1,5 +1,5 @@
 import { MongoClient, Collection, ObjectId, FilterQuery, Db } from "mongodb";
-import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse, MessageBase, Modules, Message } from '../interfaces';
+import { User, UserPreferences, Login, LoginResponse, ResponseBase, UsersResponse, MessageBase, Modules, Message, ModuleUserPreferences } from '../interfaces';
 import Logger from '../lib/logger';
 import { Dao } from '../interfaces/dao.interface';
 
@@ -140,7 +140,7 @@ export class UsersDao extends Dao {
      * @param username Lietotājvārds
      * @param mod Modulis
      */
-    async getUserPreferences(username: string, mod: string): Promise<{ error: any;[key: string]: any; }> {
+    async getUserPreferences(username: string, mod: string): Promise<{ [key: string]: any; }> {
         const pipeline = [{
             $match: { username }
         }, {
@@ -150,28 +150,37 @@ export class UsersDao extends Dao {
         }, {
             $replaceRoot: { newRoot: '$userPreferences.options' }
         }];
-        try {
-            return {
-                error: null,
-                userPreferences: (await this.users.aggregate<{ [key: string]: any; }>(pipeline).toArray())[0],
-            };
-        } catch (error) { return { error }; }
+        return (await (this.users.aggregate<{ [key: string]: any; }>(pipeline).toArray()))[0];
     }
     /**
      * Nomaina lietotāja iestatījumus noteiktam modulim
      * @param username Lietotājvārds
-     * @param mod Modulis
+     * @param module Modulis
      * @param val Moduļa iestatījumi
      */
-    async updateUserPreferences(username: string, mod: string, val: { [key: string]: any; }): Promise<ResponseBase> {
-        try {
-            const updRes = await this.users.updateOne({ username, 'userPreferences.module': mod }, { $set: { "userPreferences.$.options": val } });
-            return {
-                error: null,
-                modifiedCount: updRes.modifiedCount,
-            };
-        } catch (error) { return { error }; }
+    async updateUserPreferences(username: string, module: Modules, val: { [key: string]: any; }): Promise<number> {
+        const user = await this.users.findOne({ username });
+        if (!user) {
+            throw new Error('Non-existing user');
+        }
 
+        const userPreferences = user.userPreferences || [];
+
+        const idx = userPreferences.findIndex(mod => mod.module === module);
+        if (idx === -1) {
+            userPreferences.push({
+                module: module,
+                options: val
+            });
+        } else {
+            userPreferences[idx] = {
+                module: userPreferences[idx].module,
+                options: { ...userPreferences[idx].options, ...val }
+            };
+        }
+
+        const updRes = await this.users.updateOne({ username }, { $set: { userPreferences } });
+        return updRes.modifiedCount;
     }
 
     async setMessage(module: Modules, message: Message<any>): Promise<number> {
