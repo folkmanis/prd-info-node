@@ -54,9 +54,11 @@ export class KastesController {
         req.log.debug('post kastes preferences', req.body);
         const username = req.session?.user?.username || '';
         const preferences = req.body;
-        res.json(
-            await this.usersDao.updateUserPreferences(username, 'kastes', preferences)
-        );
+        const modifiedCount = await this.usersDao.updateUserPreferences(username, 'kastes', preferences);
+        res.json({
+            error: false,
+            modifiedCount
+        });
     }
 
     @Post('label')
@@ -95,8 +97,10 @@ export class KastesController {
     @Get('preferences')
     private async getPreferences(req: Request, res: Response) {
         const username = req.session?.user?.username || '';
-        res.json(
-            await this.usersDao.getUserPreferences(username, 'kastes')
+        res.json({
+            error: false,
+            userPreferences: await this.usersDao.getUserPreferences(username, 'kastes')
+        }
         );
     }
 

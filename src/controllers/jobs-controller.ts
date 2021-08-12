@@ -103,6 +103,7 @@ export class JobsController {
                 file: filename,
                 jobId: job.jobId,
             });
+            res.notification = new JobsNotification({ jobId, operation: 'update' });
         });
         req.pipe(busboy);
     }
@@ -122,9 +123,10 @@ export class JobsController {
             error: false,
             modifiedCount,
         });
-        // req.log.info(`Job ${jobId} updated`, { jobId, ...job });
 
-        res.notification = new JobsNotification({ jobId, operation: 'update' });
+        if (modifiedCount) {
+            res.notification = new JobsNotification({ jobId, operation: 'update' });
+        }
 
         if (job.customer && job.products instanceof Array) {
             this.productsDao.touchProduct(job.customer, job.products.map(pr => pr.name));
@@ -213,6 +215,7 @@ export class JobsController {
             if (job.customer && job.products instanceof Array) {
                 this.productsDao.touchProduct(job.customer, job.products.map(pr => pr.name));
             }
+            res.notification = new JobsNotification({ jobId, operation: 'create' });
         }
     }
 

@@ -228,19 +228,18 @@ export class JobsDao extends Dao {
                 },
             },
         };
-        return this.jobs
-            .updateMany(filter, update)
-            .then(() => {
-                return this.jobs.find(
-                    { invoiceId },
-                    {
-                        projection: { jobId: 1, _id: 0 },
-                        sort: { jobId: 1 },
-                    }
-                )
-                    .map(job => job.jobId)
-                    .toArray();
-            });
+        await this.jobs.updateMany(filter, update);
+        const updatedJobs = this.jobs
+            .find(
+                { invoiceId },
+                {
+                    projection: { jobId: 1, _id: 0 },
+                    sort: { jobId: 1 },
+                }
+            )
+            .map(job => job.jobId)
+            .toArray();
+        return updatedJobs;
     }
 
     async unsetInvoices(invoiceId: string): Promise<number> {
