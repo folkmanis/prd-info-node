@@ -45,6 +45,7 @@
     "pdfmake": "^0.2.0",
     "pdfmake-wrapper": "^2.1.2",
     "tmp-promise": "^3.0.2",
+    "xlsx": "^0.17.0",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },

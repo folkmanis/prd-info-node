@@ -7,12 +7,14 @@ import {
 import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { Veikals } from '../interfaces';
+import Busboy from "busboy";
 import '../interfaces/session';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
 import { UsersDao, KastesDao, JobsDao } from '../dao';
+import { parseXls } from '../lib/xls-parser';
 
 @Controller('data/kastes')
 @ClassErrorMiddleware(logError)
@@ -29,6 +31,31 @@ export class KastesController {
         private kastesDao: KastesDao,
         private jobsDao: JobsDao,
     ) { }
+
+    @Put('parseXlsx')
+    async parseXlsx(req: Request, res: Response) {
+
+        const busboy = new Busboy({ headers: req.headers });
+        let buffer: Buffer;
+
+        busboy.on('file', (_, file) => {
+            const chunks: any[] = [];
+            file.on('data', chunk => chunks.push(chunk));
+
+            file.on('end', () => {
+                buffer = Buffer.concat(chunks);
+            });
+
+        });
+
+        busboy.on('finish', () => res.json({
+            error: false,
+            data: buffer && parseXls(buffer, 'buffer'),
+        }));
+
+        req.pipe(busboy);
+
+    }
 
     @Put('')
     private async table(req: Request, res: Response) {
