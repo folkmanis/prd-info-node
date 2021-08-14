@@ -26,7 +26,7 @@ export class MaterialsController {
         const mat = req.body as Material;
         res.json({
             error: false,
-            data: await this.materialsDao.addMaterial(mat)
+            insertedId: await this.materialsDao.addMaterial(mat)
         });
     }
 
