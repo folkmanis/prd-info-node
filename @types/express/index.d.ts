@@ -19,7 +19,9 @@ declare namespace Express {
     }
 
 
-    export interface Response {
+    export interface Response<ResBody = any,
+        Locals extends Record<string, any> = Record<string, any>,
+        StatusCode extends number = number> {
         result?: { [key: string]: any; };
         notification?: {
             timestamp: Date;
@@ -27,13 +29,21 @@ declare namespace Express {
             module: Modules;
             payload: any;
         };
+        jsonOk: (body: JsonResponse<ResBody>) => Response;
     }
 
-    interface Version {
-        apiBuild: number;
-        appBuild: number;
+    export interface JsonResponse<T> {
+        insertedId?: string | number | Object;
+        deletedCount?: number;
+        modifiedCount?: number;
+        insertedCount?: number;
+        validatorData?: T[keyof T][];
+        data?: T | Partial<T>[];
     }
-
 }
 
 
+interface Version {
+    apiBuild: number;
+    appBuild: number;
+}

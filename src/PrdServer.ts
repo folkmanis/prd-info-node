@@ -15,6 +15,7 @@ import { MessagesDao } from './dao/messagesDAO';
 import { NotificationsDao } from './dao/notificationsDAO';
 import { startFtpWatcher } from './lib/ftp-watcher';
 import { parseInstanceId } from './lib/instance-id-parser';
+import { jsonOkHandler } from './lib/json-ok-handler';
 
 export class PrdServer extends Server {
 
@@ -29,6 +30,7 @@ export class PrdServer extends Server {
         this.app.use(json({ limit: process.env.BODY_SIZE_LIMIT }));
         this.app.use(urlencoded({ extended: true }));
         this.app.use(parseInstanceId());
+        this.app.use(jsonOkHandler());
 
         this.daoMap = new DaoIndexMap();
 

@@ -1,4 +1,4 @@
-import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject } from 'mongodb';
+import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject, InsertOneWriteOpResult } from 'mongodb';
 import Logger from '../lib/logger';
 import { Material } from '../interfaces/materials.interface';
 import { Dao } from '../interfaces/dao.interface';
@@ -40,9 +40,9 @@ export class MaterialsDao extends Dao {
         return this.materials.findOne(new ObjectId(id));
     }
 
-    async addMaterial(mat: Material): Promise<ObjectId> {
+    async addMaterial(mat: Material): Promise<InsertOneWriteOpResult<Material>> {
         const resp = await this.materials.insertOne(mat);
-        return resp.insertedId;
+        return resp;
     }
 
     updateMaterial(id: string, mat: Partial<Material>): Promise<UpdateWriteOpResult> {
