@@ -1,10 +1,10 @@
 import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject, InsertOneWriteOpResult } from 'mongodb';
 import Logger from '../lib/logger';
 import { Material } from '../interfaces/materials.interface';
-import { Dao } from '../interfaces/dao.interface';
+import { Dao, EntityDao } from '../interfaces';
 
 
-export class MaterialsDao extends Dao {
+export class MaterialsDao extends Dao implements EntityDao<Material> {
 
     readonly MATERIALS_COLLECTION_NAME = 'materials';
 
@@ -20,7 +20,7 @@ export class MaterialsDao extends Dao {
         this.createIndexes();
     }
 
-    getMaterials({ name, categories }: { name?: string, categories?: string; }): Promise<Partial<Material[]>> {
+    getArray({ name, categories }: { name?: string, categories?: string; }): Promise<Partial<Material[]>> {
         const filter: FilterQuery<Material> = {};
         if (categories) {
             filter.category = {
@@ -36,16 +36,16 @@ export class MaterialsDao extends Dao {
             .toArray();
     }
 
-    getMaterialById(id: string): Promise<Material | null> {
+    getById(id: string): Promise<Material | null> {
         return this.materials.findOne(new ObjectId(id));
     }
 
-    async addMaterial(mat: Material): Promise<InsertOneWriteOpResult<Material>> {
+    async addOne(mat: Material): Promise<InsertOneWriteOpResult<Material>> {
         const resp = await this.materials.insertOne(mat);
         return resp;
     }
 
-    updateMaterial(id: string, mat: Partial<Material>): Promise<UpdateWriteOpResult> {
+    updateOne(id: string, mat: Partial<Material>): Promise<UpdateWriteOpResult> {
         return this.materials.updateOne(
             { _id: new ObjectId(id) },
             {
@@ -54,7 +54,7 @@ export class MaterialsDao extends Dao {
         );
     }
 
-    deleteMaterial(id: string): Promise<DeleteWriteOpResultObject> {
+    deleteOneById(id: string): Promise<DeleteWriteOpResultObject> {
         return this.materials.deleteOne(
             { _id: new ObjectId(id) }
         );

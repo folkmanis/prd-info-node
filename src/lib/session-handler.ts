@@ -4,9 +4,9 @@ import session from 'express-session';
 import Logger from './logger';
 import '../interfaces/session';
 import MongoStore from 'connect-mongo';
-// const MongoStore = require('connect-mongo')(session);
+import { Modules } from '../interfaces';
 
-type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin' | 'calculations';
+// type Modules = 'xmf-search' | 'jobs' | 'xmf-upload' | 'jobs' | 'jobs-admin' | 'kastes' | 'admin' | 'calculations';
 
 export class PrdSession {
 

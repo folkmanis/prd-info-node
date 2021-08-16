@@ -16,3 +16,5 @@ export * from './counters.interface';
 export * from './message.interface';
 export * from './dao.interface';
 export * from './notification.interface';
+export * from './entityDao.interface';
+export * from './entity-controller';
