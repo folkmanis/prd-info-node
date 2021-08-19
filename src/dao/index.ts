@@ -14,3 +14,5 @@ export * from './loggerDAO';
 export * from './sessionsDAO';
 export * from './messagesDAO';
 export * from './notificationsDAO';
+export * from './equipmentDAO';
+export * from './production-stagesDAO';

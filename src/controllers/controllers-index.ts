@@ -17,7 +17,8 @@ import { InvoicesController } from './invoices.controller';
 import { PaytraqController } from './paytraq.controller';
 import { MaterialsController } from './materials-controller';
 import { NotificationsController } from './notifications-controller';
-
+import { EquipmentController } from './equipment.controller';
+import { ProductionStagesController } from './production-stages.controller';
 
 const CONTROLLERS: Type<any>[] = [
     UsersController,
@@ -35,6 +36,8 @@ const CONTROLLERS: Type<any>[] = [
     PaytraqController,
     MaterialsController,
     NotificationsController,
+    EquipmentController,
+    ProductionStagesController,
 ];
 
 export function createControllers(daoMap: DaoIndexMap): any[] {

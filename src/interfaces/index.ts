@@ -18,3 +18,5 @@ export * from './dao.interface';
 export * from './notification.interface';
 export * from './entityDao.interface';
 export * from './entity-controller';
+export * from './equipment.interface';
+export * from './production-stage.interface';

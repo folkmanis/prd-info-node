@@ -1,15 +1,15 @@
 import { ChildControllers, ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller } from '@overnightjs/core';
-import { MaterialsDao } from '../dao';
+import { EquipmentDao } from '../dao';
 import { EntityController } from '../interfaces';
-import { Material } from '../interfaces/materials.interface';
+import { Equipment } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
 import { PrdSession } from '../lib/session-handler';
 
-const controller = new EntityController<Material>();
+const controller = new EntityController<Equipment>();
 
-@Controller('data/materials')
+@Controller('data/equipment')
 @ChildControllers([controller])
 @ClassErrorMiddleware(logError)
 @ClassMiddleware([
@@ -18,10 +18,10 @@ const controller = new EntityController<Material>();
     PrdSession.validateModule('jobs'),
 ])
 @ClassWrapper(asyncWrapper)
-export class MaterialsController {
+export class EquipmentController {
 
     constructor(
-        private dao: MaterialsDao,
+        private dao: EquipmentDao,
     ) {
         controller.dao = this.dao;
     }

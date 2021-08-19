@@ -18,6 +18,8 @@ import { LoggerDao } from './loggerDAO';
 import { SessionsDao } from './sessionsDAO';
 import { MessagesDao } from './messagesDAO';
 import { NotificationsDao } from './notificationsDAO';
+import { EquipmentDao } from './equipmentDAO';
+import { ProductionStagesDao } from './production-stagesDAO';
 
 
 const DAOS: Type<Dao>[] = [
@@ -37,6 +39,8 @@ const DAOS: Type<Dao>[] = [
     SessionsDao,
     MessagesDao,
     NotificationsDao,
+    EquipmentDao,
+    ProductionStagesDao,
 ];
 
 export class DaoIndexMap extends Map<Type<Dao>, Dao> {
