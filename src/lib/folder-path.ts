@@ -1,4 +1,5 @@
 import { JobBase } from '../interfaces';
+import sanitize from 'sanitize-filename';
 
 export class FolderPath {
 
@@ -12,13 +13,18 @@ export class FolderPath {
             new Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(date),
             this.toMonthNumberName(date),
             `${job.custCode}-Input`,
-            `${job.jobId.toString()}-${this.removeDiactrics(job.name.trim())}`,
+            `${job.jobId.toString()}-${this.sanitizeFileName(job.name)}`,
         ];
     }
 
     static capitalize(s: string): string {
         if (typeof s !== 'string') { return ''; }
         return s[0].toUpperCase() + s.slice(1);
+    }
+
+    static sanitizeFileName(s: string): string {
+        if (typeof s !== 'string') { return 'unknown'; }
+        return sanitize(this.removeDiactrics(s.trim()));
     }
 
     static removeDiactrics(s: string): string {
@@ -32,3 +38,4 @@ export class FolderPath {
     }
 
 }
+

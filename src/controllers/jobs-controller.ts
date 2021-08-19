@@ -79,9 +79,9 @@ export class JobsController {
         let fileNames = job.files?.fileNames || [];
 
         busboy.on('file', (_, file, fName) => {
-            filename = fName;
-            if (!fileNames.includes(fName)) {
-                fileNames = [...fileNames, fName];
+            filename = FolderPath.sanitizeFileName(fName);
+            if (!fileNames.includes(filename)) {
+                fileNames = [...fileNames, filename];
             }
             req.log.info('Upload started', { jobId: job.jobId, path, filename });
             this.fileSystem.writeFile(file, path, fName);
