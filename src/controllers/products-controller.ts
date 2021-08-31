@@ -64,6 +64,14 @@ export class ProductsController {
         res.json(await this.productsDao.productPrices(name));
     }
 
+    @Get(':name/productionStages')
+    async getProductionStages(req: Request, res: Response) {
+        const name = req.params.name;
+        res.jsonOk({
+            data: await this.productsDao.getProductionStages(name),
+        });
+    }
+
     @Get(':name')
     private async getProduct(req: Request, res: Response) {
         const name = req.params.name;

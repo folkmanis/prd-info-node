@@ -1,8 +1,12 @@
 import {
     BulkWriteOperation, Collection, Db,
-    FilterQuery, UpdateQuery
+    FilterQuery, ObjectId, UpdateQuery
 } from "mongodb";
-import { CustomerProduct, Product, ProductNoId, ProductNoPrices, ProductPriceImport, ProductResult } from '../interfaces';
+import {
+    CustomerProduct, Product, ProductionStage,
+    ProductNoId, ProductNoPrices, ProductPriceImport,
+    ProductResult, ProductProductionStage
+} from '../interfaces';
 import { Dao } from '../interfaces/dao.interface';
 import Logger from '../lib/logger';
 
@@ -62,7 +66,6 @@ export class ProductsDao extends Dao {
         };
     }
 
-    // Done!
     async getProduct(name: string): Promise<Product | null> {
         return this.products.findOne({ name });
     }
@@ -120,6 +123,47 @@ export class ProductsDao extends Dao {
         } catch (error) { return { error }; }
     }
 
+    async getProductionStages(name: string): Promise<ProductionStage[]> {
+        const pipeline = [{
+            $match: {
+                name
+            }
+        }, {
+            $unwind: {
+                path: '$productionStages'
+            }
+        }, {
+            $replaceRoot: {
+                newRoot: '$productionStages'
+            }
+        }, {
+            $lookup: {
+                from: 'productionStages',
+                localField: 'productionStageId',
+                foreignField: '_id',
+                as: 'stage'
+            }
+        }, {
+            $replaceRoot: {
+                newRoot: {
+                    $mergeObjects: [
+                        { $arrayElemAt: ['$stage', 0] },
+                        '$$ROOT'
+                    ]
+                }
+            }
+        }, {
+            $project: {
+                stage: 0,
+                _id: 0,
+            }
+        }
+        ];
+        const result = await this.products.aggregate<ProductionStage>(pipeline).toArray();
+
+        return result;
+    }
+
     async deleteProduct(name: string): Promise<ProductResult> {
         const result = await this.products.deleteOne({ name });
         return {
@@ -129,11 +173,23 @@ export class ProductsDao extends Dao {
     }
 
     async updateProduct(name: string, prod: ProductNoId): Promise<ProductResult> {
+        if (prod.productionStages) {
+            prod.productionStages = prod.productionStages
+                .map(this.mapProdStage);
+        }
         const result = await this.products.updateOne({ name }, { $set: prod });
         return {
             modifiedCount: result.modifiedCount,
             error: !result.result.ok,
         };
+    }
+
+    private mapProdStage(stage: ProductProductionStage): ProductProductionStage {
+        if (stage.materials) {
+            stage.materials = stage.materials.map(mat => ({ ...mat, materialId: new ObjectId(mat.materialId) }));
+        }
+        stage.productionStageId = new ObjectId(stage.productionStageId);
+        return stage;
     }
 
     async productPrices(name: string): Promise<ProductResult> {
@@ -237,7 +293,6 @@ export class ProductsDao extends Dao {
         };
     }
 
-    // Done!
     async validate(property: keyof Product): Promise<ProductResult> {
         const result = (await this.products.find({}).project({ _id: 0, [property]: 1 }).toArray())
             .map((doc: Partial<Product>) => doc[property]);

@@ -8,3 +8,9 @@ export interface Material {
     category: string;
     inactive: boolean;
 }
+
+export interface ProductMaterial {
+    materialId: ObjectId;
+    amount: number;
+    fixedAmount: number;
+}

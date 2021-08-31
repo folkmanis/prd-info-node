@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { ResponseBase } from './response-base.interface';
+import { ProductProductionStage } from '../interfaces';
 
 export interface ProductResult extends ResponseBase<Product> {
     customerProducts?: CustomerProduct[];
@@ -27,6 +28,7 @@ export interface Product {
             lastUsed?: Date,
         }
     ];
+    productionStages?: ProductProductionStage[];
 }
 
 export type ProductNoId = Omit<Product, '_id'>;
@@ -37,5 +39,4 @@ export interface ProductPriceImport {
     product: string;
     customerName: string;
     price: number;
-  }
-  
+}

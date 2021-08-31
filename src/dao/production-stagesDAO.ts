@@ -41,11 +41,16 @@ export class ProductionStagesDao extends Dao implements EntityDao<ProductionStag
     }
 
     async addOne(entity: ProductionStage): Promise<InsertOneWriteOpResult<ProductionStage>> {
-        const resp = await this.productionStage.insertOne(entity);
-        return resp;
+        return this.productionStage.insertOne({
+            ...entity,
+            equipmentIds: entity.equipmentIds?.map(eq => new ObjectId(eq)) || [],
+        });
     }
 
     updateOne(id: string, entity: Partial<ProductionStage>): Promise<UpdateWriteOpResult> {
+        if (entity.equipmentIds) {
+            entity.equipmentIds = entity.equipmentIds.map(eq => new ObjectId(eq));
+        }
         return this.productionStage.updateOne(
             { _id: new ObjectId(id) },
             {
