@@ -1,4 +1,4 @@
-import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Middleware, Post, Put } from '@overnightjs/core';
+import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get, Middleware, Post, Put, ChildControllers } from '@overnightjs/core';
 import Busboy from "busboy";
 import { Request, Response } from 'express';
 import { CountersDao, CustomersDao, FileSystemDao, JobsDao, ProductsDao } from '../dao';
@@ -217,6 +217,30 @@ export class JobsController {
             }
             res.notification = new JobsNotification({ jobId, operation: 'create' });
         }
+    }
+
+    @Get('production')
+    async getProductionStatus(req: Request, res: Response) {
+        let { productionStatus } = req.query;
+        const params: { productionStatus?: number[]; } = {};
+        if (typeof productionStatus === 'string') {
+            params.productionStatus = productionStatus.split(',').map(val => +val);
+
+        }
+        res.jsonOk({
+            data: await this.jobsDao.production.activeProduction(params),
+        });
+    }
+
+    @Get('production/stages')
+    async getProductionStages(req: Request, res: Response) {
+        let { productionStatus } = req.query;
+        const params: { productionStatus?: number[]; } = {};
+        if (typeof productionStatus === 'string') {
+            params.productionStatus = productionStatus.split(',').map(val => +val);
+
+        }
+
     }
 
     @Get('jobs-without-invoices-totals')
