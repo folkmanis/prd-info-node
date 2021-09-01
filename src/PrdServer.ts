@@ -66,7 +66,7 @@ export class PrdServer extends Server {
             this.app.use(PrdSession.injectDB(uri)); // Session handler initialisation
             return client;
 
-        } catch (err) {
+        } catch (err: any) {
             Logger.error('Error connecting to mongodb', err.stack);
             return process.exit(1);
         }

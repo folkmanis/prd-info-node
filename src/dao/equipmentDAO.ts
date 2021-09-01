@@ -13,7 +13,7 @@ export class EquipmentDao extends Dao implements EntityDao<Equipment> {
     async injectDb(db: Db): Promise<void> {
         try {
             this.equipment = db.collection(this.EQUIPMENT_COLLECTION_NAME);
-        } catch (err) {
+        } catch (err: any) {
             Logger.error('Equipment DAO', err.message);
             return;
         }

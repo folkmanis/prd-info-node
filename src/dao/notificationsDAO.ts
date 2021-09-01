@@ -9,8 +9,8 @@ export class NotificationsDao extends Dao {
         try {
             this.collection = db.collection('notifications');
             this.createIndexes();
-        } catch (error) {
-            Logger.error('Notifications DAO', error.message);
+        } catch (err: any) {
+            Logger.error('Notifications DAO', err.message);
         }
     }
 

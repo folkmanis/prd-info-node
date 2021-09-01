@@ -4,9 +4,14 @@
   "description": "prd info REST module",
   "main": "dist/start.js",
   "scripts": {
-    "test": "jest --watch",
-    "tsc": "tsc",
-    "tsc-watch": "tsc -w"
+    "build:watch": "nest build --watch",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "repository": {
     "type": "git",
@@ -25,48 +30,60 @@
   },
   "homepage": "https://github.com/folkmanis/prd-info-node#readme",
   "dependencies": {
+    "@nestjs/common": "^8.0.6",
+    "@nestjs/core": "^8.0.6",
+    "@nestjs/platform-express": "^8.0.6",
     "@overnightjs/core": "^1.7.6",
     "@types/busboy": "^0.2.4",
     "@types/dotenv": "^8.2.0",
     "@types/express-session": "^1.17.4",
-    "@types/lodash": "^4.14.171",
+    "@types/lodash": "^4.14.172",
     "@types/tmp": "^0.2.1",
     "body-parser": "^1.19.0",
     "busboy": "^0.3.1",
     "chokidar": "^3.5.2",
-    "connect-mongo": "^4.4.1",
+    "connect-mongo": "^4.5.0",
     "date-fns": "^2.23.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
     "lodash": "^4.17.21",
-    "mongodb": "^3.6.10",
+    "mongodb": "^3.7.0",
     "objtree": "^0.1.24",
-    "pdfmake": "^0.2.0",
+    "pdfmake": "^0.2.2",
     "pdfmake-wrapper": "^2.1.2",
+    "reflect-metadata": "^0.1.13",
     "sanitize-filename": "^1.6.3",
     "tmp-promise": "^3.0.2",
-    "xlsx": "^0.17.0",
+    "xlsx": "^0.17.1",
     "xml-js": "^1.6.11",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
+    "@nestjs/cli": "^8.1.1",
+    "@nestjs/schematics": "^8.0.3",
+    "@nestjs/testing": "^8.0.6",
     "@types/express": "^4.17.13",
     "@types/jest": "^26.0.24",
     "@types/mongodb": "^3.6.20",
-    "@types/node": "^14.17.7",
+    "@types/node": "^14.17.14",
     "@types/pdfmake": "^0.1.18",
     "@types/xml2js": "^0.4.9",
-    "jest": "^27.0.6",
-    "ts-jest": "^27.0.4",
-    "ts-node": "^10.1.0",
-    "typescript": "^4.3.5"
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "jest": "^27.1.0",
+    "prettier": "^2.3.2",
+    "supertest": "^6.1.6",
+    "ts-jest": "^27.0.5",
+    "ts-loader": "^9.2.5",
+    "ts-node": "^10.2.1",
+    "tsconfig-paths": "^3.11.0",
+    "typescript": "^4.4.2"
   },
   "jest": {
     "testEnvironment": "node",
-    "roots": [
-      "<rootDir>/src"
-    ],
+    "rootDir": "src",
     "transform": {
       "^.+\\.ts?$": "ts-jest"
     },
@@ -76,6 +93,10 @@
       "js",
       "json",
       "node"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage"
   }
 }

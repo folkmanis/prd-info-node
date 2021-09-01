@@ -11,8 +11,8 @@ export class SessionsDao extends Dao {
     async injectDb(db: Db) {
         try {
             this.sessions = db.collection('sessions');
-        } catch (error) {
-            Logger.error('sessionDAO: unable to connect', error.message);
+        } catch (err: any) {
+            Logger.error('sessionDAO: unable to connect', err.message);
         }
     }
 

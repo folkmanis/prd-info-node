@@ -12,8 +12,8 @@ export class MessagesDao extends Dao {
     async injectDb(db: Db) {
         try {
             this.collection = db.collection(this.COLLECTION_NAME);
-        } catch (error) {
-            Logger.error('Messages DAO', error.message);
+        } catch (err: any) {
+            Logger.error('Messages DAO', err.message);
             return;
         }
         this.createIndexes();

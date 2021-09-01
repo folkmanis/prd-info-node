@@ -13,7 +13,7 @@ export class ProductionStagesDao extends Dao implements EntityDao<ProductionStag
     async injectDb(db: Db): Promise<void> {
         try {
             this.productionStage = db.collection(this.PRODUCTIONSTAGE_COLLECTION_NAME);
-        } catch (err) {
+        } catch (err: any) {
             Logger.error('ProductionStage DAO', err.message);
             return;
         }

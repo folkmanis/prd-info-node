@@ -13,7 +13,7 @@ export class MaterialsDao extends Dao implements EntityDao<Material> {
     async injectDb(db: Db): Promise<void> {
         try {
             this.materials = db.collection(this.MATERIALS_COLLECTION_NAME);
-        } catch (err) {
+        } catch (err: any) {
             Logger.error('Materials DAO', err.message);
             return;
         }
