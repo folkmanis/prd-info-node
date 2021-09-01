@@ -13,6 +13,7 @@ import {
     KastesJob, KastesJobPartial, KastesJobResponse, JobProduct
 } from '../interfaces';
 import { Dao } from '../interfaces/dao.interface';
+import { JobsProductionDao } from './jobProductionDAO';
 
 const JOBS_COLLECTION_NAME = 'jobs';
 const DEFAULT_UNIT = 'gab.';
@@ -20,6 +21,7 @@ const DEFAULT_UNIT = 'gab.';
 export class JobsDao extends Dao {
 
     jobs!: Collection<Job>;
+    production = new JobsProductionDao();
 
     async injectDb(db: Db): Promise<void> {
         if (this.jobs) { return; }
@@ -31,6 +33,7 @@ export class JobsDao extends Dao {
         await this.createCollection(db);
         await this.upgradeDb();
         this.createIndexes();
+        this.production.collection = this.jobs;
     }
 
     async getJobs(query: JobQueryFilter): Promise<JobResponse> {
@@ -407,6 +410,9 @@ export class JobsDao extends Dao {
             },
             {
                 key: { 'jobStatus.generalStatus': 1 },
+            },
+            {
+                key: { 'productionStages.productionStatus': 1 },
             }
         ]);
     }
