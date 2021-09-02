@@ -31,7 +31,9 @@
   "homepage": "https://github.com/folkmanis/prd-info-node#readme",
   "dependencies": {
     "@nestjs/common": "^8.0.6",
+    "@nestjs/config": "^1.0.1",
     "@nestjs/core": "^8.0.6",
+    "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^8.0.6",
     "@overnightjs/core": "^1.7.6",
     "@types/busboy": "^0.2.4",
@@ -47,6 +49,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-session": "^1.17.2",
+    "joi": "^17.4.2",
     "lodash": "^4.17.21",
     "mongodb": "^3.7.0",
     "objtree": "^0.1.24",
