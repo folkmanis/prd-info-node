@@ -1,20 +1,16 @@
-import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
-import { NextFunction, Request, Response, RequestHandler } from 'express';
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
+import { Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import MongoStore from 'connect-mongo';
+import session from 'express-session';
 
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
 
-  private sessionStore = MongoStore.create({ mongoUrl: this.config.get('DB_SRV'), stringify: false });
-  private maxAge: number = this.config.get('SESSION_EXPIRES')!;
-
   use = session({
     secret: 'HGG50EtOT7',
-    store: this.sessionStore,
+    store: MongoStore.create({ mongoUrl: this.config.get('DB_SRV'), stringify: false }),
     cookie: {
-      maxAge: this.maxAge,
+      maxAge: this.config.get('SESSION_EXPIRES')!,
       httpOnly: true,
       sameSite: true,
     },

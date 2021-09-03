@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { LoginModule } from './login/login.module';
 import { SessionModule } from './session/session.module';
+import { UsersModule } from './users/users.module';
 import Joi from 'joi';
 
 @Module({
@@ -13,6 +14,7 @@ import Joi from 'joi';
                 PORT: Joi.number().default(3000),
                 SESSION_EXPIRES: Joi.number().default(86400),
                 DB_SRV: Joi.string().required(),
+                DB_BASE: Joi.string().required(),
                 LOGFILE: Joi.string().default('./error.log'),
                 BODY_SIZE_LIMIT: Joi.string().default('5mb'),
                 DEBUG: Joi.boolean().truthy('1', 'Y').falsy('0', 'N'),
@@ -24,6 +26,7 @@ import Joi from 'joi';
         DatabaseModule,
         LoginModule,
         SessionModule,
+        UsersModule,
     ],
     controllers: [],
     providers: [],

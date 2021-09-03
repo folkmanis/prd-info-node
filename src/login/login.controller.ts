@@ -1,35 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Session } from '@nestjs/common';
-import { LoginService } from './login.service';
-import { CreateLoginDto } from './dto/create-login.dto';
-import { UpdateLoginDto } from './dto/update-login.dto';
+import { Controller, Delete, Get, Post, Req, Session, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
+import * as session from 'express-session';
+import { User } from '../users';
+import { LocalAuthGuard } from './local-auth.guard';
+import { PublicRoute } from './public-route.decorator';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly loginService: LoginService) { }
 
+  @UseGuards(LocalAuthGuard)
+  @PublicRoute()
   @Post()
-  create(@Body() createLoginDto: CreateLoginDto) {
-    return this.loginService.create(createLoginDto);
+  async login(@Req() req: Request) {
+    req.session.user = req.user as User;
+    req.session.lastSeen = {
+      ip: req.ip,
+      date: new Date(),
+    };
+    return req.session;
+  }
+
+  @Delete()
+  async logout(@Session() sess: session.Session) {
+    return new Promise(resolve => sess.destroy(resolve))
+      .then(() => 'logged out');
   }
 
   @Get()
-  findAll(@Session() session: Record<string, any>) {
-    return session;
-    // return this.loginService.findAll();
+  findAll(@Session() sess: session.Session) {
+    return sess;
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.loginService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLoginDto: UpdateLoginDto) {
-    return this.loginService.update(+id, updateLoginDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.loginService.remove(+id);
-  }
 }
