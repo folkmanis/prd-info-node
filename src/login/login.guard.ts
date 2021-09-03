@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
@@ -21,7 +21,11 @@ export class LoginGuard implements CanActivate {
 
     const request: Request = context.switchToHttp().getRequest();
 
-    return !!request.session?.user;
+    if (!request.session?.user) {
+      throw new UnauthorizedException();
+    }
+
+    return true;
   }
 
 }
