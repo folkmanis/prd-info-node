@@ -1,9 +1,9 @@
 import { defaultsDeep } from 'lodash';
-import { BulkWriteOperation, Collection, Db, MongoClient } from "mongodb";
+import { BulkWriteOperation, Collection, Db } from "mongodb";
 import { Modules, PreferencesResponse, SystemPreferenceModule, SystemPreferences } from '../interfaces';
+import { Dao } from '../interfaces/dao.interface';
 import { flattenObject } from '../lib/flatten-object';
 import Logger, { LogLevels } from '../lib/logger';
-import { Dao } from '../interfaces/dao.interface';
 
 interface BulkUpdateOne {
     updateOne: {

@@ -109,38 +109,20 @@ export class UsersService {
         return value || null;
     }
 
-    async getPreferences(username: string): Promise<UserPreferences | null> {
-        const user = await this.getOne(username);
-        if (!user) {
-            return null;
-        } else {
-            return user.preferences || null;
-        }
-    }
-    /**
-     * Iegūst lietotāja preferences noteiktam modulim
-     * @param username Lietotājvārds
-     * @param mod Modulis
-     */
-    async getUserPreferences(username: string, mod: string): Promise<{ [key: string]: any; }> {
+    async getModuleUserPreferences(username: string, module: string): Promise<{ [key: string]: any; }> {
         const pipeline = [{
             $match: { username }
         }, {
             $unwind: { path: "$userPreferences" }
         }, {
-            $match: { 'userPreferences.module': mod }
+            $match: { 'userPreferences.module': module }
         }, {
             $replaceRoot: { newRoot: '$userPreferences.options' }
         }];
         return (await (this.users.aggregate<{ [key: string]: any; }>(pipeline).toArray()))[0];
     }
-    /**
-     * Nomaina lietotāja iestatījumus noteiktam modulim
-     * @param username Lietotājvārds
-     * @param module Modulis
-     * @param val Moduļa iestatījumi
-     */
-    async updateUserPreferences(username: string, module: Modules, val: { [key: string]: any; }): Promise<number> {
+
+    async updateModuleUserPreferences(username: string, module: Modules, val: { [key: string]: any; }): Promise<number> {
         const user = await this.users.findOne({ username });
         if (!user) {
             throw new Error('Non-existing user');
@@ -151,7 +133,7 @@ export class UsersService {
         const idx = userPreferences.findIndex(mod => mod.module === module);
         if (idx === -1) {
             userPreferences.push({
-                module: module,
+                module,
                 options: val
             });
         } else {

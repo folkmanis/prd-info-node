@@ -13,7 +13,6 @@ declare namespace Express {
             info: (message: string, metadata?: any) => void,
             error: (message: string, metadata?: any) => void,
         };
-        systemPreferences?: Map<string, { [key: string]: any; }>;
         version?: Version;
         instanceId?: string;
     }

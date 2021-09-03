@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { parseInstanceId } from './lib/instance-id-parser';
 import { json, urlencoded } from 'express';
+import { versionMiddleware } from './preferences';
 
 async function bootstrap() {
     const app: NestExpressApplication = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
 
     app.setGlobalPrefix('data');
     app.use(parseInstanceId());
+    app.use(versionMiddleware());
 
     const port = app.get(ConfigService).get('PORT');
     await app.listen(port);

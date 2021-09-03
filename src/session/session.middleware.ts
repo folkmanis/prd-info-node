@@ -10,7 +10,7 @@ export class SessionMiddleware implements NestMiddleware {
     secret: 'HGG50EtOT7',
     store: MongoStore.create({ mongoUrl: this.config.get('DB_SRV'), stringify: false }),
     cookie: {
-      maxAge: this.config.get('SESSION_EXPIRES')!,
+      maxAge: this.config.get('SESSION_EXPIRES')! * 1000,
       httpOnly: true,
       sameSite: true,
     },

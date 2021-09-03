@@ -8,7 +8,6 @@ import { XmfSearchController } from './xmf-search-controller';
 import { XmfUploadController } from './xmf-upload-controller';
 import { KastesController } from './kastes-controller';
 import { KastesOrderController } from './kastes-orders-controller';
-import { PreferencesController } from './preferences-controller';
 import { LogController } from './log-controller';
 import { CustomersController } from './customers-controller';
 import { ProductsController } from './products-controller';
@@ -27,7 +26,6 @@ const CONTROLLERS: Type<any>[] = [
     XmfUploadController,
     KastesController,
     KastesOrderController,
-    PreferencesController,
     LogController,
     CustomersController,
     ProductsController,

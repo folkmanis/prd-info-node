@@ -37,10 +37,6 @@ export class Preferences {
     }
 
     static async getSystemPreferences(req: Request, res: Response, next: NextFunction) {
-        if (req.systemPreferences) {
-            next();
-            return;
-        }
         if (!req.session || !req.session.user) { // user not logged in
             Logger.debug('user not logged in');
             res.status(401).json({});
@@ -52,7 +48,6 @@ export class Preferences {
             res.status(501).json('Server error');
             return;
         }
-        req.systemPreferences = new Map(sysPref.map(pref => [pref.module, pref.settings]));
         next();
     }
 
