@@ -2,12 +2,14 @@ import { Controller, Delete, Get, Param, ParseIntPipe, Query } from '@nestjs/com
 import { ObjectId } from 'mongodb';
 import { User, Usr } from '../users';
 import { MessagesService } from './messages.service';
+import { NotificationsService, SystemNotification } from '../notifications';
 
 @Controller('messages')
 export class MessagesController {
 
     constructor(
         private messagesService: MessagesService,
+        private notificationsService: NotificationsService,
     ) { }
 
 
@@ -33,7 +35,9 @@ export class MessagesController {
         const modifiedCount = await this.messagesService.markAs('seenBy', user.username);
 
         if (modifiedCount > 0) {
-            // res.notification = new SystemNotification({ operation: 'messages' });
+            this.notificationsService.notify(
+                new SystemNotification({ operation: 'messages' })
+            );
         }
         return modifiedCount;
 
@@ -48,7 +52,9 @@ export class MessagesController {
         const deletedCount = await this.messagesService.markAs('deletedBy', user.username, filter);
 
         if (deletedCount > 0) {
-            // res.notification = new SystemNotification({ operation: 'messages' });
+            this.notificationsService.notify(
+                new SystemNotification({ operation: 'messages' })
+            );
         }
         return deletedCount;
     }

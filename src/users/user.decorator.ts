@@ -1,4 +1,4 @@
-import { SetMetadata, createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from './user.interface';
 

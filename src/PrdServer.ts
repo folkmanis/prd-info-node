@@ -14,7 +14,7 @@ import { notificationHandler } from './lib/message-handler';
 import { MessagesDao } from './dao/messagesDAO';
 import { NotificationsDao } from './dao/notificationsDAO';
 import { startFtpWatcher } from './lib/ftp-watcher';
-import { parseInstanceId } from './lib/instance-id-parser';
+import { parseInstanceId } from './preferences/instance-id-parser';
 import { jsonOkHandler } from './lib/json-ok-handler';
 
 export class PrdServer extends Server {

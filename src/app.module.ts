@@ -6,6 +6,7 @@ import { SessionModule } from './session/session.module';
 import { UsersModule } from './users/users.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { MessagesModule } from './messages/messages.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import Joi from 'joi';
 
 @Module({
@@ -31,6 +32,7 @@ import Joi from 'joi';
         UsersModule,
         PreferencesModule,
         MessagesModule,
+        NotificationsModule,
     ],
     controllers: [],
     providers: [],
