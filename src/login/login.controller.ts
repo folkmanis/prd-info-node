@@ -1,7 +1,7 @@
 import { Controller, Delete, Get, Post, Req, Session, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import * as session from 'express-session';
-import { User } from '../users';
+import { User, Usr } from '../users';
 import { LocalAuthGuard } from './local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
 
@@ -17,7 +17,7 @@ export class LoginController {
       ip: req.ip,
       date: new Date(),
     };
-    return req.session;
+    return req.session.user;
   }
 
   @Delete()
@@ -27,8 +27,8 @@ export class LoginController {
   }
 
   @Get()
-  findAll(@Session() sess: session.Session) {
-    return sess;
+  findAll(@Usr() user: User) {
+    return user;
   }
 
 }
