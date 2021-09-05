@@ -19,7 +19,14 @@
     &limit - ierakstu skaits vienā porcijā
  */
 
-import { Controller, ClassMiddleware, Get, Post, Wrapper, ClassWrapper } from '@overnightjs/core';
+import {
+  Controller,
+  ClassMiddleware,
+  Get,
+  Post,
+  Wrapper,
+  ClassWrapper,
+} from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { ArchiveSearchParams, UserPreferences } from '../interfaces';
 import { asyncWrapper } from '../lib/asyncWrapper';
@@ -28,27 +35,32 @@ import { Preferences } from '../lib/preferences-handler';
 import { XmfSearchDao } from '../dao';
 
 @Controller('data/xmf-archive')
-@ClassMiddleware([Preferences.getUserPreferences, PrdSession.validateSession, PrdSession.validateModule('xmf-search')])
+@ClassMiddleware([
+  Preferences.getUserPreferences,
+  PrdSession.validateSession,
+  PrdSession.validateModule('xmf-search'),
+])
 @ClassWrapper(asyncWrapper)
 export class XmfSearchController {
+  constructor(private xmfSearchDao: XmfSearchDao) {}
 
-    constructor(
-        private xmfSearchDao: XmfSearchDao,
-    ) { }
+  @Get()
+  private async search(req: Request, res: Response) {
+    const query = req.query.query ? JSON.parse(req.query.query as string) : {};
+    query.q && query.q.length > 0 && req.log.info('XMF search');
+    res.json(
+      await this.xmfSearchDao.findJobs(
+        query as ArchiveSearchParams,
+        req.userPreferences as UserPreferences,
+        req.query.start as string,
+        req.query.limit as string | undefined,
+      ),
+    );
+  }
 
-    @Get()
-    private async search(req: Request, res: Response) {
-        const query = req.query.query ? JSON.parse(req.query.query as string) : {};
-        query.q && query.q.length > 0 && req.log.info("XMF search");
-        res.json(
-            await this.xmfSearchDao.findJobs(query as ArchiveSearchParams, req.userPreferences as UserPreferences, req.query.start as string, req.query.limit as string | undefined)
-        );
-    }
-
-    @Get('customers')
-    private async getCustomers(req: Request, res: Response) {
-        req.log.debug('xmfCustomers customers');
-        res.json(await this.xmfSearchDao.getCustomers());
-    }
-
+  @Get('customers')
+  private async getCustomers(req: Request, res: Response) {
+    req.log.debug('xmfCustomers customers');
+    res.json(await this.xmfSearchDao.getCustomers());
+  }
 }

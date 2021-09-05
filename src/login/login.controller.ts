@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, Post, Req, Session, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Req,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
 import * as session from 'express-session';
 import { User, Usr } from '../users';
@@ -7,7 +15,6 @@ import { PublicRoute } from './public-route.decorator';
 
 @Controller('login')
 export class LoginController {
-
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
   @Post()
@@ -22,13 +29,13 @@ export class LoginController {
 
   @Delete()
   async logout(@Session() sess: session.Session) {
-    return new Promise(resolve => sess.destroy(resolve))
-      .then(() => 'logged out');
+    return new Promise((resolve) => sess.destroy(resolve)).then(
+      () => 'logged out',
+    );
   }
 
   @Get()
   findAll(@Usr() user: User) {
     return user;
   }
-
 }

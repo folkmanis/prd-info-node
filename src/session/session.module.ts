@@ -4,12 +4,10 @@ import { userSessionMiddleware } from './user-session.middleware';
 import { UsersModule } from '../users';
 
 @Module({
-    imports: [UsersModule],
+  imports: [UsersModule],
 })
 export class SessionModule implements NestModule {
-    configure(consumer: MiddlewareConsumer) {
-        consumer
-            .apply(SessionMiddleware, userSessionMiddleware)
-            .forRoutes('*');
-    }
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SessionMiddleware, userSessionMiddleware).forRoutes('*');
+  }
 }

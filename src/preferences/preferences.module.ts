@@ -5,16 +5,9 @@ import { PreferencesDao } from './dao/preferencesDao.service';
 import { PreferencesController } from './preferences.controller';
 
 @Module({
-  imports: [
-    UsersModule,
-  ],
-  providers: [
-    PreferencesService,
-    PreferencesDao,
-  ],
-  exports: [
-    PreferencesService,
-  ],
-  controllers: [PreferencesController]
+  imports: [UsersModule],
+  providers: [PreferencesService, PreferencesDao],
+  exports: [PreferencesService],
+  controllers: [PreferencesController],
 })
-export class PreferencesModule { }
+export class PreferencesModule {}

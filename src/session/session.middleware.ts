@@ -5,10 +5,12 @@ import session from 'express-session';
 
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
-
   use = session({
     secret: 'HGG50EtOT7',
-    store: MongoStore.create({ mongoUrl: this.config.get('DB_SRV'), stringify: false }),
+    store: MongoStore.create({
+      mongoUrl: this.config.get('DB_SRV'),
+      stringify: false,
+    }),
     cookie: {
       maxAge: this.config.get('SESSION_EXPIRES')! * 1000,
       httpOnly: true,
@@ -20,9 +22,5 @@ export class SessionMiddleware implements NestMiddleware {
     rolling: true,
   });
 
-  constructor(
-    private config: ConfigService,
-  ) { }
-
-
+  constructor(private config: ConfigService) {}
 }

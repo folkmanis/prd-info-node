@@ -5,4 +5,4 @@ import { Observable } from 'rxjs';
 import { User } from '../users';
 
 @Injectable()
-export class LocalAuthGuard extends AuthGuard('local') { }
+export class LocalAuthGuard extends AuthGuard('local') {}

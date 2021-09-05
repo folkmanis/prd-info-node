@@ -1,54 +1,61 @@
 import { SystemModules } from './system-modules.interface';
 
 export enum LogLevels {
-    ERROR = 10, WARN = 20, INFO = 30, VERBOSE = 40, DEBUG = 50, SILLY = 60
+  ERROR = 10,
+  WARN = 20,
+  INFO = 30,
+  VERBOSE = 40,
+  DEBUG = 50,
+  SILLY = 60,
 }
 
-
-export type SystemPreferences = Array<SystemPreferenceModule>;
+export type SystemPreference =
+  | KastesSystemPreference
+  | SystemSystemPreference
+  | JobsSystemPreference
+  | PaytraqSystemPreference;
 
 export interface SystemPreferenceModule {
-    module: SystemModules;
-    settings: KastesSystemPreference | SystemSystemPreference | JobsSystemPreference | PaytraqSystemPreference;
+  module: SystemModules;
+  settings: SystemPreference;
 }
 
 export interface KastesSystemPreference {
-    colors: { [key: string]: string; },
+  colors: { [key: string]: string };
 }
 
 export interface SystemSystemPreference {
-    menuExpandedByDefault: boolean;
-    logLevels: Array<LogLevels | string>[];
+  menuExpandedByDefault: boolean;
+  logLevels: Array<LogLevels | string>[];
 }
 
 export interface ProductUnit {
-    shortName: string;
-    description: string;
-    disabled: boolean;
+  shortName: string;
+  description: string;
+  disabled: boolean;
 }
 
 export interface JobsSystemPreference {
-    productCategories:
-    {
-        category: string,
-        description: string,
-    }[];
-    jobStates: {
-        state: number,
-        description: string;
-    }[];
-    productUnits: ProductUnit[];
+  productCategories: {
+    category: string;
+    description: string;
+  }[];
+  jobStates: {
+    state: number;
+    description: string;
+  }[];
+  productUnits: ProductUnit[];
 }
 
 export interface PaytraqSystemPreference {
-    enabled: boolean;
-    connectionParams?: PaytraqConnectionParams;
+  enabled: boolean;
+  connectionParams?: PaytraqConnectionParams;
 }
 
 export interface PaytraqConnectionParams {
-    connectUrl: string;
-    connectKey: string;
-    apiUrl: string;
-    apiKey: string;
-    apiToken: string;
+  connectUrl: string;
+  connectKey: string;
+  apiUrl: string;
+  apiKey: string;
+  apiToken: string;
 }

@@ -7,18 +7,18 @@ import { json, urlencoded } from 'express';
 import { versionMiddleware } from './preferences';
 
 async function bootstrap() {
-    const app: NestExpressApplication = await NestFactory.create(AppModule);
+  const app: NestExpressApplication = await NestFactory.create(AppModule);
 
-    const maxBodySize = app.get(ConfigService).get('BODY_SIZE_LIMIT');
-    app.use(json({ limit: maxBodySize }));
+  const maxBodySize = app.get(ConfigService).get('BODY_SIZE_LIMIT');
+  app.use(json({ limit: maxBodySize }));
 
-    app.use(urlencoded({ extended: true }));
+  app.use(urlencoded({ extended: true }));
 
-    app.setGlobalPrefix('data');
-    app.use(parseInstanceId());
-    app.use(versionMiddleware());
+  app.setGlobalPrefix('data');
+  app.use(parseInstanceId());
+  app.use(versionMiddleware());
 
-    const port = app.get(ConfigService).get('PORT');
-    await app.listen(port);
+  const port = app.get(ConfigService).get('PORT');
+  await app.listen(port);
 }
 bootstrap();

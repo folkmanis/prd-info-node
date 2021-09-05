@@ -4,7 +4,6 @@ export * from './fileSystemDAO';
 export * from './invoicesDAO';
 export * from './jobsDAO';
 export * from './materialsDAO';
-export * from './paytraqDAO';
 export * from './preferencesDAO';
 export * from './productsDAO';
 export * from './usersDAO';

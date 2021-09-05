@@ -4,13 +4,9 @@ import { NotificationsDaoService } from './notifications-dao/notifications-dao.s
 
 @Injectable()
 export class NotificationsService {
+  constructor(private notificationsDao: NotificationsDaoService) {}
 
-    constructor(
-        private notificationsDao: NotificationsDaoService,
-    ) { }
-
-    async notify(notification: Notification): Promise<boolean> {
-        return this.notificationsDao.insertOne(notification);
-    }
-
+  async notify(notification: Notification): Promise<boolean> {
+    return this.notificationsDao.insertOne(notification);
+  }
 }

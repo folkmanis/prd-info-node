@@ -1,11 +1,11 @@
 export interface PaytraqProductObject {
-    [key: string]: string;
+  [key: string]: string;
 }
 
 export interface PaytraqProduct {
-    product: PaytraqProductObject;
+  product: PaytraqProductObject;
 }
 
 export interface PaytraqProducts {
-    products: PaytraqProduct[];
+  products: PaytraqProduct[];
 }

@@ -1,80 +1,88 @@
-import { Collection, Db, FilterQuery, ObjectId, UpdateWriteOpResult, DeleteWriteOpResultObject, InsertOneWriteOpResult } from 'mongodb';
+import {
+  Collection,
+  Db,
+  FilterQuery,
+  ObjectId,
+  UpdateWriteOpResult,
+  DeleteWriteOpResultObject,
+  InsertOneWriteOpResult,
+} from 'mongodb';
 import Logger from '../lib/logger';
 import { Material } from '../interfaces/materials.interface';
 import { Dao, EntityDao } from '../interfaces';
 
-
 export class MaterialsDao extends Dao implements EntityDao<Material> {
+  readonly MATERIALS_COLLECTION_NAME = 'materials';
 
-    readonly MATERIALS_COLLECTION_NAME = 'materials';
+  private materials!: Collection<Material>;
 
-    private materials!: Collection<Material>;
-
-    async injectDb(db: Db): Promise<void> {
-        try {
-            this.materials = db.collection(this.MATERIALS_COLLECTION_NAME);
-        } catch (err: any) {
-            Logger.error('Materials DAO', err.message);
-            return;
-        }
-        this.createIndexes();
+  async injectDb(db: Db): Promise<void> {
+    try {
+      this.materials = db.collection(this.MATERIALS_COLLECTION_NAME);
+    } catch (err: any) {
+      Logger.error('Materials DAO', err.message);
+      return;
     }
+    this.createIndexes();
+  }
 
-    getArray({ name, categories }: { name?: string, categories?: string; }): Promise<Partial<Material[]>> {
-        const filter: FilterQuery<Material> = {};
-        if (categories) {
-            filter.category = {
-                $in: categories.split(',')
-            };
-        }
-        if (name) {
-            filter.name = name && new RegExp(name, 'gi');
-        }
-        return this.materials
-            .find(filter)
-            .sort({ category: 1, name: 1 })
-            .toArray();
+  getArray({
+    name,
+    categories,
+  }: {
+    name?: string;
+    categories?: string;
+  }): Promise<Partial<Material[]>> {
+    const filter: FilterQuery<Material> = {};
+    if (categories) {
+      filter.category = {
+        $in: categories.split(','),
+      };
     }
-
-    getById(id: string): Promise<Material | null> {
-        return this.materials.findOne(new ObjectId(id));
+    if (name) {
+      filter.name = name && new RegExp(name, 'gi');
     }
+    return this.materials.find(filter).sort({ category: 1, name: 1 }).toArray();
+  }
 
-    async addOne(mat: Material): Promise<InsertOneWriteOpResult<Material>> {
-        const resp = await this.materials.insertOne(mat);
-        return resp;
-    }
+  getById(id: string): Promise<Material | null> {
+    return this.materials.findOne(new ObjectId(id));
+  }
 
-    updateOne(id: string, mat: Partial<Material>): Promise<UpdateWriteOpResult> {
-        return this.materials.updateOne(
-            { _id: new ObjectId(id) },
-            {
-                $set: mat
-            }
-        );
-    }
+  async addOne(mat: Material): Promise<InsertOneWriteOpResult<Material>> {
+    const resp = await this.materials.insertOne(mat);
+    return resp;
+  }
 
-    deleteOneById(id: string): Promise<DeleteWriteOpResultObject> {
-        return this.materials.deleteOne(
-            { _id: new ObjectId(id) }
-        );
-    }
+  updateOne(id: string, mat: Partial<Material>): Promise<UpdateWriteOpResult> {
+    return this.materials.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: mat,
+      },
+    );
+  }
 
-    async validationData<K extends keyof Material>(key: K): Promise<Array<Material[K]>> {
-        const resp = await this.materials.find()
-            .project({ _id: 0, [key]: 1 })
-            .toArray();
-        return resp.map(data => data[key]);
-    }
+  deleteOneById(id: string): Promise<DeleteWriteOpResultObject> {
+    return this.materials.deleteOne({ _id: new ObjectId(id) });
+  }
 
-    private createIndexes(): void {
-        this.materials.createIndexes([
-            {
-                key: { name: 1 },
-                unique: true,
-            }
-        ]);
-    }
+  async validationData<K extends keyof Material>(
+    key: K,
+  ): Promise<Array<Material[K]>> {
+    const resp = await this.materials
+      .find()
+      .project({ _id: 0, [key]: 1 })
+      .toArray();
+    return resp.map((data) => data[key]);
+  }
 
+  private createIndexes(): void {
+    this.materials.createIndexes([
+      {
+        key: { name: 1 },
+        unique: true,
+      },
+    ]);
+  }
 }
-

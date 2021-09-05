@@ -1,6 +1,6 @@
 export type Counters = 'lastJobId' | 'lastInvoiceId';
 
 export interface CounterLastId {
-    counter: Counters,
-    lastId: number;
+  counter: Counters;
+  lastId: number;
 }

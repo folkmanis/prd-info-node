@@ -10,7 +10,6 @@ import { FileSystemDao } from './fileSystemDAO';
 import { CustomersDao } from './customersDAO';
 import { JobsDao } from './jobsDAO';
 import { ProductsDao } from './productsDAO';
-import { PaytraqDao } from './paytraqDAO';
 import { InvoicesDao } from './invoicesDAO';
 import { KastesDao } from './kastesDAO';
 import { XmfSearchDao } from './xmf-searchDAO';
@@ -21,42 +20,36 @@ import { NotificationsDao } from './notificationsDAO';
 import { EquipmentDao } from './equipmentDAO';
 import { ProductionStagesDao } from './production-stagesDAO';
 
-
 const DAOS: Type<Dao>[] = [
-    MaterialsDao,
-    CountersDao,
-    UsersDao,
-    PreferencesDao,
-    FileSystemDao,
-    CustomersDao,
-    JobsDao,
-    ProductsDao,
-    PaytraqDao,
-    InvoicesDao,
-    KastesDao,
-    XmfSearchDao,
-    LoggerDao,
-    SessionsDao,
-    MessagesDao,
-    NotificationsDao,
-    EquipmentDao,
-    ProductionStagesDao,
+  MaterialsDao,
+  CountersDao,
+  UsersDao,
+  PreferencesDao,
+  FileSystemDao,
+  CustomersDao,
+  JobsDao,
+  ProductsDao,
+  InvoicesDao,
+  KastesDao,
+  XmfSearchDao,
+  LoggerDao,
+  SessionsDao,
+  MessagesDao,
+  NotificationsDao,
+  EquipmentDao,
+  ProductionStagesDao,
 ];
 
 export class DaoIndexMap extends Map<Type<Dao>, Dao> {
+  constructor() {
+    super(DAOS.map((DaoClass) => [DaoClass, new DaoClass()]));
+  }
 
-    constructor() {
-        super(
-            DAOS.map(DaoClass => [DaoClass, new DaoClass()])
-        );
-    }
+  injectDb(db: Db) {
+    this.forEach(async (dao) => await dao.injectDb(db));
+  }
 
-    injectDb(db: Db) {
-        this.forEach(async (dao) => await dao.injectDb(db));
-    }
-
-    getDao<T extends Dao>(type: Type<T>): T {
-        return this.get(type) as T;
-    }
-
+  getDao<T extends Dao>(type: Type<T>): T {
+    return this.get(type) as T;
+  }
 }

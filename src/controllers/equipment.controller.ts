@@ -1,4 +1,10 @@
-import { ChildControllers, ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller } from '@overnightjs/core';
+import {
+  ChildControllers,
+  ClassErrorMiddleware,
+  ClassMiddleware,
+  ClassWrapper,
+  Controller,
+} from '@overnightjs/core';
 import { EquipmentDao } from '../dao';
 import { EntityController } from '../interfaces';
 import { Equipment } from '../interfaces';
@@ -13,17 +19,13 @@ const controller = new EntityController<Equipment>();
 @ChildControllers([controller])
 @ClassErrorMiddleware(logError)
 @ClassMiddleware([
-    Preferences.getUserPreferences,
-    PrdSession.validateSession,
-    PrdSession.validateModule('jobs'),
+  Preferences.getUserPreferences,
+  PrdSession.validateSession,
+  PrdSession.validateModule('jobs'),
 ])
 @ClassWrapper(asyncWrapper)
 export class EquipmentController {
-
-    constructor(
-        private dao: EquipmentDao,
-    ) {
-        controller.dao = this.dao;
-    }
-
+  constructor(private dao: EquipmentDao) {
+    controller.dao = this.dao;
+  }
 }

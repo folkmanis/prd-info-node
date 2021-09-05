@@ -14,7 +14,13 @@ _id: dienas YYYY-m-d
 
 */
 
-import { ClassErrorMiddleware, ClassMiddleware, ClassWrapper, Controller, Get } from '@overnightjs/core';
+import {
+  ClassErrorMiddleware,
+  ClassMiddleware,
+  ClassWrapper,
+  Controller,
+  Get,
+} from '@overnightjs/core';
 import { Request, Response } from 'express';
 import { LoggerDao } from '../dao';
 import { asyncWrapper } from '../lib/asyncWrapper';
@@ -25,43 +31,34 @@ import { logError } from '../lib/errorMiddleware';
 @Controller('data/log')
 @ClassErrorMiddleware(logError)
 @ClassMiddleware([
-    Preferences.getUserPreferences,
-    PrdSession.validateModule('admin')
+  Preferences.getUserPreferences,
+  PrdSession.validateModule('admin'),
 ])
 @ClassWrapper(asyncWrapper)
 export class LogController {
+  constructor(private logDao: LoggerDao) {}
 
-    constructor(
-        private logDao: LoggerDao,
-    ) { }
+  @Get('entries')
+  private async getEntries(req: Request, res: Response) {
+    const query = req.query as { [key: string]: string };
+    const params = {
+      limit: +query.limit || 1000,
+      start: +query.start || 0,
+      level: +query.level || undefined,
+      dateTo: query.dateTo ? new Date(query.dateTo) : new Date(Date.now()),
+      dateFrom: query.dateFrom ? new Date(query.dateFrom) : new Date(0),
+    };
+    res.json(await this.logDao.read(params));
+    req.log.debug('Syslog retrieved', params);
+  }
 
-    @Get('entries')
-    private async getEntries(req: Request, res: Response) {
-        const query = req.query as { [key: string]: string; };
-        const params = {
-            limit: +query.limit || 1000,
-            start: +query.start || 0,
-            level: +query.level || undefined,
-            dateTo: query.dateTo ? new Date(query.dateTo) : new Date(Date.now()),
-            dateFrom: query.dateFrom ? new Date(query.dateFrom) : new Date(0),
-        };
-        res.json(
-            await this.logDao.read(params)
-        );
-        req.log.debug('Syslog retrieved', params);
-    }
+  @Get('infos')
+  private async getInfos(req: Request, res: Response) {
+    res.json({ data: await this.logDao.infos() });
+  }
 
-    @Get('infos')
-    private async getInfos(req: Request, res: Response) {
-        res.json(
-            { data: await this.logDao.infos() }
-        );
-    }
-
-    @Get('dates-groups')
-    private async getDatesGroups(req: Request, res: Response) {
-        res.json(
-            { data: await this.logDao.datesGroup(req.query) }
-        );
-    }
+  @Get('dates-groups')
+  private async getDatesGroups(req: Request, res: Response) {
+    res.json({ data: await this.logDao.datesGroup(req.query) });
+  }
 }
