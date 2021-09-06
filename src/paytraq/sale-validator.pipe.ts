@@ -12,7 +12,7 @@ export class SaleValidatorPipe implements PipeTransform {
     const { value, error } = SalesInputSchema.validate(inputValue);
 
     if (error) {
-      throw new BadRequestException(error);
+      throw new BadRequestException({ error });
     }
 
     return value;

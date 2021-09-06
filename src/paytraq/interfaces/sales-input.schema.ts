@@ -7,11 +7,11 @@ export const SalesInputSchema = Joi.object<SalesInput>({
       header: Joi.object({
         document: Joi.object({
           client: Joi.object({
-            clientID: Joi.number().integer().positive(),
-          }),
-        }),
-        saleType: Joi.string().allow('sales_invoice'),
-        operation: Joi.string().allow('sell_goods'),
+            clientID: Joi.number().integer().positive().required(),
+          }).required(),
+        }).required(),
+        saleType: Joi.string().allow('sales_invoice').required(),
+        operation: Joi.string().allow('sell_goods').required(),
       }),
       lineItems: Joi.object({
         lineItem: Joi.array().items(
