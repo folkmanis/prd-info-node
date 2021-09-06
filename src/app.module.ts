@@ -8,6 +8,7 @@ import { PreferencesModule } from './preferences/preferences.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaytraqModule } from './paytraq/paytraq.module';
+import { LoggingModule } from './logging/logging.module';
 import Joi from 'joi';
 
 @Module({
@@ -35,6 +36,7 @@ import Joi from 'joi';
     MessagesModule,
     NotificationsModule,
     PaytraqModule,
+    LoggingModule,
   ],
   controllers: [],
   providers: [],
