@@ -1,7 +1,8 @@
 import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Modules } from '../login';
 import { LogQuery } from './interfaces/log-query.class';
 import { LoggerDaoService } from './logger-dao/logger-dao.service';
-import { Modules } from '../login';
+
 
 @Controller('logging')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
@@ -9,14 +10,13 @@ import { Modules } from '../login';
 export class LoggingController {
 
     constructor(
-        private logDao: LoggerDaoService
+        private logDao: LoggerDaoService,
     ) { }
 
     @Get('entries')
     async getEntries(
         @Query() query: LogQuery
     ) {
-
         return this.logDao.read(query);
     }
 

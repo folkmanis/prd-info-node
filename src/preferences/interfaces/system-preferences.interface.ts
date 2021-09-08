@@ -1,13 +1,8 @@
 import { SystemModules } from './system-modules.interface';
 
-export enum LogLevels {
-  ERROR = 10,
-  WARN = 20,
-  INFO = 30,
-  VERBOSE = 40,
-  DEBUG = 50,
-  SILLY = 60,
-}
+export type LogLevel = 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly';
+
+export type AppLogLevels = Record<LogLevel, number>;
 
 export type SystemPreference =
   | KastesSystemPreference
@@ -21,12 +16,12 @@ export interface SystemPreferenceModule {
 }
 
 export interface KastesSystemPreference {
-  colors: { [key: string]: string };
+  colors: { [key: string]: string; };
 }
 
 export interface SystemSystemPreference {
   menuExpandedByDefault: boolean;
-  logLevels: Array<LogLevels | string>[];
+  logLevels: Record<LogLevel, number>;
 }
 
 export interface ProductUnit {

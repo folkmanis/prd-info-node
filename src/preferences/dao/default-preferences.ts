@@ -1,7 +1,4 @@
-import {
-  LogLevels,
-  SystemPreferenceModule,
-} from '../interfaces/system-preferences.interface';
+import { SystemPreferenceModule, } from '../interfaces/system-preferences.interface';
 
 export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
   {
@@ -17,15 +14,16 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
   {
     module: 'system',
     settings: {
-      menuExpandedByDefault: true,
-      logLevels: [
-        [LogLevels.DEBUG, 'Debug'],
-        [LogLevels.ERROR, 'Error'],
-        [LogLevels.INFO, 'Info'],
-        [LogLevels.SILLY, 'Silly'],
-        [LogLevels.VERBOSE, 'Verbose'],
-        [LogLevels.WARN, 'Warning'],
-      ],
+      menuExpandedByDefault: false,
+      logLevels: {
+        error: 0,
+        warn: 1,
+        info: 2,
+        http: 3,
+        verbose: 4,
+        debug: 5,
+        silly: 6
+      },
     },
   },
   {
