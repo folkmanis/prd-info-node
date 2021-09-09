@@ -10,6 +10,7 @@ import { ObjectId } from 'mongodb';
 import { User, Usr } from '../entities/users';
 import { MessagesService } from './messages.service';
 import { NotificationsService, SystemNotification } from '../notifications';
+import { ObjectIdPipe } from '../lib/object-id.pipe';
 
 @Controller('messages')
 export class MessagesController {
@@ -53,12 +54,14 @@ export class MessagesController {
   }
 
   @Delete(':id')
-  async deleteMessage(@Param('id') id: string, @Usr() user: User) {
-    const filter = { _id: new ObjectId(id) };
+  async deleteMessage(
+    @Param('id', ObjectIdPipe) _id: ObjectId,
+    @Usr() user: User
+  ) {
     const deletedCount = await this.messagesService.markAs(
       'deletedBy',
       user.username,
-      filter,
+      { _id },
     );
 
     if (deletedCount > 0) {
@@ -68,4 +71,5 @@ export class MessagesController {
     }
     return deletedCount;
   }
+
 }
