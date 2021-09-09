@@ -3,12 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { LoginModule } from './login/login.module';
 import { SessionModule } from './session/session.module';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './entities/users/users.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { MessagesModule } from './messages/messages.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PaytraqModule } from './paytraq/paytraq.module';
 import { LoggingModule } from './logging/logging.module';
+import { EntitiesModule } from './entities/entities.module';
 import Joi from 'joi';
 
 @Module({
@@ -31,14 +32,14 @@ import Joi from 'joi';
     DatabaseModule,
     LoginModule,
     SessionModule,
-    UsersModule,
     PreferencesModule,
     MessagesModule,
     NotificationsModule,
     PaytraqModule,
     LoggingModule,
+    EntitiesModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

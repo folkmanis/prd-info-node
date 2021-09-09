@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { User, SystemPreferenceModule } from '../interfaces';
 import Logger from './logger';
-import '../interfaces/session';
+import '../session/session';
 import { DaoIndexMap } from '../dao/dao-map';
 import { UsersDao } from '../dao/usersDAO';
 import { PreferencesDao } from '../dao/preferencesDAO';
@@ -31,7 +31,7 @@ export class Preferences {
       res.status(401).json({});
       return;
     }
-    const user = req.session.user as User;
+    const user = req.session.user; // as User;
     const prefs = await usersDao.getPreferences(user.username);
     if (!prefs) {
       Logger.error('User preferences not found');

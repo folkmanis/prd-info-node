@@ -2,7 +2,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { MongoClient } from 'mongodb';
 import session from 'express-session';
 import Logger from './logger';
-import '../interfaces/session';
+import '../session/session';
 import MongoStore from 'connect-mongo';
 import { Modules } from '../interfaces';
 

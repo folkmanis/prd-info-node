@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService, UserPreferences } from '../users';
+import { UsersService, UserPreferences } from '../entities/users';
 import { PreferencesDao } from './dao/preferencesDao.service';
 import {
   SystemPreferenceModule,
@@ -12,7 +12,7 @@ export class PreferencesService {
   constructor(
     private usersService: UsersService,
     private preferencesDao: PreferencesDao,
-  ) {}
+  ) { }
 
   async getUserPreferences(username: string): Promise<UserPreferences> {
     const user = await this.usersService.getOne(username);

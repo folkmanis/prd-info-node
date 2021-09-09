@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { LoginService } from './login.service';
 import { LoginController } from './login.controller';
-import { UsersModule } from '../users/users.module';
+import { UsersModule } from '../entities/users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { APP_GUARD } from '@nestjs/core';
@@ -24,4 +24,4 @@ import { ModulesGuard } from './modules.guard';
     },
   ],
 })
-export class LoginModule {}
+export class LoginModule { }

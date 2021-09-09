@@ -2,7 +2,6 @@ import { Type } from '../interfaces/type';
 import { Dao } from '../interfaces/dao.interface';
 import { DaoIndexMap } from '../dao/dao-map';
 
-import { UsersController } from './users-controller';
 import { XmfSearchController } from './xmf-search-controller';
 import { XmfUploadController } from './xmf-upload-controller';
 import { KastesController } from './kastes-controller';
@@ -17,7 +16,6 @@ import { EquipmentController } from './equipment.controller';
 import { ProductionStagesController } from './production-stages.controller';
 
 const CONTROLLERS: Type<any>[] = [
-  UsersController,
   XmfSearchController,
   XmfUploadController,
   KastesController,

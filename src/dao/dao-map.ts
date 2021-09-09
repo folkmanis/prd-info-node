@@ -14,7 +14,6 @@ import { InvoicesDao } from './invoicesDAO';
 import { KastesDao } from './kastesDAO';
 import { XmfSearchDao } from './xmf-searchDAO';
 import { LoggerDao } from './loggerDAO';
-import { SessionsDao } from './sessionsDAO';
 import { MessagesDao } from './messagesDAO';
 import { NotificationsDao } from './notificationsDAO';
 import { EquipmentDao } from './equipmentDAO';
@@ -33,7 +32,6 @@ const DAOS: Type<Dao>[] = [
   KastesDao,
   XmfSearchDao,
   LoggerDao,
-  SessionsDao,
   MessagesDao,
   NotificationsDao,
   EquipmentDao,

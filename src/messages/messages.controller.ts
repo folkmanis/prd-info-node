@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { User, Usr } from '../users';
+import { User, Usr } from '../entities/users';
 import { MessagesService } from './messages.service';
 import { NotificationsService, SystemNotification } from '../notifications';
 
@@ -16,7 +16,7 @@ export class MessagesController {
   constructor(
     private messagesService: MessagesService,
     private notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   @Get()
   async getMessages(

@@ -12,7 +12,7 @@ import { Request, Response } from 'express';
 import { ObjectId } from 'mongodb';
 import { Veikals } from '../interfaces';
 import Busboy from 'busboy';
-import '../interfaces/session';
+import '../session/session';
 import { asyncWrapper } from '../lib/asyncWrapper';
 import { logError } from '../lib/errorMiddleware';
 import { Preferences } from '../lib/preferences-handler';
@@ -33,7 +33,7 @@ export class KastesController {
     private usersDao: UsersDao,
     private kastesDao: KastesDao,
     private jobsDao: JobsDao,
-  ) {}
+  ) { }
 
   @Put('parseXlsx')
   async parseXlsx(req: Request, res: Response) {
@@ -106,7 +106,7 @@ export class KastesController {
 
   @Post('veikali')
   private async updateVeikali(req: Request, res: Response) {
-    const { veikali } = req.body as { veikali: Veikals[] };
+    const { veikali } = req.body as { veikali: Veikals[]; };
     if (!veikali) {
       throw new Error('invalid data');
     }

@@ -1,10 +1,10 @@
 import crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
-import { User, UsersService } from '../users';
+import { User, UsersService } from '../entities/users';
 
 @Injectable()
 export class LoginService {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   async validateUser(username: string, password: string): Promise<User | null> {
     return this.usersService.login(
