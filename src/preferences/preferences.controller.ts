@@ -1,16 +1,15 @@
-import { Controller, Post, Get, Body, Param, Session } from '@nestjs/common';
-import { PreferencesService } from './preferences.service';
+import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
 import { Modules } from '../login';
-import { SystemModules } from './interfaces/system-modules.interface';
 import { PreferencesDao } from './dao/preferencesDao.service';
+import { SystemModules } from './interfaces/system-modules.interface';
 import { SystemPreferenceModule } from './interfaces/system-preferences.interface';
 
 @Controller('preferences')
 export class PreferencesController {
-  constructor(private preferencesDao: PreferencesDao) {}
+  constructor(private preferencesDao: PreferencesDao) { }
 
   @Modules('admin')
-  @Post()
+  @Patch()
   async updateAll(@Body() preferences: SystemPreferenceModule[]) {
     return this.preferencesDao.updatePreferences(...preferences);
   }

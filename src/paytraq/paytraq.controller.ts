@@ -1,18 +1,14 @@
 import {
-    Controller,
-    Get,
-    Post,
-    Param,
-    Query,
-    Body,
-    ParseIntPipe,
+    Body, Controller,
+    Get, Param, ParseIntPipe,
+    Put, Query
 } from '@nestjs/common';
-import { RequestParameters } from './interfaces/request-parameters';
 import { Modules } from '../login';
+import { RequestParameters } from './interfaces/request-parameters';
+import { SalesInput } from './interfaces/sales-input';
 import { PaytraqDaoService } from './paytraq-dao/paytraq-dao.service';
 import { RequestParametersPipe } from './request-parameters.pipe';
 import { SaleValidatorPipe } from './sale-validator.pipe';
-import { SalesInput } from './interfaces/sales-input';
 
 @Controller('paytraq')
 @Modules('jobs')
@@ -49,7 +45,7 @@ export class PaytraqController {
         return this.paytraqDao.getSale(id);
     }
 
-    @Post('sale')
+    @Put('sale')
     async postSale(@Body(SaleValidatorPipe) data: SalesInput) {
         const resp = await this.paytraqDao.postSale(data);
         if (!resp.response?.documentID) {
