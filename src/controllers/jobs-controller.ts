@@ -13,7 +13,6 @@ import Busboy from 'busboy';
 import { Request, Response } from 'express';
 import {
   CountersDao,
-  CustomersDao,
   FileSystemDao,
   JobsDao,
   ProductsDao,
@@ -53,10 +52,9 @@ export class JobsController {
   constructor(
     private countersDao: CountersDao,
     private jobsDao: JobsDao,
-    private customersDao: CustomersDao,
     private fileSystem: FileSystemDao,
     private productsDao: ProductsDao,
-  ) {}
+  ) { }
 
   @Middleware(PrdSession.validateModule('jobs-admin'))
   @Post('jobimport')
@@ -263,7 +261,7 @@ export class JobsController {
   @Get('production')
   async getProductionStatus(req: Request, res: Response) {
     const { productionStatus } = req.query;
-    const params: { productionStatus?: number[] } = {};
+    const params: { productionStatus?: number[]; } = {};
     if (typeof productionStatus === 'string') {
       params.productionStatus = productionStatus.split(',').map((val) => +val);
     }
@@ -275,7 +273,7 @@ export class JobsController {
   @Get('production/stages')
   async getProductionStages(req: Request, res: Response) {
     const { productionStatus } = req.query;
-    const params: { productionStatus?: number[] } = {};
+    const params: { productionStatus?: number[]; } = {};
     if (typeof productionStatus === 'string') {
       params.productionStatus = productionStatus.split(',').map((val) => +val);
     }

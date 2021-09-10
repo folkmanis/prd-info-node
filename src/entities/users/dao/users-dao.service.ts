@@ -81,6 +81,7 @@ export class UsersDaoService {
             {
                 writeConcern: { w: 'majority' },
                 returnDocument: 'after',
+                upsert: true,
             }
         );
         if (!value) {

@@ -9,7 +9,7 @@ import {
   Put,
 } from '@overnightjs/core';
 import { Request, Response } from 'express';
-import { CountersDao, CustomersDao, InvoicesDao, JobsDao } from '../dao';
+import { CountersDao, InvoicesDao, JobsDao } from '../dao';
 import {
   Invoice,
   InvoicesFilter,
@@ -36,8 +36,7 @@ export class InvoicesController {
     private jobsDao: JobsDao,
     private invoicesDao: InvoicesDao,
     private countersDao: CountersDao,
-    private customersDao: CustomersDao,
-  ) {}
+  ) { }
 
   @Put('')
   private async newInvoice(req: Request, res: Response) {
