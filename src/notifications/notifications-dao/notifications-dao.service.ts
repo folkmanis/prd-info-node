@@ -24,10 +24,12 @@ export class NotificationsDaoService {
         $gt: from,
         $lte: to,
       },
-      instanceId: {
-        $ne: instanceId,
-      },
     };
+    if (instanceId) {
+      filter.instanceId = {
+        $ne: instanceId,
+      };
+    }
     if (modules.length > 0) {
       filter = {
         ...filter,

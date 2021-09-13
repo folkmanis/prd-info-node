@@ -1,5 +1,4 @@
 export * from './countersDAO';
-export * from './fileSystemDAO';
 export * from './invoicesDAO';
 export * from './jobsDAO';
 export * from './materialsDAO';

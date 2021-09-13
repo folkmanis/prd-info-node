@@ -10,6 +10,9 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaytraqModule } from './paytraq/paytraq.module';
 import { LoggingModule } from './logging/logging.module';
 import { EntitiesModule } from './entities/entities.module';
+import { FilesystemService } from './filesystem/filesystem.service';
+import { FilesystemModule } from './filesystem/filesystem.module';
+import { FtpWatcherModule } from './ftp-watcher/ftp-watcher.module';
 import Joi from 'joi';
 
 @Module({
@@ -38,8 +41,9 @@ import Joi from 'joi';
     PaytraqModule,
     LoggingModule,
     EntitiesModule,
+    FilesystemModule,
+    FtpWatcherModule,
   ],
   controllers: [],
-  providers: [],
 })
 export class AppModule { }

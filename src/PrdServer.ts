@@ -1,5 +1,5 @@
 import { DaoIndexMap } from './dao/dao-map';
-import { FileSystemDao, LoggerDao, UsersDao } from './dao';
+import { LoggerDao, UsersDao } from './dao';
 import { createControllers } from './controllers/controllers-index';
 import { Server } from '@overnightjs/core';
 
@@ -10,10 +10,6 @@ import Logger, { Console, MongoLog } from './lib/logger';
 import { Application, json, urlencoded } from 'express';
 
 import { insertDao as insertPreferencesHandlerDao } from './lib/preferences-handler';
-import { notificationHandler } from './lib/message-handler';
-import { MessagesDao } from './dao/messagesDAO';
-import { NotificationsDao } from './dao/notificationsDAO';
-import { startFtpWatcher } from './lib/ftp-watcher';
 import { parseInstanceId } from './preferences/instance-id-parser';
 import { jsonOkHandler } from './lib/json-ok-handler';
 
@@ -33,8 +29,6 @@ export class PrdServer extends Server {
 
     this.daoMap = new DaoIndexMap();
 
-    this.setMessaging();
-    this.startFtpWatch();
   }
 
   async connectDB(uri: string | undefined): Promise<MongoClient> {
@@ -74,18 +68,6 @@ export class PrdServer extends Server {
 
   setupControllers(): void {
     super.addControllers(createControllers(this.daoMap));
-  }
-
-  private setMessaging() {
-    this.app.use(notificationHandler(this.daoMap.getDao(NotificationsDao)));
-  }
-
-  private startFtpWatch() {
-    startFtpWatcher({
-      fileSystemDao: this.daoMap.getDao(FileSystemDao),
-      messagesDao: this.daoMap.getDao(MessagesDao),
-      notificationsDao: this.daoMap.getDao(NotificationsDao),
-    });
   }
 
   private setupDAO(client: MongoClient): void {

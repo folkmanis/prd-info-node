@@ -6,7 +6,6 @@ import { MaterialsDao } from './materialsDAO';
 import { CountersDao } from './countersDAO';
 import { UsersDao } from './usersDAO';
 import { PreferencesDao } from './preferencesDAO';
-import { FileSystemDao } from './fileSystemDAO';
 import { JobsDao } from './jobsDAO';
 import { ProductsDao } from './productsDAO';
 import { InvoicesDao } from './invoicesDAO';
@@ -23,7 +22,6 @@ const DAOS: Type<Dao>[] = [
   CountersDao,
   UsersDao,
   PreferencesDao,
-  FileSystemDao,
   JobsDao,
   ProductsDao,
   InvoicesDao,
