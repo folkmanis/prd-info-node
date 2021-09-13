@@ -28,14 +28,16 @@ export class LoginController {
   }
 
   @Delete()
+  @PublicRoute()
   async logout(@Session() sess: session.Session) {
     return new Promise((resolve) => sess.destroy(resolve)).then(
-      () => 'logged out',
+      () => ({ response: 'logged out' })
     );
   }
 
   @Get()
-  findAll(@Usr() user: User) {
-    return user;
+  @PublicRoute()
+  user(@Usr() user: User | undefined) {
+    return user || {};
   }
 }
