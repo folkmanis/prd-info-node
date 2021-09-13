@@ -1,11 +1,14 @@
 import { ObjectId } from 'mongodb';
-import { IsMongoId, IsString, IsBoolean, IsDate, IsNotEmpty, ValidateNested, IsOptional } from 'class-validator';
+import { IsMongoId, IsString, IsBoolean, IsDate, IsNotEmpty, ValidateNested, IsOptional, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Financial {
 
     @IsString()
     clientName: string;
+
+    @IsNumber()
+    paytraqId: number;
 }
 
 export class Customer {
