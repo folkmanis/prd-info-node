@@ -21,21 +21,16 @@ export class MessagesController {
 
   @Get()
   async getMessages(
-    @Query('from', ParseIntPipe) fromDate: number,
     @Usr() user: User,
   ) {
     const toDate: Date = new Date();
     const modules = user.preferences.modules;
 
-    return {
-      timestamp: toDate,
-      messages: await this.messagesService.getMessages(
-        new Date(fromDate),
-        toDate,
-        modules,
-        user.username,
-      ),
-    };
+    return this.messagesService.getMessages(
+      toDate,
+      modules,
+      user.username,
+    );
   }
 
   @Delete('allRead')

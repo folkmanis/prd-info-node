@@ -16,7 +16,6 @@ export class MessagesService {
   }
 
   async getMessages(
-    from: Date,
     to: Date,
     modules: SystemModules[],
     username: string,
@@ -25,7 +24,6 @@ export class MessagesService {
       {
         $match: {
           timestamp: {
-            $gt: from,
             $lte: to,
           },
           deletedBy: {
@@ -74,7 +72,7 @@ export class MessagesService {
   async markAs(
     prop: 'seenBy' | 'deletedBy',
     user: string,
-    filter: { _id?: ObjectId } = {},
+    filter: { _id?: ObjectId; } = {},
   ): Promise<number> {
     const resp = await this.collection.updateMany(filter, {
       $addToSet: {
