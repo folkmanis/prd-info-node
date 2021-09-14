@@ -38,6 +38,9 @@ const collectionProvider: FactoryProvider = {
     CustomersService,
     collectionProvider,
     CustomersDaoService,
+  ],
+  exports: [
+    CustomersService,
   ]
 })
 export class CustomersModule { }

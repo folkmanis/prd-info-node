@@ -42,7 +42,15 @@ export class CustomersDaoService {
     async getCustomerById(_id: ObjectId): Promise<Customer | null> {
         const customer = await this.collection.findOne({ _id });
         if (!customer) {
-            throw new NotFoundException(`User with id ${_id} not found in database`);
+            throw new NotFoundException(`Customer with id ${_id} not found in database`);
+        }
+        return customer;
+    }
+
+    async getCustomerByName(CustomerName: string): Promise<Customer> {
+        const customer = await this.collection.findOne({ CustomerName });
+        if (!customer) {
+            throw new NotFoundException(`Unknown customer ${CustomerName}`);
         }
         return customer;
     }
