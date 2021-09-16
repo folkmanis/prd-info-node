@@ -3,7 +3,7 @@ import { InvoicesDao } from './dao/invoices-dao.service';
 import { CustomersService } from '../customers/customers.service';
 import { InvoiceForReport } from './entities/invoice-for-report.interface';
 import { InvoiceInsert } from './dto/invoice-insert.dto';
-import { CounterService } from './dao/counter.service';
+import { InvoicesCounterService } from './dao/counter.service';
 import { JobsService } from '../jobs/jobs.service';
 import { ObjectId } from 'mongodb';
 
@@ -13,7 +13,7 @@ export class InvoicesService {
     constructor(
         private readonly invoicesDao: InvoicesDao,
         private readonly customersService: CustomersService,
-        private readonly counterService: CounterService,
+        private readonly counterService: InvoicesCounterService,
         private readonly jobsService: JobsService,
     ) { }
 

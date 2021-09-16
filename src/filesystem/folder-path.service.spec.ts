@@ -1,4 +1,4 @@
-import { FolderPath } from './folder-path';
+import { FolderPathService } from './folder-path.service';
 import { JobBase } from '../interfaces';
 
 const fileName = ' Etiķetes Tine 8/2 + 8/3 ';
@@ -25,14 +25,14 @@ const result: string[] = [
 
 describe('Should create correct path', () => {
   test('path should be correct', () =>
-    expect(FolderPath.toArray(obj)).toEqual(result));
+    expect(FolderPathService.toArray(obj)).toEqual(result));
 
   test('should return empty array when not all data provided', () =>
-    expect(FolderPath.toArray({} as JobBase)).toEqual([]));
+    expect(FolderPathService.toArray({} as JobBase)).toEqual([]));
 });
 
 describe('should sanitize pathname', () => {
   test('should replace diactrics and remove forbidden symbols', () => {
-    expect(FolderPath.sanitizeFileName(fileName)).toEqual(fileNameSanitized);
+    expect(FolderPathService.sanitizeFileName(fileName)).toEqual(fileNameSanitized);
   });
 });

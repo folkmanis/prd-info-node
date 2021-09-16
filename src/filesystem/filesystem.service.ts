@@ -2,28 +2,58 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createWriteStream, promises as fsPromises } from 'fs';
 import path from 'path';
+import Busboy from 'busboy';
+import { Request, Response } from 'express';
+import { FolderPathService } from './folder-path.service';
 
 @Injectable()
 export class FilesystemService {
 
     constructor(
         private configService: ConfigService,
+        private folderPathService: FolderPathService,
     ) { }
 
     protected readonly rootPath = this.configService.get<string>('JOBS_INPUT')!;
 
     async createFolder(folder: string[]) {
         const fullPath = path.resolve(this.rootPath, ...folder);
-        return fsPromises.mkdir(fullPath, { recursive: true });
+        const created = await fsPromises.mkdir(fullPath, { recursive: true });
+        if (!created) {
+            throw new Error(`Unable to create folder ${path.join(...folder)}`);
+        }
+        return created;
     }
 
     resolveFullPath(folder: string[], filename: string): string {
         return path.resolve(this.rootPath, ...folder, filename);
     }
 
-    writeFile(file: NodeJS.ReadableStream, folder: string[], filename: string) {
+    private writeFile(file: NodeJS.ReadableStream, folder: string[], filename: string) {
         const fullPath = this.resolveFullPath(folder, filename);
         file.pipe(createWriteStream(fullPath));
+    }
+
+    async writeFormFile(path: string[], req: Request): Promise<string[]> {
+
+        const busboy = new Busboy({ headers: req.headers });
+        const fileNames = new Set<string>();
+
+        return new Promise(resolve => {
+
+            busboy.on('file', (_, file, fName) => {
+                const name = this.folderPathService.sanitizeFileName(fName);
+                fileNames.add(name);
+                this.writeFile(file, path, fName);
+            });
+
+            busboy.on('finish', () => {
+                resolve([...fileNames.values()]);
+            });
+            req.pipe(busboy);
+
+        });
+
     }
 
 }

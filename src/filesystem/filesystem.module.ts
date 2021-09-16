@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { FilesystemService } from './filesystem.service';
 import { NotificationsModule } from '../notifications';
 import { MessagesModule } from '../messages';
+import { FolderPathService } from './folder-path.service';
 
 
 @Module({
@@ -11,9 +12,11 @@ import { MessagesModule } from '../messages';
     ],
     providers: [
         FilesystemService,
+        FolderPathService,
     ],
     exports: [
         FilesystemService,
+        FolderPathService,
     ]
 })
 export class FilesystemModule { }

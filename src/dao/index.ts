@@ -1,6 +1,4 @@
 export * from './countersDAO';
-export * from './invoicesDAO';
-export * from './jobsDAO';
 export * from './materialsDAO';
 export * from './preferencesDAO';
 export * from './productsDAO';

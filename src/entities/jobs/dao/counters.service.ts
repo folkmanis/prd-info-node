@@ -8,7 +8,7 @@ interface Counter {
 }
 
 @Injectable()
-export class InvoicesCounterService {
+export class JobsCounterService {
 
     private collection: Collection<Counter>;
 
@@ -18,11 +18,11 @@ export class InvoicesCounterService {
         this.collection = this.dbService.db().collection('counters');
     }
 
-    async getNextInvoiceId(nums = 1): Promise<string> {
+    async getNextJobId(nums = 1): Promise<number> {
         const { value } = (
             await this.collection.findOneAndUpdate(
                 {
-                    counter: 'lastInvoiceId',
+                    counter: 'lastJobId',
                 },
                 {
                     $inc: { lastId: nums },
@@ -34,12 +34,10 @@ export class InvoicesCounterService {
         );
 
         if (!value) {
-            throw new Error('Error assigning new invoice Id');
+            throw new Error('Error assigning new jobId');
         }
 
-        return value.lastId
-            .toString()
-            .padStart(5, '0');
+        return value.lastId;
     }
 
 

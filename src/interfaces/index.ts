@@ -1,5 +1,4 @@
 export * from './response-base.interface';
-export * from './invoice.interface';
 export * from './preferences.interface';
 export * from './customers.interface';
 export * from './products.interface';

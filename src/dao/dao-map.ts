@@ -6,9 +6,7 @@ import { MaterialsDao } from './materialsDAO';
 import { CountersDao } from './countersDAO';
 import { UsersDao } from './usersDAO';
 import { PreferencesDao } from './preferencesDAO';
-import { JobsDao } from './jobsDAO';
 import { ProductsDao } from './productsDAO';
-import { InvoicesDao } from './invoicesDAO';
 import { KastesDao } from './kastesDAO';
 import { XmfSearchDao } from './xmf-searchDAO';
 import { LoggerDao } from './loggerDAO';
@@ -22,9 +20,7 @@ const DAOS: Type<Dao>[] = [
   CountersDao,
   UsersDao,
   PreferencesDao,
-  JobsDao,
   ProductsDao,
-  InvoicesDao,
   KastesDao,
   XmfSearchDao,
   LoggerDao,
