@@ -1,60 +1,104 @@
 import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
 import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation, Db, } from 'mongodb';
-import { isDate, isString, isNumber, ValidateNested, IsIn, IsDate, IsString, IsBoolean } from 'class-validator';
-import { Type } from 'class-transformer';
+import { isDate, isString, isNumber, ValidateNested, IsIn, IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsInt } from 'class-validator';
+import { Exclude, Type, deserializeArray, Transform, classToPlain, Expose } from 'class-transformer';
 import { pickBy } from 'lodash';
 import { Job } from '../entities/job.entity';
 
+export interface JobQueryInterface {
+    receivedDate?: Date;
+    customer?: string;
+    invoiceId?: Record<string, boolean>;
+    name?: Record<string, string>;
+    'jobStatus.generalStatus'?: Record<string, number[]>;
+    category?: string;
+    start: number;
+    limit: number;
+}
+
+// @Exclude()
 export class JobQuery {
 
     @Type(() => Date)
+    @IsOptional()
     @IsDate()
     fromDate?: Date;
 
+    @IsOptional()
     @IsString()
     customer?: string;
 
+    @IsOptional()
     @IsString()
     name?: string;
 
-    @Type(() => Boolean)
-    @IsBoolean()
-    invoice?: boolean;
-
     @Type(() => Number)
-    jobsId: number[] = [];
+    @IsOptional()
+    @IsIn([0, 1])
+    invoice?: 0 | 1;
 
     @Type(() => Boolean)
+    @IsOptional()
     @IsBoolean()
     unwindProducts?: boolean;
 
-    @IsString()
-    jobStatus?: string;
+    @Transform(
+        ({ value }) => deserializeArray(Number, `[${value}]`),
+        { toClassOnly: true }
+    )
+    @IsOptional()
+    @IsNumber(undefined, { each: true })
+    jobStatus?: number[];
 
+    @IsOptional()
     @IsIn(JOB_CATEGORIES)
     category?: JobCategories;
+
+    @Type(() => Number)
+    @IsInt()
+    start = 0;
+
+    @Type(() => Number)
+    @IsInt()
+    limit = 100;
 }
 
-export class JobFilter implements FilterQuery<Job> {
+export class JobFilter {
 
-    receivedDate?;
-    customer?;
-    invoiceId?;
-    name?;
-    jobId;
-    'jobStatus.generalStatus'?: undefined | Record<string, string>;
-    category?;
-
-    constructor(query: JobQuery) {
-        this.receivedDate = query.fromDate && { $gte: query.fromDate };
-        this.customer = query.customer;
-        this.invoiceId = typeof query.invoice !== 'boolean' ? { $exists: query.invoice } : undefined;
-        this.name = query.name?.length ? { $regex: query.name, $options: 'i' } : undefined;
-        this.jobId = query.jobsId.length > 0 ? { $in: query.jobsId } : undefined;
-        this['jobStatus.generalStatus'] = query.jobStatus?.length ? {
-            $in: query.jobStatus
-        } : undefined;
-        this.category = query.category;
+    @Exclude({ toPlainOnly: true })
+    fromDate?: Date;
+    @Expose()
+    get receivedDate() {
+        return this.fromDate && { '$gte': this.fromDate };
     }
 
+    customer?: string;
+
+    @Exclude()
+    _name: any;
+    @Expose()
+    set name(value: string) {
+        this._name = value;
+    }
+    get name() {
+        return this._name && { $regex: this._name, $options: 'i' };
+    }
+
+    @Exclude({ toPlainOnly: true })
+    invoice?: 0 | 1;
+    @Expose()
+    get invoiceId() {
+        return this.invoice !== undefined ? { $exists: !!this.invoice } : undefined;
+    }
+
+    @Exclude({ toPlainOnly: true })
+    jobStatus?: number[];
+    @Expose()
+    get 'jobStatus.generalStatus'() {
+        return this.jobStatus && { $in: this.jobStatus };
+    }
+
+    category?: JobCategories;
+
 }
+

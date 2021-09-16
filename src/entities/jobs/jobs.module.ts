@@ -8,6 +8,7 @@ import { KastesJobsDao } from './dao/kastes-jobs-dao';
 import { FilesystemModule } from '../../filesystem/filesystem.module';
 import { CustomersModule } from '../customers/customers.module';
 import { DatabaseModule } from '../../database';
+import { JobsCounterService } from './dao/counters.service';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { DatabaseModule } from '../../database';
     JobsDao,
     JobsInvoicesDao,
     KastesJobsDao,
+    JobsCounterService,
   ],
   exports: [
     JobsService,

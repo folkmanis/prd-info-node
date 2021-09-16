@@ -9,7 +9,7 @@ import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { KastesJobsDao } from './dao/kastes-jobs-dao';
 import { JobId } from './job-id.decorator';
 import { ObjectId } from 'mongodb';
-import { JobQuery, JobFilter } from './dto/job-query';
+import { JobQuery } from './dto/job-query';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -92,6 +92,7 @@ export class JobsController {
   async getJobs(
     @Query() query: JobQuery
   ) {
+    // return query;
     return this.jobsDao.getAll(query);
   }
 

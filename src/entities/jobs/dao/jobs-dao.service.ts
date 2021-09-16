@@ -3,12 +3,14 @@ import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteU
 
 import { JOBS_COLLECTION } from './jobs-collection.provider';
 
-import { JobFilter, JobQuery } from '../dto/job-query';
+import { JobQuery, JobFilter } from '../dto/job-query';
 import { Job } from '../entities/job.entity';
 import { JobProduct } from '../entities/job-product.entity';
 
 import { CreateJobDto } from '../dto/create-job.dto';
 import { UpdateJobDto } from '../dto/update-job.dto';
+import { Type, deserializeArray, Transform, classToPlain, Expose, plainToClass } from 'class-transformer';
+import { isUndefined, pickBy } from 'lodash';
 
 @Injectable()
 export class JobsDao {
@@ -20,11 +22,12 @@ export class JobsDao {
 
     async getAll(query: JobQuery) {
 
-        const filter: FilterQuery<Job> = new JobFilter(query);
+        const { start, limit, unwindProducts, ...filter } = query;
+        console.log(classToPlain(plainToClass(JobFilter, filter)));
 
         const aggr: any[] = [
             {
-                $match: filter,
+                $match: pickBy(classToPlain(plainToClass(JobFilter, filter)), value => !isUndefined(value)),
             },
             {
                 $lookup: {
@@ -56,7 +59,7 @@ export class JobsDao {
                 },
             },
         ];
-        if (query.unwindProducts && +query.unwindProducts === 1) {
+        if (unwindProducts) {
             aggr.push({
                 $unwind: {
                     path: '$products',
@@ -65,6 +68,16 @@ export class JobsDao {
                 },
             });
         }
+        aggr.push({
+            $limit: limit,
+        });
+
+        if (start > 0) {
+            aggr.push({
+                $skip: start,
+            });
+        }
+        // return aggr;
         return this.collection.aggregate(aggr).toArray();
 
     }
