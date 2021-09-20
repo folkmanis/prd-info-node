@@ -165,10 +165,10 @@ export class JobsInvoicesDao {
             .toArray();
     }
 
-    async getJobsTotals(jobsId: number[]): Promise<ProductTotals[]> {
+    async getJobsTotals(jobIds: number[]): Promise<ProductTotals[]> {
         const aggr = [
             {
-                $match: { jobId: { $in: jobsId } },
+                $match: { jobId: { $in: jobIds } },
             },
             {
                 $unwind: { path: '$products' },

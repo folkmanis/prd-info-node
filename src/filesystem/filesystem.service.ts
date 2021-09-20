@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Busboy from 'busboy';
+import { Request } from 'express';
 import { createWriteStream, promises as fsPromises } from 'fs';
 import path from 'path';
-import Busboy from 'busboy';
-import { Request, Response } from 'express';
 import { FolderPathService } from './folder-path.service';
 
 @Injectable()
@@ -25,19 +25,22 @@ export class FilesystemService {
         return created;
     }
 
-    resolveFullPath(folder: string[], filename: string): string {
-        return path.resolve(this.rootPath, ...folder, filename);
+    resolveFullPath(...relativePathWithFilename: string[]): string {
+        return path.resolve(this.rootPath, ...relativePathWithFilename);
     }
 
+
+
     private writeFile(file: NodeJS.ReadableStream, folder: string[], filename: string) {
-        const fullPath = this.resolveFullPath(folder, filename);
+        const fullPath = this.resolveFullPath(...folder, filename);
         file.pipe(createWriteStream(fullPath));
     }
 
-    async writeFormFile(path: string[], req: Request): Promise<string[]> {
+    async writeFormFile(path: string[], req: Request, filenames?: string[]): Promise<string[]> {
 
         const busboy = new Busboy({ headers: req.headers });
-        const fileNames = new Set<string>();
+
+        const fileNames = new Set<string>(filenames);
 
         return new Promise(resolve => {
 

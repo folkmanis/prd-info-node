@@ -40,10 +40,6 @@ export class Job {
     @IsString()
     customerJobId?: string;
 
-    @Type(() => Boolean)
-    @IsBoolean()
-    isLocked: boolean = false;
-
     @Type(() => Date)
     @IsDate()
     receivedDate: Date;
@@ -84,7 +80,8 @@ export class Job {
         },
         keepDiscriminatorProperty: true,
     })
-    production: ReproProduction | KastesProduction;
+    @IsOptional()
+    production?: ReproProduction | KastesProduction;
 
 
 }

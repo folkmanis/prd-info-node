@@ -2,7 +2,7 @@ import { Type } from 'class-transformer';
 import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
 
 
-export const JOB_CATEGORIES = ['repro', 'perforated paper'] as const;
+export const JOB_CATEGORIES = ['repro', 'perforated paper', 'print'] as const;
 
 export type JobCategories = typeof JOB_CATEGORIES[number];
 

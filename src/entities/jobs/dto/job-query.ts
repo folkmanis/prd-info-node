@@ -16,7 +16,6 @@ export interface JobQueryInterface {
     limit: number;
 }
 
-// @Exclude()
 export class JobQuery {
 
     @Type(() => Date)
@@ -49,6 +48,14 @@ export class JobQuery {
     @IsOptional()
     @IsNumber(undefined, { each: true })
     jobStatus?: number[];
+
+    @Transform(
+        ({ value }) => deserializeArray(Number, `[${value}]`),
+        { toClassOnly: true }
+    )
+    @IsOptional()
+    @IsNumber(undefined, { each: true })
+    jobsId: number[];
 
     @IsOptional()
     @IsIn(JOB_CATEGORIES)
@@ -89,6 +96,13 @@ export class JobFilter {
     @Expose()
     get invoiceId() {
         return this.invoice !== undefined ? { $exists: !!this.invoice } : undefined;
+    }
+
+    @Exclude({ toPlainOnly: true })
+    jobsId: number[];
+    @Expose()
+    get jobId() {
+        return this.jobsId && { $in: this.jobsId };
     }
 
     @Exclude({ toPlainOnly: true })

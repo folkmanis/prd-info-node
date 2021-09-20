@@ -20,7 +20,7 @@ export class InvoicesService {
     async createInvoice({ jobIds, customerId }: InvoiceInsert): Promise<string> {
 
         const invoiceId = await this.counterService.getNextInvoiceId();
-        const jobsId = await this.jobsService.setInvoice(jobIds, customerId, invoiceId);
+        const jobsId = await this.jobsService.setInvoice(jobIds, invoiceId);
         const products = await this.jobsService.getInvoiceTotals(invoiceId);
 
         await this.invoicesDao.insertOne({

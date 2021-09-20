@@ -7,7 +7,6 @@ import { XmfUploadController } from './xmf-upload-controller';
 import { KastesController } from './kastes-controller';
 import { KastesOrderController } from './kastes-orders-controller';
 import { ProductsController } from './products-controller';
-import { JobsController } from './jobs-controller';
 import { MaterialsController } from './materials-controller';
 import { EquipmentController } from './equipment.controller';
 import { ProductionStagesController } from './production-stages.controller';
@@ -18,7 +17,6 @@ const CONTROLLERS: Type<any>[] = [
   KastesController,
   KastesOrderController,
   ProductsController,
-  JobsController,
   MaterialsController,
   EquipmentController,
   ProductionStagesController,

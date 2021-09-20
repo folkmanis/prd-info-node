@@ -1,4 +1,4 @@
-import { Req, Controller, Get, Post, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, ParseIntPipe, Put } from '@nestjs/common';
+import { Req, Controller, Get, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, ParseIntPipe, Put } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
@@ -10,6 +10,7 @@ import { KastesJobsDao } from './dao/kastes-jobs-dao';
 import { JobId } from './job-id.decorator';
 import { ObjectId } from 'mongodb';
 import { JobQuery } from './dto/job-query';
+import { Type, deserializeArray, Transform, classToPlain, Expose, plainToClass } from 'class-transformer';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -20,10 +21,11 @@ export class JobsController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
+    private readonly jobsInvoicesDao: JobsInvoicesDao,
   ) { }
 
 
-  @Post(':jobId/file')
+  @Put(':jobId/file')
   async uploadFile(
     @JobId(ParseIntPipe) jobId: number,
     @Req() req: Request,
@@ -35,7 +37,7 @@ export class JobsController {
 
   }
 
-  @Patch('createFolder')
+  @Patch(':jobId/createFolder')
   async createFolder(
     @JobId(ParseIntPipe) jobId: number,
   ) {
@@ -52,7 +54,7 @@ export class JobsController {
     // this.productsDao.touchProduct(
   }
 
-  @Post('')
+  @Patch('')
   async updateMany(
     @Body() jobsUpdate: UpdateJobDto[]
   ) {
@@ -65,12 +67,12 @@ export class JobsController {
   async InsertOne(
     @Body() job: CreateJobDto
   ) {
-
-    return this.jobsDao.insertOne({
+    const document = {
       ...job,
       _id: new ObjectId(),
       jobId: await this.jobsService.nexJobId(),
-    });
+    };
+    return this.jobsDao.insertOne(document);
 
     // this.productsDao.touchProduct(
 
@@ -78,7 +80,7 @@ export class JobsController {
 
   @Get('jobs-without-invoices-totals')
   async getInvoicesTotals() {
-    // res.json(await this.jobsDao.jobsWithoutInvoiceTotals());
+    return this.jobsInvoicesDao.jobsWithoutInvoiceTotals();
   }
 
   @Get(':jobId')
@@ -92,7 +94,6 @@ export class JobsController {
   async getJobs(
     @Query() query: JobQuery
   ) {
-    // return query;
     return this.jobsDao.getAll(query);
   }
 

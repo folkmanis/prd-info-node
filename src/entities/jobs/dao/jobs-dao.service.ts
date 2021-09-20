@@ -23,7 +23,6 @@ export class JobsDao {
     async getAll(query: JobQuery) {
 
         const { start, limit, unwindProducts, ...filter } = query;
-        console.log(classToPlain(plainToClass(JobFilter, filter)));
 
         const aggr: any[] = [
             {
@@ -91,9 +90,9 @@ export class JobsDao {
         return job;
     }
 
-    async insertOne({ jobId, ...job }: Job): Promise<Job> {
+    async insertOne(job: Job): Promise<Job> {
         const { value } = await this.collection.findOneAndReplace(
-            { jobId },
+            { jobId: job.jobId },
             job,
             { upsert: true, returnDocument: 'after' }
         );
