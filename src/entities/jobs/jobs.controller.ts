@@ -64,7 +64,7 @@ export class JobsController {
   }
 
   @Put('')
-  async InsertOne(
+  async insertOne(
     @Body() job: CreateJobDto
   ) {
     const document = {
