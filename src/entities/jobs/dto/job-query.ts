@@ -1,9 +1,6 @@
+import { deserializeArray, Exclude, Expose, Transform, Type } from 'class-transformer';
+import { IsBoolean, IsDate, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
-import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation, Db, } from 'mongodb';
-import { isDate, isString, isNumber, ValidateNested, IsIn, IsDate, IsString, IsBoolean, IsOptional, IsNumber, IsInt } from 'class-validator';
-import { Exclude, Type, deserializeArray, Transform, classToPlain, Expose } from 'class-transformer';
-import { pickBy } from 'lodash';
-import { Job } from '../entities/job.entity';
 
 export interface JobQueryInterface {
     receivedDate?: Date;
