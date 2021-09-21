@@ -1,4 +1,4 @@
-import { Req, Controller, Get, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, ParseIntPipe, Put } from '@nestjs/common';
+import { Req, Controller, Get, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, ParseIntPipe, Put, NotFoundException } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
@@ -32,6 +32,9 @@ export class JobsController {
   ) {
 
     const job = await this.jobsService.addFolderPathToJob(jobId);
+    if (!job) {
+      throw new NotFoundException(`${jobId} not found`);
+    }
 
     return this.jobsService.writeJobFile(job, req);
 

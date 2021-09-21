@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './interfaces/user.interface';
+import { User } from './entities/user.interface';
 import { UsersDaoService } from './dao/users-dao.service';
 
 @Injectable()

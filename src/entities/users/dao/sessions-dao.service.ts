@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ClientSession as MongoClientSession, Collection } from 'mongodb';
 import { DatabaseService } from '../../../database/database.service';
-import { Session } from '../interfaces/session.interface';
+import { Session } from '../entities/session.interface';
 
 
 @Injectable()

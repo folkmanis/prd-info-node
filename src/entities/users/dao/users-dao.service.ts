@@ -3,7 +3,7 @@ import { Collection, FilterQuery, MongoClient } from 'mongodb';
 import { DatabaseService } from '../../../database/database.service';
 import { Message } from '../../../messages/interfaces/message.interface';
 import { SystemModules } from '../../../preferences';
-import { ModuleUserPreferences, User } from '../interfaces/user.interface';
+import { ModuleUserPreferences, User } from '../entities/user.interface';
 import { SessionsDaoService } from './sessions-dao.service';
 
 
@@ -74,7 +74,7 @@ export class UsersDaoService {
             .then((usr) => usr[0]);
     }
 
-    async addOne(user: User): Promise<User> {
+    async addOne(user: User): Promise<User | undefined> {
         const { value } = await this.collection.findOneAndReplace(
             { username: user.username },
             user,
@@ -84,31 +84,28 @@ export class UsersDaoService {
                 upsert: true,
             }
         );
-        if (!value) {
-            throw new Error('User insert error');
-        }
         return value;
     }
 
-    async updateOne(username: string, user: Partial<User>): Promise<number> {
-        delete user.username;
+    async updateOne({ username, ...user }: Pick<User, 'username'> & Partial<User>): Promise<User | undefined> {
         const dbSession = this.connection.startSession();
-        const resp = await this.collection.updateOne(
+        const { value } = await this.collection.findOneAndUpdate(
             { username },
             { $set: user },
             {
                 writeConcern: { w: 'majority' },
                 session: dbSession,
+                returnDocument: 'after'
             },
         );
-        if (resp.modifiedCount > 0) {
+        if (value) {
             await this.sessionsDao.deleteUserSessions(
                 username,
                 dbSession
             );
         }
         dbSession.endSession();
-        return resp.modifiedCount;
+        return value;
     }
 
     async deleteUser(username: string): Promise<number | undefined> {

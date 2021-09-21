@@ -160,32 +160,26 @@ export class InvoicesDao {
         return result[0] || undefined;
     }
 
-    async insertOne(invoice: Invoice): Promise<Invoice> {
+    async insertOne(invoice: Invoice): Promise<Invoice | undefined> {
         const { value } = await this.collection.findOneAndReplace(
             { invoiceId: invoice.invoiceId },
             invoice,
             { upsert: true, returnDocument: 'after' });
-        if (!value) {
-            throw new NotFoundException(`Can't insert invoice ${invoice.invoiceId}`);
-        }
         return value;
     }
 
-    async updateInvoice({ invoiceId, ...update }: InvoiceUpdate): Promise<Invoice> {
+    async updateInvoice({ invoiceId, ...update }: InvoiceUpdate): Promise<Invoice | undefined> {
         const { value } = await this.collection.findOneAndUpdate(
             { invoiceId },
             { $set: update },
             { returnDocument: 'after' },
         );
-        if (!value) {
-            throw new NotFoundException(`Can't update invoice ${invoiceId}`);
-        }
         return value;
     }
 
-    async deleteInvoice(invoiceId: string): Promise<number> {
-        const result = await this.collection.deleteOne({ invoiceId });
-        return result.deletedCount || 0;
+    async deleteInvoice(invoiceId: string): Promise<number | undefined> {
+        const { deletedCount } = await this.collection.deleteOne({ invoiceId });
+        return deletedCount;
     }
 
     private async createCollection(db: Db) {
