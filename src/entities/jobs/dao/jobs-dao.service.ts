@@ -1,16 +1,15 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
-import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation, Db, } from 'mongodb';
-
+import { Inject, Injectable } from '@nestjs/common';
+import { classToPlain, plainToClass } from 'class-transformer';
+import { isUndefined, pickBy } from 'lodash';
+import { BulkWriteUpdateOneOperation, Collection, UpdateQuery } from 'mongodb';
+import { JobFilter, JobQuery } from '../dto/job-query';
+import { UpdateJobDto } from '../dto/update-job.dto';
+import { JobProduct } from '../entities/job-product.entity';
+import { Job } from '../entities/job.entity';
 import { JOBS_COLLECTION } from './jobs-collection.provider';
 
-import { JobQuery, JobFilter } from '../dto/job-query';
-import { Job } from '../entities/job.entity';
-import { JobProduct } from '../entities/job-product.entity';
 
-import { CreateJobDto } from '../dto/create-job.dto';
-import { UpdateJobDto } from '../dto/update-job.dto';
-import { Type, deserializeArray, Transform, classToPlain, Expose, plainToClass } from 'class-transformer';
-import { isUndefined, pickBy } from 'lodash';
+
 
 @Injectable()
 export class JobsDao {
@@ -82,23 +81,16 @@ export class JobsDao {
     }
 
 
-    async getOne(jobId: number): Promise<Job> {
-        const job = await this.collection.findOne({ jobId });
-        if (!job) {
-            throw new NotFoundException(`Job ${jobId} not found`);
-        }
-        return job;
+    async getOne(jobId: number): Promise<Job | null> {
+        return this.collection.findOne({ jobId });
     }
 
-    async insertOne(job: Job): Promise<Job> {
+    async insertOne(job: Job): Promise<Job | undefined> {
         const { value } = await this.collection.findOneAndReplace(
             { jobId: job.jobId },
             job,
             { upsert: true, returnDocument: 'after' }
         );
-        if (!value) {
-            throw new Error(`Job insert failed`);
-        }
         return value;
     }
 
@@ -109,7 +101,7 @@ export class JobsDao {
         return Object.values(insertedIds).map(id => id.toHexString());
     }
 
-    async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job> {
+    async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | undefined> {
         const { value } = await this.collection.findOneAndUpdate(
             {
                 jobId,
@@ -118,16 +110,12 @@ export class JobsDao {
             { $set: job },
             { returnDocument: 'after' }
         );
-        if (!value) {
-            throw new Error(`Job update failed`);
-
-        }
         return value;
     }
 
     async updateJobs(jobsUpdate: UpdateJobDto[]): Promise<number> {
         const operations: BulkWriteUpdateOneOperation<Job>[] =
-            jobsUpdate.map(job => this.jobUpdate(job));
+            jobsUpdate.map(jobUpdate);
 
         const { modifiedCount } = await this.collection.bulkWrite(operations);
         return modifiedCount || 0;
@@ -146,21 +134,23 @@ export class JobsDao {
 
     }
 
-    private jobUpdate({ jobId, ...job }: UpdateJobDto): BulkWriteUpdateOneOperation<Job> {
-
-        const update: UpdateQuery<Job> = {
-            $set: { ...job },
-        };
-
-        return {
-            updateOne:
-            {
-                filter: { jobId },
-                update,
-                upsert: false,
-            },
-        };
-    }
-
 
 }
+
+
+function jobUpdate({ jobId, ...job }: UpdateJobDto): BulkWriteUpdateOneOperation<Job> {
+
+    const update: UpdateQuery<Job> = {
+        $set: { ...job },
+    };
+
+    return {
+        updateOne:
+        {
+            filter: { jobId },
+            update,
+            upsert: false,
+        },
+    };
+}
+
