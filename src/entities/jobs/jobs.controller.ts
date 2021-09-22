@@ -1,21 +1,21 @@
-import { Req, Controller, Get, Body, Patch, Param, Delete, ValidationPipe, UsePipes, Query, ParseIntPipe, Put, NotFoundException } from '@nestjs/common';
-import { JobsService } from './jobs.service';
-import { CreateJobDto } from './dto/create-job.dto';
-import { UpdateJobDto } from './dto/update-job.dto';
+import { Body, Controller, Get, UseInterceptors, NotFoundException, ParseIntPipe, Patch, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Request } from 'express';
+import { ObjectId } from 'mongodb';
 import { Modules } from '../../login';
-import { Request, Response } from 'express';
 import { JobsDao } from './dao/jobs-dao.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
-import { KastesJobsDao } from './dao/kastes-jobs-dao';
-import { JobId } from './job-id.decorator';
-import { ObjectId } from 'mongodb';
+import { CreateJobDto } from './dto/create-job.dto';
 import { JobQuery } from './dto/job-query';
-import { Type, deserializeArray, Transform, classToPlain, Expose, plainToClass } from 'class-transformer';
+import { UpdateJobDto } from './dto/update-job.dto';
+import { JobId } from './job-id.decorator';
+import { JobsService } from './jobs.service';
+import { TouchProductInterceptor } from '../products/touch-product.interceptor';
+import { JobNotifyInterceptor } from './job-notify.interceptor';
 
 @Controller('jobs')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-// Notifications interceptor
+@UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
 
   constructor(
@@ -33,9 +33,8 @@ export class JobsController {
 
     const job = await this.jobsService.addFolderPathToJob(jobId);
     if (!job) {
-      throw new NotFoundException(`${jobId} not found`);
+      return undefined;
     }
-
     return this.jobsService.writeJobFile(job, req);
 
   }
@@ -48,25 +47,23 @@ export class JobsController {
   }
 
   @Patch(':jobId')
+  @UseInterceptors(TouchProductInterceptor)
   async updateOne(
     @JobId(ParseIntPipe) jobId: number,
     @Body() jobUpdate: UpdateJobDto,
   ) {
     return this.jobsDao.updateJob({ ...jobUpdate, jobId });
-
-    // this.productsDao.touchProduct(
   }
 
   @Patch('')
   async updateMany(
     @Body() jobsUpdate: UpdateJobDto[]
   ) {
-
     return this.jobsDao.updateJobs(jobsUpdate);
-
   }
 
   @Put('')
+  @UseInterceptors(TouchProductInterceptor)
   async insertOne(
     @Body() job: CreateJobDto
   ) {
@@ -76,9 +73,6 @@ export class JobsController {
       jobId: await this.jobsService.nexJobId(),
     };
     return this.jobsDao.insertOne(document);
-
-    // this.productsDao.touchProduct(
-
   }
 
   @Get('jobs-without-invoices-totals')

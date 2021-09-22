@@ -7,14 +7,16 @@ import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { KastesJobsDao } from './dao/kastes-jobs-dao';
 import { FilesystemModule } from '../../filesystem/filesystem.module';
 import { CustomersModule } from '../customers/customers.module';
-import { DatabaseModule } from '../../database';
 import { JobsCounterService } from './dao/counters.service';
+import { ProductsModule } from '../products/products.module';
+import { NotificationsModule } from '../../notifications';
 
 @Module({
   imports: [
     FilesystemModule,
     CustomersModule,
-    DatabaseModule,
+    ProductsModule,
+    NotificationsModule,
   ],
   controllers: [JobsController],
   providers: [

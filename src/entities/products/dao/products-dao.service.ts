@@ -36,9 +36,9 @@ export class ProductsDaoService {
         return value;
     }
 
-    async deleteOne(name: string): Promise<number> {
+    async deleteOne(name: string): Promise<number | undefined> {
         const { deletedCount } = await this.collection.deleteOne({ name });
-        return deletedCount || 0;
+        return deletedCount;
     }
 
 

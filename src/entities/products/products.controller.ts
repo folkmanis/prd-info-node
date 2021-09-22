@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ValidationPipe, UsePipes, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ValidationPipe, UsePipes, Query, UseInterceptors } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -7,6 +7,7 @@ import { Modules } from '../../login';
 import { ProductsDaoService } from './dao/products-dao.service';
 import { Product } from './entities/product.entity';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 
 @Controller('products')
 @Modules('jobs')
@@ -66,6 +67,7 @@ export class ProductsController {
 
   @Modules('jobs-admin')
   @Delete(':name')
+  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteProducts(
     @Param('name') name: string
   ) {
