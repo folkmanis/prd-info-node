@@ -28,12 +28,11 @@ export class XmfSearchController {
     return this.xmfSearchDao.findJobs(query, customers, start, limit);
   }
 
-  /*       @Get('customers')
-        private async getCustomers(req: Request, res: Response) {
-          req.log.debug('xmfCustomers customers');
-          res.json(await this.xmfSearchDao.getCustomers());
-        }
-      }
-   */
+  @Get('customers')
+  async getCustomers() {
+    return this.xmfSearchDao.findAllCustomers();
+  }
+
+
 
 }

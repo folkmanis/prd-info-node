@@ -89,6 +89,25 @@ export class XmfSearchDao {
 
     }
 
+    async findAllCustomers(): Promise<string[]> {
+        const pipeline = [
+            {
+                $group: {
+                    _id: '$CustomerName',
+                },
+            },
+            {
+                $sort: {
+                    _id: 1,
+                },
+            },
+        ];
+        const customers = await this.collection.aggregate<{ _id: string; }>(pipeline).toArray();
+        return customers.map((res) => res._id);
+
+    }
+
+
     /*     async insertJob(
             jobs: ArchiveJob | ArchiveJob[],
         ): Promise<{ modified: number; upserted: number; }> {
@@ -145,30 +164,6 @@ export class XmfSearchDao {
             }
         }
     
-        async getCustomers(): Promise<XmfArchiveResponse> {
-            const pipeline = [
-                {
-                    $group: {
-                        _id: '$CustomerName',
-                    },
-                },
-                {
-                    $sort: {
-                        _id: 1,
-                    },
-                },
-            ];
-            try {
-                return {
-                    error: false,
-                    xmfCustomers: (
-                        await this.archives.aggregate<{ _id: string; }>(pipeline).toArray()
-                    ).map((res) => res._id),
-                };
-            } catch (error) {
-                return { error };
-            }
-        }
     
         async customersToCustomersDb(dbName: string) {
             const pipeline: any[] = [
