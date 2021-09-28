@@ -1,8 +1,8 @@
-import { UseInterceptors, Controller, Get, Post, Body, Patch, Param, Delete, Query, ValidationPipe, ParseIntPipe, DefaultValuePipe, UsePipes } from '@nestjs/common';
+import { Controller, Get, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { QueryStartLimitPipe, StartAndLimit } from '../../lib/query-start-limit.pipe';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
 import { XmfSearchDao } from './dao/xmf-search.dao';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { QueryStartLimitPipe, StartAndLimit } from '../../lib/query-start-limit.pipe';
 import { XmfJobsFilter } from './dto/xmf-jobs-filter';
 import { QueryFilter } from './query-filter.decorator';
 

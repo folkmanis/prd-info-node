@@ -1,8 +1,8 @@
-import { Db, Collection } from 'mongodb';
-import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity';
 import { Injectable } from '@nestjs/common';
+import { Collection } from 'mongodb';
 import { DatabaseService } from '../../../database';
 import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
+import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity';
 
 @Injectable()
 export class XmfUploadProgressDao {
@@ -24,7 +24,8 @@ export class XmfUploadProgressDao {
             {
                 skip: start,
                 limit,
-            }
+            },
+
         )
             .sort({ _id: -1 })
             .toArray();

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { Observable, queueScheduler } from 'rxjs';
-import { UploadProgressService } from './upload-progress.service';
-import { tap, switchMap, toArray, reduce, count, concatMap, observeOn, finalize, map, mapTo } from 'rxjs/operators';
-import { rxBusboy } from './busboy-rx';
-import { linesToObject } from './lines-to-object';
+import { Observable } from 'rxjs';
+import { concatMap, finalize, map, tap, toArray } from 'rxjs/operators';
 import { XmfSearchDao } from '../dao/xmf-search.dao';
-import { lineReader } from './line-reader';
 import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity';
+import { rxBusboy } from './busboy-rx';
+import { lineReader } from './line-reader';
+import { linesToObject } from './lines-to-object';
+import { UploadProgressService } from './upload-progress.service';
 
 @Injectable()
 export class XmfParserService {
