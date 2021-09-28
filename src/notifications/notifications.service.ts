@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Notification } from './notification';
+import { Notification } from './entities';
 import { NotificationsDaoService } from './notifications-dao/notifications-dao.service';
 import { from, Observable } from 'rxjs';
 

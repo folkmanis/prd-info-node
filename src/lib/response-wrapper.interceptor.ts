@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor, Optional } 
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export type ResponseKeys = 'data' | 'deletedCount' | 'modifiedCount';
+export type ResponseKeys = 'data' | 'deletedCount' | 'modifiedCount' | string;
 
 export interface ResponseWrapperInterceptorOptions {
   wrapZero?: boolean;

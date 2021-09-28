@@ -4,7 +4,7 @@ import { Customer } from '../entities/customer.entity';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { ListCustomer } from '../dto/list-customer.dto';
-import { StartAndLimit } from '../../../lib/start-and-limit';
+import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
 
 @Injectable()
 export class CustomersDaoService {

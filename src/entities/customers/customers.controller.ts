@@ -8,7 +8,7 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ListCustomer } from './dto/list-customer.dto';
 import { Customer } from './entities/customer.entity';
-import { StartAndLimit } from '../../lib/start-and-limit';
+import { StartAndLimit } from '../../lib/query-start-limit.pipe';
 
 
 @Controller('customers')

@@ -7,7 +7,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { NotificationsDaoService } from './notifications-dao/notifications-dao.service';
-import { NotificationModules, Notification } from './notification';
+import { NotificationModules, Notification } from './entities';
 import { InstanceId } from '../preferences/instance-id.decorator';
 
 interface NotificationResponse {

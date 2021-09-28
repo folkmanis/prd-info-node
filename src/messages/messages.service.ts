@@ -2,16 +2,21 @@ import { Collection, Db, ObjectId } from 'mongodb';
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 
-import { MessageBase } from './interfaces/message.interface';
+import { Message } from './entities';
 import { SystemModules } from '../preferences';
+import { from, Observable } from 'rxjs';
+import { SystemNotification, NotificationsService, Systemoperations } from '../notifications';
 
 @Injectable()
 export class MessagesService {
-  collection: Collection<MessageBase> = this.dbService
+  collection: Collection<Message> = this.dbService
     .db()
     .collection('messages');
 
-  constructor(private dbService: DatabaseService) {
+  constructor(
+    private dbService: DatabaseService,
+    private notifications: NotificationsService,
+  ) {
     this.createIndexes();
   }
 
@@ -19,7 +24,7 @@ export class MessagesService {
     to: Date,
     modules: SystemModules[],
     username: string,
-  ): Promise<MessageBase[]> {
+  ): Promise<Message[]> {
     const pipeline: any[] = [
       {
         $match: {
@@ -64,9 +69,17 @@ export class MessagesService {
     return this.collection.aggregate(pipeline).toArray();
   }
 
-  async add(msg: MessageBase): Promise<ObjectId> {
-    const resp = await this.collection.insertOne(msg);
-    return resp.insertedId;
+  async add(msg: Message): Promise<ObjectId> {
+    const { insertedId } = await this.collection.insertOne(msg);
+    await this.notifications.notify(new SystemNotification({
+      id: insertedId,
+      operation: Systemoperations.MESSAGE_ADDED,
+    }));
+    return insertedId;
+  }
+
+  postMessage(msg: Message): Observable<ObjectId> {
+    return from(this.add(msg));
   }
 
   async markAs(

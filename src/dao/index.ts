@@ -4,7 +4,6 @@ export * from './preferencesDAO';
 export * from './productsDAO';
 export * from './usersDAO';
 export * from './kastesDAO';
-export * from './xmf-searchDAO';
 export * from './loggerDAO';
 export * from './messagesDAO';
 export * from './notificationsDAO';

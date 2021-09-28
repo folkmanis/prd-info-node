@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
 import { DatabaseService } from '../../database';
-import { Notification, NotificationModules } from '../notification';
+import { Notification, NotificationModules } from '../entities';
 
 @Injectable()
 export class NotificationsDaoService {
@@ -42,9 +42,7 @@ export class NotificationsDaoService {
   }
 
   async insertOne(notification: Notification): Promise<boolean> {
-    const resp = await this.collection.insertOne(notification, {
-      writeConcern: { w: 1 },
-    });
+    const resp = await this.collection.insertOne(notification);
     return resp.insertedCount > 0;
   }
 

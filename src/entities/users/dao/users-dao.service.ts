@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Collection, FilterQuery, MongoClient } from 'mongodb';
 import { DatabaseService } from '../../../database/database.service';
-import { Message } from '../../../messages/interfaces/message.interface';
+import { Message } from '../../../messages/entities/message.interface';
 import { SystemModules } from '../../../preferences';
 import { ModuleUserPreferences, User } from '../entities/user.interface';
 import { SessionsDaoService } from './sessions-dao.service';
@@ -209,7 +209,7 @@ export class UsersDaoService {
         return updRes.modifiedCount;
     }
 
-    async setMessage(module: SystemModules, message: Message<any>): Promise<number> {
+    async setMessage(module: SystemModules, message: Message): Promise<number> {
         const resp = await this.collection.updateMany(
             {
                 'preferences.modules': module,

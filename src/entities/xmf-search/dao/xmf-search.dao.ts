@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from '../../../database';
 import { Collection, Db, ObjectId, Cursor } from 'mongodb';
-import { ArchiveSearchQuery } from '../dto/archive-search-query.dto';
-import { intersection } from 'lodash';
+import { XmfJobsFilter } from '../dto/xmf-jobs-filter';
 import { ArchiveJob } from '../entities/xmf-archive.interface';
+import { Observable, of, from } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class XmfSearchDao {
@@ -11,61 +12,51 @@ export class XmfSearchDao {
     private db = this.dbService.db();
 
     private collection: Collection<ArchiveJob> = this.db.collection('xmfarchives');
-    // private archSorted: Collection<ArchiveJob> = this.db.collection('xmfArchiveSorted');
 
     constructor(
         private readonly dbService: DatabaseService,
-    ) { }
+    ) {
+        this.createIndexes();
+    }
 
-
-    private lastUpdate: Date | undefined; // datums, kad bijušas pēdējās izmaiņas datubāzē
-    private sortedDbDate: Date | undefined; // šķirotās datubāzes laiks
-
-
-    // await this.sortedDb();
 
     async findJobs(
-        query: ArchiveSearchQuery,
-        customers: string[],
+        filter: XmfJobsFilter,
         start: number,
         limit: number,
     ) {
-
-        const filter = new XmfJobsFilter(query, customers);
-        const cursor = this.collection.find(filter.toObject())
-            .project({
-                _id: 0,
-                JDFJobID: 1,
-                DescriptiveName: 1,
-                CustomerName: 1,
-                'Archives.Location': 1,
-                'Archives.Date': 1,
-                'Archives.Action': 1,
-                'Archives.yearIndex': 1,
-                'Archives.monthIndex': 1,
-            });
-        const data = await cursor
-            .skip(start)
-            .limit(limit)
+        return this.collection.find(
+            filter.toFilter(),
+            {
+                projection: {
+                    _id: 0,
+                    JDFJobID: 1,
+                    DescriptiveName: 1,
+                    CustomerName: 1,
+                    'Archives.Location': 1,
+                    'Archives.Date': 1,
+                    'Archives.Action': 1,
+                    'Archives.yearIndex': 1,
+                    'Archives.monthIndex': 1,
+                },
+                skip: start,
+                limit,
+                sort: {
+                    'Archives.yearIndex': -1,
+                    'Archives.monthIndex': -1,
+                }
+            }
+        )
             .toArray();
-
-        if (start !== 0) {
-            return {
-                data
-            };
-        } else {
-            return {
-                data,
-                count: await cursor.count(),
-                facet: await this.getFacetResult(filter.toObject()),
-            };
-        }
-
     }
 
-    private async getFacetResult(filter: Record<string, any>) {
+    async getCount(filter: XmfJobsFilter): Promise<number> {
+        return this.collection.countDocuments(filter.toFilter());
+    }
+
+    async findFacet(filter: XmfJobsFilter) {
         const pipeline = [
-            { $match: filter },
+            { $match: filter.toFilter() },
             {
                 $facet: {
                     customerName: [{ $sortByCount: '$CustomerName' }],
@@ -107,6 +98,51 @@ export class XmfSearchDao {
 
     }
 
+    private createIndexes() {
+        this.collection.createIndexes([
+            { key: { JDFJobID: 1 }, name: 'JDFJobID' },
+            {
+                key: {
+                    JobID: 1,
+                    JDFJobID: 1,
+                },
+                name: 'JobID_1_JDFJobID_1',
+                unique: true,
+            },
+            {
+                key: {
+                    'Archives.yearIndex': -1,
+                    'Archives.monthIndex': -1,
+                },
+                name: 'yearIndex_monthIndex',
+            },
+        ]);
+
+    }
+
+    insertManyRx(jobs: ArchiveJob[]): Observable<{ modifiedCount: number, upsertedCount: number; }> {
+        if (jobs.length === 0) {
+            return of({ modifiedCount: 0, upsertedCount: 0 });
+        }
+
+        const update = jobs.map(job => ({
+            updateOne: {
+                filter: {
+                    JobID: job.JobID,
+                    JDFJobID: job.JDFJobID,
+                },
+                update: { $set: job },
+                upsert: true,
+            },
+        }));
+
+        return from(this.collection.bulkWrite(update)).pipe(
+            map(({ modifiedCount, upsertedCount }) => ({
+                modifiedCount: modifiedCount || 0,
+                upsertedCount: upsertedCount || 0,
+            }))
+        );
+    }
 
     /*     async insertJob(
             jobs: ArchiveJob | ArchiveJob[],
@@ -114,21 +150,7 @@ export class XmfSearchDao {
             if (!(jobs instanceof Array)) {
                 jobs = [jobs];
             }
-            if (jobs.length === 0) {
-                return { modified: 0, upserted: 0 };
-            }
-            const update = jobs.map((job) => ({
-                updateOne: {
-                    filter: {
-                        JobID: job.JobID,
-                        JDFJobID: job.JDFJobID,
-                    },
-                    update: { $set: job },
-                    upsert: true,
-                },
-            }));
             try {
-                const updResult = await this.archives.bulkWrite(update);
                 this.archives.createIndexes([
                     { key: { JDFJobID: 1 }, name: 'JDFJobID' },
                     {
@@ -303,36 +325,5 @@ export class XmfSearchDao {
     }
         
      */
-
-}
-
-class XmfJobsFilter {
-
-    constructor(
-        private search: ArchiveSearchQuery,
-        private customers: string[],
-    ) { }
-
-    toObject(): Record<string, any> {
-        const filter: Record<string, any> = {};
-        const { customerName, q, year, month } = this.search;
-        const customers = customerName ? intersection(customerName, this.customers) : this.customers;
-        filter.CustomerName = {
-            $in: customers,
-        };
-        if (q) {
-            filter['$or'] = [
-                { JDFJobID: q },
-                { DescriptiveName: { $regex: q, $options: 'i' } },
-            ];
-        }
-        if (year) {
-            filter['Archives.yearIndex'] = { $in: year };
-        }
-        if (month) {
-            filter['Archives.monthIndex'] = { $in: month };
-        }
-        return filter;
-    }
 
 }

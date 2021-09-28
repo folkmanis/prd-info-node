@@ -69,9 +69,6 @@ export class FtpWatcherService {
                     path: path?.slice(this.offset).split('/'),
                 }),
             );
-            this.notifService.notify(
-                new SystemNotification({ operation: 'ftpWatcher', id: messageId }),
-            );
         };
     };
 

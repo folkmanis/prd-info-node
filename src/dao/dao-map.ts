@@ -8,7 +8,6 @@ import { UsersDao } from './usersDAO';
 import { PreferencesDao } from './preferencesDAO';
 import { ProductsDao } from './productsDAO';
 import { KastesDao } from './kastesDAO';
-import { XmfSearchDao } from './xmf-searchDAO';
 import { LoggerDao } from './loggerDAO';
 import { MessagesDao } from './messagesDAO';
 import { NotificationsDao } from './notificationsDAO';
@@ -22,7 +21,6 @@ const DAOS: Type<Dao>[] = [
   PreferencesDao,
   ProductsDao,
   KastesDao,
-  XmfSearchDao,
   LoggerDao,
   MessagesDao,
   NotificationsDao,

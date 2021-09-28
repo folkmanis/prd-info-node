@@ -1,38 +1,47 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ValidationPipe, ParseIntPipe, DefaultValuePipe } from '@nestjs/common';
-import { XmfSearchService } from './xmf-search.service';
-import { CreateXmfSearchDto } from './dto/create-xmf-search.dto';
-import { UpdateXmfSearchDto } from './dto/update-xmf-search.dto';
+import { UseInterceptors, Controller, Get, Post, Body, Patch, Param, Delete, Query, ValidationPipe, ParseIntPipe, DefaultValuePipe, UsePipes } from '@nestjs/common';
 import { Modules } from '../../login';
 import { XmfSearchDao } from './dao/xmf-search.dao';
-import { JsonParsePipe } from './json-parse.pipe';
-import { ArchiveSearchQuery } from './dto/archive-search-query.dto';
-import { Usr, User } from '../users';
-import { PreferencesService } from '../../preferences';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { QueryStartLimitPipe, StartAndLimit } from '../../lib/query-start-limit.pipe';
+import { XmfJobsFilter } from './dto/xmf-jobs-filter';
+import { QueryFilter } from './query-filter.decorator';
 
 @Controller('xmf-search')
 @Modules('xmf-search')
+@UsePipes(ValidationPipe)
 export class XmfSearchController {
+
   constructor(
     private readonly xmfSearchDao: XmfSearchDao,
-    private readonly prefService: PreferencesService,
   ) { }
 
   @Get()
   async search(
-    @Query('query', JsonParsePipe, ValidationPipe) query: ArchiveSearchQuery,
-    @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
-    @Query('start', new DefaultValuePipe(0), ParseIntPipe) start: number,
-    @Usr() user: User,
+    @Query(QueryStartLimitPipe) { limit, start }: StartAndLimit,
+    @QueryFilter() query: XmfJobsFilter,
   ) {
-    const { customers } = await this.prefService.getUserPreferences(user.username);
-    return this.xmfSearchDao.findJobs(query, customers, start, limit);
+    return this.xmfSearchDao.findJobs(query, start, limit);
+  }
+
+  @Get('count')
+  @UseInterceptors(new ResponseWrapperInterceptor('count'))
+  async getCount(
+    @QueryFilter() query: XmfJobsFilter,
+  ) {
+    return this.xmfSearchDao.getCount(query);
+  }
+
+  @Get('facet')
+  async getFacet(
+    @QueryFilter() query: XmfJobsFilter,
+  ) {
+    return this.xmfSearchDao.findFacet(query);
   }
 
   @Get('customers')
   async getCustomers() {
     return this.xmfSearchDao.findAllCustomers();
   }
-
 
 
 }

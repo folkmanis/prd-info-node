@@ -1,8 +1,8 @@
 import { Modules, MODULES } from '../../../interfaces/preferences.interface';
-import { Message } from '../../../interfaces/message.interface';
 import { Type } from 'class-transformer';
 import { IsDate, IsNotEmpty, IsNumber, IsBoolean, ArrayContains, IsInstance, IsString, IsArray, ValidateNested } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { Message } from '../../../messages';
 
 export class UserPreferences {
 
@@ -36,7 +36,7 @@ export class User {
 
   last_login?: Date;
   sessions?: UserSession[];
-  messages?: Message<any>[];
+  messages?: Message[];
 
 }
 

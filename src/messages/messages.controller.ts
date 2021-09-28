@@ -7,10 +7,11 @@ import {
   Query,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { User, Usr } from '../entities/users';
+import { User } from '../entities/users';
 import { MessagesService } from './messages.service';
-import { NotificationsService, SystemNotification } from '../notifications';
+import { NotificationsService, SystemNotification, Systemoperations } from '../notifications';
 import { ObjectIdPipe } from '../lib/object-id.pipe';
+import { Usr } from '../session';
 
 @Controller('messages')
 export class MessagesController {
@@ -42,7 +43,7 @@ export class MessagesController {
 
     if (modifiedCount > 0) {
       this.notificationsService.notify(
-        new SystemNotification({ operation: 'messages' }),
+        new SystemNotification({ operation: Systemoperations.MESSAGE_ALL_READ }),
       );
     }
     return modifiedCount;
@@ -61,7 +62,7 @@ export class MessagesController {
 
     if (deletedCount > 0) {
       this.notificationsService.notify(
-        new SystemNotification({ operation: 'messages' }),
+        new SystemNotification({ operation: Systemoperations.MESSAGE_DELETED }),
       );
     }
     return deletedCount;
