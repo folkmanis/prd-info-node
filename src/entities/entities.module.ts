@@ -5,6 +5,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { JobsModule } from './jobs/jobs.module';
 import { ProductsModule } from './products/products.module';
 import { XmfSearchModule } from './xmf-search/xmf-search.module';
+import { KastesModule } from './kastes/kastes.module';
 
 @Module({
     imports: [
@@ -14,6 +15,7 @@ import { XmfSearchModule } from './xmf-search/xmf-search.module';
         JobsModule,
         ProductsModule,
         XmfSearchModule,
+        KastesModule,
     ]
 })
 export class EntitiesModule { }
