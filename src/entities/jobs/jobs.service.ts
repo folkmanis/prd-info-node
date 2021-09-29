@@ -10,6 +10,7 @@ import { Request } from 'express';
 import { JobsCounterService } from './dao/counters.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { Production } from './entities/job-categories';
+import { JobQuery } from './dto/job-query';
 
 @Injectable()
 export class JobsService {
@@ -23,6 +24,13 @@ export class JobsService {
     private readonly counters: JobsCounterService,
   ) { }
 
+  async getAll(query: JobQuery): Promise<Job[]> {
+    return this.jobsDao.getAll(query);
+  }
+
+  async getOne(jobId: number): Promise<Job | null> {
+    return this.jobsDao.getOne(jobId);
+  }
 
   async addFolderPathToJob(jobId: number): Promise<Job | undefined> {
 

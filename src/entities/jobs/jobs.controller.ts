@@ -84,14 +84,14 @@ export class JobsController {
   async getJob(
     @JobId(ParseIntPipe) jobId: number,
   ) {
-    return this.jobsDao.getOne(jobId);
+    return this.jobsService.getOne(jobId);
   }
 
   @Get('')
   async getJobs(
     @Query() query: JobQuery
   ) {
-    return this.jobsDao.getAll(query);
+    return this.jobsService.getAll(query);
   }
 
 }
