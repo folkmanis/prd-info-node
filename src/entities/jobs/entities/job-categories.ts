@@ -21,3 +21,5 @@ export class KastesProduction extends ProductionCategory {
     @IsBoolean()
     isLocked: boolean = false; // ir izveidots pakošanas saraksts
 }
+
+export type Production = ReproProduction | KastesProduction;

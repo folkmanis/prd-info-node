@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { Veikals } from '../entities/kaste.entity';
+import { Veikals } from '../entities/veikals';
 import { VEIKALI } from './veikali.injector';
 
 @Injectable()
@@ -10,6 +10,50 @@ export class VeikaliDaoService {
     constructor(
         @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
     ) { }
+
+    async apjomi(pasutijums: number): Promise<number[]> {
+        const pipeline: Array<any> = [
+            {
+                $match: { pasutijums },
+            },
+            {
+                $unwind: {
+                    path: '$kastes',
+                    preserveNullAndEmptyArrays: false,
+                },
+            },
+            {
+                $group: { _id: '$kastes.total' },
+            },
+            {
+                $sort: { _id: 1 },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    total: '$_id',
+                },
+            },
+        ];
+        const result = await this.collection.aggregate<{ total: number; }>(pipeline).toArray();
+        return result.map(total => total.total);
+    }
+
+
+    async insertMany(
+        veikali: Veikals[],
+        orderIds: number[],
+    ): Promise<number> {
+        await this.collection.deleteMany({
+            pasutijums: {
+                $in: orderIds,
+            }
+        });
+        const { insertedCount } = await this.collection.insertMany(veikali);
+        return insertedCount;
+    }
+
+
 
 }
 
@@ -89,22 +133,6 @@ import Logger from '../lib/logger';
   * Pievieno pakošanas sarakstu
    * @param kastes Pakošanas saraksts
 
-  async veikaliAdd(
-    orderId: number,
-    kastes: Veikals[],
-  ): Promise<KastesResponse> {
-    try {
-      const insertResp = await this.veikali.insertMany(kastes);
-      return {
-        error: false,
-        insertedCount: insertResp.insertedCount,
-      };
-    } catch (error) {
-      Logger.error('Veikali insert failed', error);
-      return { error };
-    }
-  }
-
   async updateVeikali(kastes: Veikals[]): Promise<KastesResponse> {
     Logger.info('veikals update requested', { kastes });
     try {
@@ -130,41 +158,6 @@ import Logger from '../lib/logger';
     }
   }
 
-  async kastesApjomi(pas: number): Promise<KastesResponse> {
-    const pipeline: Array<any> = [
-      {
-        $match: { pasutijums: pas },
-      },
-      {
-        $unwind: {
-          path: '$kastes',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      {
-        $group: { _id: '$kastes.total' },
-      },
-      {
-        $sort: { _id: 1 },
-      },
-      {
-        $project: {
-          _id: 0,
-          total: '$_id',
-        },
-      },
-    ];
-    try {
-      return {
-        error: false,
-        apjomi: (
-          await this.veikali.aggregate<{ total: number }>(pipeline).toArray()
-        ).map((tot) => tot.total),
-      };
-    } catch (error) {
-      return { error };
-    }
-  }
 
   * Atrod vienu ierakstu no datubāzes pēc tā ID
    * @param _id Ieraksta ID
@@ -177,66 +170,11 @@ import Logger from '../lib/logger';
    * @param pasutijums pasūtījuma ID
    * @param apjoms skaits vienā kastē (ja nav norādīts, meklēs visus)
 
-  async kastesList(pasutijums: number): Promise<KastesResponse> {
-    const kastesPipeline: Array<any> = [
-      {
-        $match: {
-          pasutijums,
-        },
-      },
-      {
-        $sort: {
-          kods: 1,
-        },
-      },
-      {
-        $unwind: {
-          path: '$kastes',
-          includeArrayIndex: 'kaste',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-    ];
-    try {
-      return {
-        error: false,
-        data: await this.veikali.aggregate(kastesPipeline).toArray(),
-      };
-    } catch (error) {
-      return { error };
-    }
-  }
 
   * Izsniedz vienas piegādes kastes ierakstu
    * @param _id Piegādes ieraksta _id
    * @param kaste Kastas kārtas numurs
 
-  async getKaste(_id: ObjectId, kaste: number): Promise<KastesResponse> {
-    const pipeline = [
-      {
-        $match: { _id },
-      },
-      {
-        $unwind: {
-          path: '$kastes',
-          includeArrayIndex: 'kaste',
-          preserveNullAndEmptyArrays: false,
-        },
-      },
-      {
-        $match: { kaste },
-      },
-    ];
-    try {
-      const res = await this.veikali.aggregate(pipeline).toArray();
-      return {
-        error: false,
-        data: res[0],
-      };
-    } catch (error) {
-      return { error };
-    }
-  }
 
   * Uzstāda ierakstu kā gatavu
    * @param id Ieraksta ObjectId

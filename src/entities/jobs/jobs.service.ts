@@ -9,6 +9,7 @@ import { FilesystemService } from '../../filesystem';
 import { Request } from 'express';
 import { JobsCounterService } from './dao/counters.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
+import { Production } from './entities/job-categories';
 
 @Injectable()
 export class JobsService {
@@ -84,5 +85,11 @@ export class JobsService {
 
   async getJobsTotals(jobIds: number[]) {
     return this.jobsInvoicesDao.getJobsTotals(jobIds);
+  }
+
+  async setProduction(jobsId: number[], production: Partial<Production>) {
+    const update = Object.assign({}, ...Object.keys(production).map((key) => ({ ['production.' + key]: production[key as keyof Production] })));
+    const jobsUpdate: UpdateJobDto[] = jobsId.map(jobId => ({ ...update, jobId }));
+    return this.jobsDao.updateJobs(jobsUpdate);
   }
 }
