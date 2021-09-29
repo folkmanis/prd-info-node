@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Post } from '@nestjs/common';
 import { Modules } from '../../login';
 import { Usr } from '../../session';
 import { ModuleUserPreferences, UsersService } from '../users';
@@ -18,7 +18,7 @@ export class KastesPreferencesController {
         return this.usersService.getModulePreferences(username, 'kastes');
     }
 
-    @Post()
+    @Patch()
     async setPreferences(
         @Usr('username') username: string,
         @Body() preferences: ModuleUserPreferences,

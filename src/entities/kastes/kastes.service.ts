@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CreateKasteDto } from './dto/create-kaste.dto';
-import { UpdateKasteDto } from './dto/update-kaste.dto';
+import { VeikalsCreateDto } from './dto/veikals-create.dto';
+import { VeikalsUpdateDto } from './dto/veikals-update.dto';
 
 @Injectable()
 export class KastesService {
-  create(createKasteDto: CreateKasteDto) {
+  create(createKasteDto: VeikalsCreateDto) {
     return 'This action adds a new kaste';
   }
 
@@ -16,7 +16,7 @@ export class KastesService {
     return `This action returns a #${id} kaste`;
   }
 
-  update(id: number, updateKasteDto: UpdateKasteDto) {
+  update(id: number, updateKasteDto: VeikalsUpdateDto) {
     return `This action updates a #${id} kaste`;
   }
 

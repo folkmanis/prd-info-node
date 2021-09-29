@@ -1,81 +1,82 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Collection } from 'mongodb';
+import { BulkWriteOperation, Collection } from 'mongodb';
 import { Veikals } from '../entities/veikals';
 import { VEIKALI } from './veikali.injector';
+import { VeikalsCreateDto } from '../dto/veikals-create.dto';
+import { VeikalsUpdateDto } from '../dto/veikals-update.dto';
+import { omit } from 'lodash';
 
 @Injectable()
 export class VeikaliDaoService {
 
 
-    constructor(
-        @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-    ) { }
+  constructor(
+    @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
+  ) { }
 
-    async apjomi(pasutijums: number): Promise<number[]> {
-        const pipeline: Array<any> = [
-            {
-                $match: { pasutijums },
-            },
-            {
-                $unwind: {
-                    path: '$kastes',
-                    preserveNullAndEmptyArrays: false,
-                },
-            },
-            {
-                $group: { _id: '$kastes.total' },
-            },
-            {
-                $sort: { _id: 1 },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    total: '$_id',
-                },
-            },
-        ];
-        const result = await this.collection.aggregate<{ total: number; }>(pipeline).toArray();
-        return result.map(total => total.total);
-    }
+  async apjomi(pasutijums: number): Promise<number[]> {
+    const pipeline: Array<any> = [
+      {
+        $match: { pasutijums },
+      },
+      {
+        $unwind: {
+          path: '$kastes',
+          preserveNullAndEmptyArrays: false,
+        },
+      },
+      {
+        $group: { _id: '$kastes.total' },
+      },
+      {
+        $sort: { _id: 1 },
+      },
+      {
+        $project: {
+          _id: 0,
+          total: '$_id',
+        },
+      },
+    ];
+    const result = await this.collection.aggregate<{ total: number; }>(pipeline).toArray();
+    return result.map(total => total.total);
+  }
 
 
-    async insertMany(
-        veikali: Veikals[],
-        orderIds: number[],
-    ): Promise<number> {
-        await this.collection.deleteMany({
-            pasutijums: {
-                $in: orderIds,
-            }
-        });
-        const { insertedCount } = await this.collection.insertMany(veikali);
-        return insertedCount;
-    }
+  async insertMany(
+    veikali: VeikalsCreateDto[],
+    orderIds: number[],
+  ): Promise<number> {
+    await this.collection.deleteMany({
+      pasutijums: {
+        $in: orderIds,
+      }
+    });
+    const { insertedCount } = await this.collection.insertMany(veikali);
+    return insertedCount;
+  }
 
+  async deleteOrder(jobId: number): Promise<number> {
+    const { deletedCount } = await this.collection.deleteMany({ pasutijums: jobId });
+    return deletedCount || 0;
+  }
+
+  async updateOne(pasutijums: number, kods: number, veikals: VeikalsUpdateDto): Promise<Veikals | undefined> {
+    const { value } = await this.collection.findOneAndUpdate(
+      { pasutijums, kods },
+      {
+        $set: veikals,
+        $currentDate: { lastModified: true },
+      },
+      { returnDocument: 'after' }
+    );
+    return value;
+  }
 
 
 }
 
 /*
-import { omit } from 'lodash';
-import {
-  BulkWriteOperation,
-  Collection,
-  Db,
-  ObjectId,
-  ObjectID,
-} from 'mongodb';
-import {
-  ApjomiTotals,
-  ColorTotals,
-  KastesResponse,
-  Veikals,
-} from '../interfaces';
-import { Dao } from '../interfaces/dao.interface';
-import Logger from '../lib/logger';
-
-
   async colorTotals(pasutijums: number): Promise<ColorTotals[]> {
     const pipeline = [
       { $match: { pasutijums } },
@@ -166,112 +167,13 @@ import Logger from '../lib/logger';
     return await this.veikali.findOne({ _id });
   }
 
-  * Izvērsts saraksts ar pakojumu pa veikaliem
-   * @param pasutijums pasūtījuma ID
-   * @param apjoms skaits vienā kastē (ja nav norādīts, meklēs visus)
-
-
-  * Izsniedz vienas piegādes kastes ierakstu
-   * @param _id Piegādes ieraksta _id
-   * @param kaste Kastas kārtas numurs
-
-
   * Uzstāda ierakstu kā gatavu
    * @param id Ieraksta ObjectId
    * @param yesno Gatavība jā/nē
    * @param paka Pakas numurs uz veikalu
 
-  async setGatavs({
-    id,
-    kaste,
-    yesno,
-  }: {
-    id: ObjectID;
-    kaste: number;
-    yesno: boolean;
-  }): Promise<KastesResponse> {
-    // TODO
 
-    Logger.debug('set gatavs dao', { id, kaste, yesno });
-    try {
-      const resp = await this.veikali.updateOne(
-        { _id: id },
-        {
-          $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${yesno} }`),
-          $currentDate: { lastModified: true },
-        },
-      );
-      return {
-        error: false,
-        modifiedCount: resp.modifiedCount,
-      };
-    } catch (error) {
-      return { error };
-    }
-  }
 
-  async setLabel(
-    pasutijumsId: number,
-    kods: number | string,
-  ): Promise<KastesResponse> {
-    try {
-      const data =
-        (
-          await this.veikali
-            .aggregate([
-              {
-                $unwind: {
-                  path: '$kastes',
-                  includeArrayIndex: 'kaste',
-                  preserveNullAndEmptyArrays: false,
-                },
-              },
-              {
-                $match: {
-                  pasutijums: pasutijumsId,
-                  $or: [{ kods }, { kods: +kods }],
-                  'kastes.uzlime': false,
-                },
-              },
-            ])
-            .toArray()
-        )[0] || undefined;
-      if (!data) {
-        return { error: false, modifiedCount: 0 };
-      } else {
-        const resp = await this.veikali.updateOne(
-          {
-            pasutijums: pasutijumsId,
-            $or: [{ kods }, { kods: +kods }],
-            'kastes.uzlime': false,
-          },
-          {
-            $set: JSON.parse(`{ "kastes.${data.kaste}.uzlime": true }`),
-            $currentDate: { lastModified: true },
-          },
-        );
-        return {
-          error: false,
-          modifiedCount: resp.modifiedCount,
-          data,
-        };
-      }
-    } catch (error) {
-      return { error };
-    }
-  }
-
-  async deleteKastes(jobId: number): Promise<KastesResponse> {
-    try {
-      const resp = this.veikali.deleteMany({ pasutijums: jobId });
-      return {
-        error: false,
-        deletedCount: (await resp).deletedCount,
-      };
-    } catch (error) {
-      return { error };
-    }
-  }
 }
 
 */

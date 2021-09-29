@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
 import { VEIKALI } from './veikali.injector';
 import { Veikals } from '../entities/veikals';
-import { Kaste } from '../entities/kaste.entity';
+import { VeikalsKaste } from '../dto/veikals-kaste.dto';
 
 @Injectable()
 export class KastesDaoService {
@@ -11,7 +11,7 @@ export class KastesDaoService {
         @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
     ) { }
 
-    async findAllKastes(pasutijums: number) {
+    async findAllKastes(pasutijums: number): Promise<VeikalsKaste[]> {
         const kastesPipeline = [
             {
                 $match: { pasutijums },
@@ -27,10 +27,10 @@ export class KastesDaoService {
                 },
             },
         ];
-        return this.collection.aggregate(kastesPipeline).toArray();
+        return this.collection.aggregate<VeikalsKaste>(kastesPipeline).toArray();
     }
 
-    async findOneByPasutijums(pasutijums: number, kods: number, kaste: number) {
+    async findOneByPasutijums(pasutijums: number, kods: number, kaste: number): Promise<VeikalsKaste | undefined> {
         const pipeline = [
             {
                 $match: { pasutijums, kods },
@@ -46,10 +46,11 @@ export class KastesDaoService {
                 $match: { kaste },
             },
         ];
-        return this.collection.aggregate(pipeline).toArray();
+        const [veikals] = await this.collection.aggregate<VeikalsKaste>(pipeline).toArray();
+        return veikals;
     }
 
-    async findOneById(_id: ObjectId, kaste: number) {
+    async findOneById(_id: ObjectId, kaste: number): Promise<VeikalsKaste | undefined> {
         const pipeline = [
             {
                 $match: { _id },
@@ -65,8 +66,60 @@ export class KastesDaoService {
                 $match: { kaste },
             },
         ];
-        return this.collection.aggregate(pipeline).toArray();
+        const [veikals] = await this.collection.aggregate<VeikalsKaste>(pipeline).toArray();
+        return veikals;
     }
+
+    async setLabel(pasutijums: number, kods: number): Promise<VeikalsKaste | undefined> {
+
+        const pipeline = [
+            {
+                $unwind: {
+                    path: '$kastes',
+                    includeArrayIndex: 'kaste',
+                    preserveNullAndEmptyArrays: false,
+                },
+            },
+            {
+                $match: {
+                    pasutijums,
+                    kods,
+                    'kastes.uzlime': false,
+                },
+            },
+        ];
+        const [data] = await this.collection.aggregate(pipeline).toArray();
+        if (!data) {
+            return undefined;
+        }
+        await this.collection.updateOne(
+            {
+                pasutijums,
+                kods,
+            },
+            {
+                $set: JSON.parse(`{ "kastes.${data.kaste}.uzlime": true }`),
+                $currentDate: { lastModified: true },
+            },
+        );
+        return this.findOneById(data._id, data.kaste!);
+    }
+
+    async setGatavs(pasutijums: number, kods: number, kaste: number, value: boolean): Promise<VeikalsKaste | undefined> {
+
+        const { value: veikals } = await this.collection.findOneAndUpdate(
+            { pasutijums, kods },
+            {
+                $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${value} }`),
+                $currentDate: { lastModified: true },
+            },
+            {
+                returnDocument: 'after'
+            }
+        );
+        return veikals && this.findOneById(veikals._id, kaste);
+    }
+
 
 
 }

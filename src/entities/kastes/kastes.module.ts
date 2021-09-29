@@ -10,9 +10,11 @@ import { JobsModule } from '../jobs/jobs.module';
 import { KastesDaoService } from './dao/kastes-dao.service';
 import { KastesPreferencesController } from './kastes-preferences.controller';
 import { UsersModule } from '../users';
+import { KastesJobsController } from './kastes-jobs.controller';
 
 @Module({
   controllers: [
+    KastesJobsController,
     KastesPreferencesController,
     KastesController,
     XlsParserController,

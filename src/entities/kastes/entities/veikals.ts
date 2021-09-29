@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Kaste } from './kaste.entity';
-import { Type } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { IsMongoId, IsNumber, IsDate, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class Veikals {
@@ -29,5 +29,6 @@ export class Veikals {
 
     @IsNumber()
     @IsOptional()
+    @Exclude()
     kaste?: number;
 }
