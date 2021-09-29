@@ -1,26 +1,21 @@
 import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Collection, FilterQuery, MongoClient } from 'mongodb';
-import { DatabaseService } from '../../../database/database.service';
 import { Message } from '../../../messages/entities/message.interface';
 import { SystemModules } from '../../../preferences';
 import { ModuleUserPreferences, User } from '../entities/user.interface';
 import { SessionsDaoService } from './sessions-dao.service';
-
+import { USERS } from './users.provider';
 
 @Injectable()
 export class UsersDaoService {
 
-    private collection: Collection<User>;
     private logger = new Logger(UsersDaoService.name);
 
     constructor(
-        dbService: DatabaseService,
+        @Inject(USERS) private collection: Collection<User>,
         private sessionsDao: SessionsDaoService,
         @Inject('MONGO_CLIENT') private connection: MongoClient,
-    ) {
-        this.collection = dbService.db().collection('users');
-        this.createIndexes();
-    }
+    ) { }
 
     async findAllUsers(): Promise<Partial<User>[]> {
         const projection = {
@@ -187,7 +182,7 @@ export class UsersDaoService {
             throw new NotFoundException(`Non-existing user ${username}`);
         }
 
-        const userPreferences = user.modulePreferences || [];
+        const userPreferences = user.userPreferences || [];
 
         const idx = userPreferences.findIndex((mod) => mod.module === module);
         if (idx === -1) {
@@ -202,11 +197,11 @@ export class UsersDaoService {
             };
         }
 
-        const updRes = await this.collection.updateOne(
+        const { modifiedCount } = await this.collection.updateOne(
             { username },
-            { $set: { modulePreferences: userPreferences } },
+            { $set: { userPreferences } },
         );
-        return updRes.modifiedCount;
+        return modifiedCount;
     }
 
     async setMessage(module: SystemModules, message: Message): Promise<number> {
@@ -224,17 +219,4 @@ export class UsersDaoService {
         return resp.modifiedCount;
     }
 
-    private async createIndexes() {
-        try {
-            await this.collection.createIndexes([
-                {
-                    key: { username: 1 },
-                    name: 'username',
-                    unique: true,
-                },
-            ]);
-        } catch (error) {
-            this.logger.error(error);
-        }
-    }
 }

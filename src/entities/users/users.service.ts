@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './entities/user.interface';
+import { User, ModuleUserPreferences } from './entities/user.interface';
 import { UsersDaoService } from './dao/users-dao.service';
+import { SystemModules } from '../../preferences';
 
 @Injectable()
 export class UsersService {
@@ -15,6 +16,15 @@ export class UsersService {
 
   async login(username: string, password: string): Promise<User | null> {
     return this.usersDao.login(username, password);
+  }
+
+  async getModulePreferences(username: string, module: SystemModules): Promise<ModuleUserPreferences> {
+    return this.usersDao.getModuleUserPreferences(username, module);
+  }
+
+  async setModulePreferences(username: string, module: SystemModules, preferences: ModuleUserPreferences): Promise<ModuleUserPreferences> {
+    await this.usersDao.updateModuleUserPreferences(username, module, preferences);
+    return this.getModulePreferences(username, module);
   }
 
 }
