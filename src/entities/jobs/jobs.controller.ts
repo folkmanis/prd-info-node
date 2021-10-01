@@ -91,7 +91,6 @@ export class JobsController {
   async getJobs(
     @Query() query: JobQuery
   ) {
-    console.log(query instanceof JobQuery);
     return this.jobsService.getAll(query);
   }
 
