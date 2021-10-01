@@ -109,7 +109,12 @@ export class JobFilter {
         return this.jobStatus && { $in: this.jobStatus };
     }
 
+    @Exclude({ toPlainOnly: true })
     category?: JobCategories;
+    @Expose()
+    get 'production.category'() {
+        return this.category;
+    }
 
 }
 

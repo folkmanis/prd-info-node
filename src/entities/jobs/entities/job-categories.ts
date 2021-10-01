@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
+import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, Contains } from 'class-validator';
 
 
 export const JOB_CATEGORIES = ['repro', 'perforated paper', 'print'] as const;
@@ -11,10 +11,14 @@ export abstract class ProductionCategory {
 }
 
 export class ReproProduction extends ProductionCategory {
+
+    @Contains('repro')
     category: JobCategories = 'repro';
 }
 
 export class KastesProduction extends ProductionCategory {
+
+    @Contains('perforated paper')
     category: JobCategories = 'perforated paper';
 
     @Type(() => Boolean)

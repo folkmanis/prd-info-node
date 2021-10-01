@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb';
 import { IntersectionType } from '@nestjs/mapped-types';
 import { JOB_CATEGORIES, JobCategories, ReproProduction, KastesProduction, ProductionCategory } from './job-categories';
 import { Type } from 'class-transformer';
-import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
+import { Min, Max, IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
 import { JobProduct } from './job-product.entity';
 
 
@@ -25,8 +25,9 @@ export class Job {
     @IsMongoId()
     _id: ObjectId;
 
-    @IsIn(JOB_CATEGORIES)
-    category: JobCategories;
+    @Min(2)
+    @Max(2)
+    _v = 2;
 
     @IsNumber()
     jobId: number;

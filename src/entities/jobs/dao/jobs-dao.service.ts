@@ -47,7 +47,7 @@ export class JobsDao {
                     products: 1,
                     invoiceId: 1,
                     jobStatus: 1,
-                    category: 1,
+                    'production.category': 1,
                     custCode: { $arrayElemAt: ['$custCode.code', 0] },
                 },
             },
@@ -75,7 +75,6 @@ export class JobsDao {
                 $skip: start,
             });
         }
-        // return aggr;
         return this.collection.aggregate(aggr).toArray();
 
     }

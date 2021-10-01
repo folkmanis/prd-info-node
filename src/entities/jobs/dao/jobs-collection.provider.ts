@@ -97,6 +97,24 @@ async function upgradeDb(collection: Collection): Promise<void> {
             $set: { 'products.$[].units': DEFAULT_UNIT, },
         },
     );
+    await collection.updateMany(
+        {
+            $or: [
+                { _v: { $lt: 2 } },
+                { _v: { $exists: false } }
+            ]
+        },
+        [{
+            $addFields: {
+                _v: 2,
+                "production.isLocked": "$isLocked",
+                "production.category": "$category"
+            }
+        }, {
+            $unset:
+                ["isLocked", "category"]
+        }]
+    );
 };
 
 
@@ -121,5 +139,30 @@ function createIndexes(collection: Collection): void {
         {
             key: { 'productionStages.productionStatus': 1 },
         },
+        {
+            key: { _v: 1 },
+        },
+        {
+            key: { 'production.category': 1 }
+        }
     ]);
 };
+
+
+const upgradeV2 = [{
+    $match: {
+        $or: [
+            { _v: { $lt: 2 } },
+            { _v: { $exists: false } }
+        ]
+    }
+}, {
+    $addFields: {
+        _v: 2,
+        "production.isLocked": "$isLocked",
+        "production.category": "$category"
+    }
+}, {
+    $unset:
+        ["isLocked", "category"]
+}];
