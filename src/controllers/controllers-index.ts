@@ -2,17 +2,11 @@ import { Type } from '../interfaces/type';
 import { Dao } from '../interfaces/dao.interface';
 import { DaoIndexMap } from '../dao/dao-map';
 
-import { KastesController } from './kastes-controller';
-import { KastesOrderController } from './kastes-orders-controller';
-import { ProductsController } from './products-controller';
 import { MaterialsController } from './materials-controller';
 import { EquipmentController } from './equipment.controller';
 import { ProductionStagesController } from './production-stages.controller';
 
 const CONTROLLERS: Type<any>[] = [
-  KastesController,
-  KastesOrderController,
-  ProductsController,
   MaterialsController,
   EquipmentController,
   ProductionStagesController,

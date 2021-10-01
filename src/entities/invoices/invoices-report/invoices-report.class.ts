@@ -10,7 +10,9 @@ import { InvoiceProduct } from '../entities/invoice.entity';
 import { InvoiceForReport } from '../entities/invoice-for-report.interface';
 
 // TODO
-import { JobProduct } from '../../../interfaces';
+import { JobProduct } from '../../jobs/entities/job-product.entity';
+import { Job } from '../../jobs/entities/job.entity';
+import { JobOneProduct } from '../../jobs/entities/job-one-product';
 import { JobBase } from '../entities/invoice-for-report.interface';
 
 export class InvoiceReport {
@@ -91,7 +93,7 @@ export class InvoiceReport {
             new Txt('EUR').alignment('right').end,
         ]);
         for (const job of jobs) {
-            const prod: JobProduct | undefined = job.products as JobProduct;
+            const prod = job.products;
             if (!prod || prod.price * prod.count === 0) {
                 continue;
             }

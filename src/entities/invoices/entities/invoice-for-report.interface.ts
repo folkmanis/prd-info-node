@@ -4,18 +4,9 @@ import { Type } from 'class-transformer';
 import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber } from 'class-validator';
 import { Customer } from '../../customers/entities/customer.entity';
 
+import { JobOneProduct } from "../../jobs/entities/job-one-product";
 
-import { JobProduct } from "../../../interfaces";
-export class JobBase {
-    products: JobProduct;
-
-    @Type(() => Date)
-    @IsDate()
-    receivedDate: Date;
-
-    @IsString()
-    name: string;
-}
+export class JobBase extends PickType(JobOneProduct, ['products', 'receivedDate', 'name']) { }
 
 export class ReportData {
 

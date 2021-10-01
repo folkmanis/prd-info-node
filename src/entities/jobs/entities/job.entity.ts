@@ -59,8 +59,7 @@ export class Job {
 
     @Type(() => JobProduct)
     @ValidateNested({ each: true })
-    @IsOptional()
-    products?: JobProduct[];
+    products: JobProduct[];
 
     @Type(() => JobStatus)
     @ValidateNested()
