@@ -9,6 +9,7 @@ import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ListCustomer } from './dto/list-customer.dto';
 import { Customer } from './entities/customer.entity';
 import { StartAndLimit } from '../../lib/query-start-limit.pipe';
+import { CustomersQuery } from './dto/customers-query';
 
 
 @Controller('customers')
@@ -59,10 +60,9 @@ export class CustomersController {
 
   @Get()
   async getAll(
-    @Query('disabled') disabled: boolean | undefined,
-    @Query() options: StartAndLimit,
+    @Query() query: CustomersQuery,
   ): Promise<ListCustomer[]> {
-    return this.customersDao.getCustomers(options, disabled);
+    return this.customersDao.getCustomers(query);
   }
 
 

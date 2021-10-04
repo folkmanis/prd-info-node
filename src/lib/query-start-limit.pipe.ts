@@ -13,9 +13,6 @@ export class StartAndLimit {
   @Type(() => Number)
   @IsNumber()
   limit: number = 100;
-
-  @IsOptional()
-  filter?: string;
 }
 
 

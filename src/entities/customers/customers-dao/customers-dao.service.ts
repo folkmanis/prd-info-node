@@ -5,6 +5,7 @@ import { CreateCustomerDto } from '../dto/create-customer.dto';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { ListCustomer } from '../dto/list-customer.dto';
 import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
+import { CustomersQuery } from '../dto/customers-query';
 
 @Injectable()
 export class CustomersDaoService {
@@ -14,17 +15,8 @@ export class CustomersDaoService {
     ) { }
 
 
-    async getCustomers({ start, limit, filter: nameFilter }: StartAndLimit, disabled: boolean | undefined): Promise<ListCustomer[]> {
-        const filter: FilterQuery<Customer> = {};
-        if (!disabled) {
-            filter.$or = [
-                { disabled: { $exists: false } },
-                { disabled: false }
-            ];
-        }
-        if (nameFilter) {
-            filter.CustomerName = new RegExp(nameFilter, 'i');
-        }
+    async getCustomers(query: CustomersQuery): Promise<ListCustomer[]> {
+        const { start, limit, filter } = query.toFilter();
         return this.collection
             .find(filter)
             .project({
