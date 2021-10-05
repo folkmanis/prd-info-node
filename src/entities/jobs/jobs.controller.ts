@@ -11,6 +11,7 @@ import { JobId } from './job-id.decorator';
 import { JobsService } from './jobs.service';
 import { TouchProductInterceptor } from '../products/touch-product.interceptor';
 import { JobNotifyInterceptor } from './job-notify.interceptor';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -80,6 +81,14 @@ export class JobsController {
     return this.jobsInvoicesDao.jobsWithoutInvoiceTotals();
   }
 
+  @Get('count')
+  @UseInterceptors(new ResponseWrapperInterceptor('documentsCount'))
+  async getJobsCount(
+    @Query() query: JobQuery
+  ) {
+    return this.jobsDao.getCount(query.toFilter());
+  }
+
   @Get(':jobId')
   async getJob(
     @JobId(ParseIntPipe) jobId: number,
@@ -91,7 +100,7 @@ export class JobsController {
   async getJobs(
     @Query() query: JobQuery
   ) {
-    return this.jobsService.getAll(query);
+    return this.jobsService.getAll(query.toFilter(), !!query.unwindProducts);
   }
 
 }

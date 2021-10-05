@@ -1,16 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateJobDto } from './dto/create-job.dto';
-import { UpdateJobDto } from './dto/update-job.dto';
-import { CustomersService } from '../customers/customers.service';
-import { JobsDao } from './dao/jobs-dao.service';
-import { Job } from './entities/job.entity';
-import { FolderPathService } from '../../filesystem';
-import { FilesystemService } from '../../filesystem';
 import { Request } from 'express';
+import { FilesystemService, FolderPathService } from '../../filesystem';
+import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
+import { CustomersService } from '../customers/customers.service';
 import { JobsCounterService } from './dao/counters.service';
+import { JobsDao } from './dao/jobs-dao.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
+import { UpdateJobDto } from './dto/update-job.dto';
 import { Production } from './entities/job-categories';
-import { JobQuery } from './dto/job-query';
+import { Job } from './entities/job.entity';
 
 @Injectable()
 export class JobsService {
@@ -24,8 +22,8 @@ export class JobsService {
     private readonly counters: JobsCounterService,
   ) { }
 
-  async getAll(query: JobQuery): Promise<Job[]> {
-    return this.jobsDao.getAll(query);
+  async getAll(filter: FilterType<Job>, unwindProducts: boolean): Promise<Job[]> {
+    return this.jobsDao.getAll(filter, unwindProducts);
   }
 
   async getOne(jobId: number): Promise<Job | null> {

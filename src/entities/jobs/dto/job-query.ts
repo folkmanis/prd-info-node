@@ -1,6 +1,10 @@
-import { deserializeArray, Exclude, Expose, Transform, Type } from 'class-transformer';
+import { deserializeArray, Transform, Type } from 'class-transformer';
 import { IsBoolean, IsDate, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import { pickNotNull } from '../../../lib/pick-not-null';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
 import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
+import { Job } from '../entities/job.entity';
 
 export interface JobQueryInterface {
     receivedDate?: Date;
@@ -13,7 +17,7 @@ export interface JobQueryInterface {
     limit: number;
 }
 
-export class JobQuery {
+export class JobQuery extends StartLimitFilter<Job> {
 
     @Type(() => Date)
     @IsOptional()
@@ -65,56 +69,32 @@ export class JobQuery {
     @Type(() => Number)
     @IsInt()
     limit = 100;
+
+    toFilter(): FilterType<Job> {
+        const { start, limit } = this;
+
+        return {
+            start,
+            limit,
+            filter: pickNotNull({
+
+                receivedDate: this.fromDate && { '$gte': this.fromDate },
+
+                customer: this.customer,
+
+                name: this.name && { $regex: this.name, $options: 'gi' },
+
+                invoiceId: this.invoice !== undefined ? { $exists: !!this.invoice } : undefined,
+
+                jobId: this.jobsId && { $in: this.jobsId },
+
+                'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
+
+                'production.category': this.category,
+
+            })
+        };
+
+
+    }
 }
-
-export class JobFilter {
-
-    @Exclude({ toPlainOnly: true })
-    fromDate?: Date;
-    @Expose()
-    get receivedDate() {
-        return this.fromDate && { '$gte': this.fromDate };
-    }
-
-    customer?: string;
-
-    @Exclude()
-    _name: any;
-    @Expose()
-    set name(value: string) {
-        this._name = value;
-    }
-    get name() {
-        return this._name && { $regex: this._name, $options: 'i' };
-    }
-
-    @Exclude({ toPlainOnly: true })
-    invoice?: 0 | 1;
-    @Expose()
-    get invoiceId() {
-        return this.invoice !== undefined ? { $exists: !!this.invoice } : undefined;
-    }
-
-    @Exclude({ toPlainOnly: true })
-    jobsId: number[];
-    @Expose()
-    get jobId() {
-        return this.jobsId && { $in: this.jobsId };
-    }
-
-    @Exclude({ toPlainOnly: true })
-    jobStatus?: number[];
-    @Expose()
-    get 'jobStatus.generalStatus'() {
-        return this.jobStatus && { $in: this.jobStatus };
-    }
-
-    @Exclude({ toPlainOnly: true })
-    category?: JobCategories;
-    @Expose()
-    get 'production.category'() {
-        return this.category;
-    }
-
-}
-

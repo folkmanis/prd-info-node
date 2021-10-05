@@ -1,17 +1,8 @@
-import { ParseIntPipe, Controller, UseInterceptors, Get, Post, Body, Patch, Param, Delete, ParseBoolPipe, Query, UsePipes, ValidationPipe } from '@nestjs/common';
-import { VeikalsCreateDto } from './dto/veikals-create.dto';
-import { VeikalsUpdateDto } from './dto/veikals-update.dto';
+import { Controller, Get, Param, ParseIntPipe, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Modules } from '../../login';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { ObjectId } from 'mongodb';
-import { Kaste } from './entities/kaste.entity';
-import { KastesDaoService } from './dao/kastes-dao.service';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Veikals } from './entities/veikals';
-import { VeikalsKaste } from './dto/veikals-kaste.dto';
-import { JobsService } from '../jobs/jobs.service';
 import { JobQuery } from '../jobs/dto/job-query';
 import { Job, KastesJob } from '../jobs/entities/job.entity';
+import { JobsService } from '../jobs/jobs.service';
 
 @Controller('kastes/jobs')
 @Modules('kastes')
@@ -27,7 +18,7 @@ export class KastesJobsController {
         @Query() query: JobQuery,
     ): Promise<KastesJob[]> {
         query.category = 'perforated paper';
-        return this.jobsService.getAll(query) as Promise<KastesJob[]>;
+        return this.jobsService.getAll(query.toFilter(), !!query.unwindProducts) as Promise<KastesJob[]>;
     }
 
     @Get(':jobId')

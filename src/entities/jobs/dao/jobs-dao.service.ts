@@ -1,14 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { classToPlain, plainToClass } from 'class-transformer';
-import { isUndefined, pickBy } from 'lodash';
 import { BulkWriteUpdateOneOperation, Collection, UpdateQuery } from 'mongodb';
-import { JobFilter, JobQuery } from '../dto/job-query';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { UpdateJobDto } from '../dto/update-job.dto';
 import { JobProduct } from '../entities/job-product.entity';
 import { Job } from '../entities/job.entity';
 import { JOBS_COLLECTION } from './jobs-collection.provider';
-
-
 
 
 @Injectable()
@@ -19,64 +15,16 @@ export class JobsDao {
         @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
     ) { }
 
-    async getAll(query: JobQuery) {
+    async getAll(query: FilterType<Job>, unwindProducts: boolean) {
 
-        const { start, limit, unwindProducts, ...filter } = query;
+        const aggr = findAllPipeline(query, unwindProducts);
 
-        const aggr: any[] = [
-            {
-                $match: pickBy(classToPlain(plainToClass(JobFilter, filter)), value => !isUndefined(value)),
-            },
-            {
-                $lookup: {
-                    from: 'customers',
-                    localField: 'customer',
-                    foreignField: 'CustomerName',
-                    as: 'custCode',
-                },
-            },
-            {
-                $project: {
-                    _id: 0,
-                    jobId: 1,
-                    customer: 1,
-                    name: 1,
-                    customerJobId: 1,
-                    receivedDate: 1,
-                    dueDate: 1,
-                    products: 1,
-                    invoiceId: 1,
-                    jobStatus: 1,
-                    'production.category': 1,
-                    custCode: { $arrayElemAt: ['$custCode.code', 0] },
-                },
-            },
-            {
-                $sort: {
-                    jobId: -1,
-                },
-            },
-        ];
-        if (unwindProducts) {
-            aggr.push({
-                $unwind: {
-                    path: '$products',
-                    includeArrayIndex: 'productsIdx',
-                    preserveNullAndEmptyArrays: true,
-                },
-            });
-        }
-        aggr.push({
-            $limit: limit,
-        });
-
-        if (start > 0) {
-            aggr.push({
-                $skip: start,
-            });
-        }
         return this.collection.aggregate(aggr).toArray();
 
+    }
+
+    async getCount({ filter }: FilterType<Job>): Promise<number> {
+        return this.collection.countDocuments(filter);
     }
 
 
@@ -153,3 +101,62 @@ function jobUpdate({ jobId, ...job }: UpdateJobDto): BulkWriteUpdateOneOperation
     };
 }
 
+function findAllPipeline(query: FilterType<Job>, unwindProducts: boolean): any[] {
+    const { start, limit, filter } = query;
+
+    const aggr: any[] = [
+        {
+            $match: filter,
+        },
+        {
+            $lookup: {
+                from: 'customers',
+                localField: 'customer',
+                foreignField: 'CustomerName',
+                as: 'custCode',
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                jobId: 1,
+                customer: 1,
+                name: 1,
+                customerJobId: 1,
+                receivedDate: 1,
+                dueDate: 1,
+                products: 1,
+                invoiceId: 1,
+                jobStatus: 1,
+                'production.category': 1,
+                custCode: { $arrayElemAt: ['$custCode.code', 0] },
+            },
+        },
+        {
+            $sort: {
+                jobId: -1,
+            },
+        },
+    ];
+    if (unwindProducts) {
+        aggr.push({
+            $unwind: {
+                path: '$products',
+                includeArrayIndex: 'productsIdx',
+                preserveNullAndEmptyArrays: true,
+            },
+        });
+    }
+    if (start > 0) {
+        aggr.push({
+            $skip: start,
+        });
+    }
+    aggr.push({
+        $limit: limit,
+    });
+
+
+    return aggr;
+
+}
