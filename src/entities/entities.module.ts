@@ -7,6 +7,7 @@ import { ProductsModule } from './products/products.module';
 import { XmfSearchModule } from './xmf-search/xmf-search.module';
 import { KastesModule } from './kastes/kastes.module';
 import { EquipmentModule } from './equipment/equipment.module';
+import { MaterialsModule } from './materials/materials.module';
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { EquipmentModule } from './equipment/equipment.module';
         XmfSearchModule,
         KastesModule,
         EquipmentModule,
+        MaterialsModule,
     ]
 })
 export class EntitiesModule { }
