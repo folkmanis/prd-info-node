@@ -1,9 +1,9 @@
-import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
-import { IsString, IsOptional } from 'class-validator';
-import { Exclude, Expose, classToPlain } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 import { pickNotNull } from '../../../lib/pick-not-null';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
+import { Equipment } from '../entities/equipment.entity';
 
-export class EquiomentFilterQuery extends StartAndLimit {
+export class EquipmentFilterQuery extends StartLimitFilter<Equipment> {
 
     @IsString()
     @IsOptional()

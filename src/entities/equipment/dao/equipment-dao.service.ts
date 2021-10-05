@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
-import { Equipment } from '../entities/equipment.entity';
+import { classToPlain } from 'class-transformer';
 import { Collection, ObjectId } from 'mongodb';
-import { EntityDao, FilterType } from '../../entityDao.interface';
+import { DatabaseService } from '../../../database';
+import { EntityDao } from '../../entityDao.interface';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { CreateEquipmentDto } from '../dto/create-equipment.dto';
 import { UpdateEquipmentDto } from '../dto/update-equipment.dto';
-import { classToPlain, plainToClass } from 'class-transformer';
-import { pickNotNull } from '../../../lib/pick-not-null';
+import { Equipment } from '../entities/equipment.entity';
 
 const EQUIPMENT_COLLECTION_NAME = 'equipment';
 

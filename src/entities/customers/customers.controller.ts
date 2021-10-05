@@ -8,7 +8,6 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { ListCustomer } from './dto/list-customer.dto';
 import { Customer } from './entities/customer.entity';
-import { StartAndLimit } from '../../lib/query-start-limit.pipe';
 import { CustomersQuery } from './dto/customers-query';
 
 
@@ -25,7 +24,7 @@ export class CustomersController {
   @Put()
   async newCustomer(
     @Body() customer: CreateCustomerDto
-  ): Promise<Customer> {
+  ) {
     return this.customersDao.insertOne(customer);
   }
 
@@ -33,14 +32,14 @@ export class CustomersController {
   async updateCustomer(
     @Param('id', ObjectIdPipe) _id: ObjectId,
     @Body() customer: UpdateCustomerDto,
-  ): Promise<Customer> {
+  ) {
     return this.customersDao.updateOne(_id, customer);
   }
 
   @Delete(':id')
   async deleteCustomer(
     @Param('id', ObjectIdPipe) _id: ObjectId,
-  ): Promise<number> {
+  ) {
     return this.customersDao.deleteOne(_id);
   }
 
@@ -62,7 +61,7 @@ export class CustomersController {
   async getAll(
     @Query() query: CustomersQuery,
   ): Promise<ListCustomer[]> {
-    return this.customersDao.getCustomers(query);
+    return this.customersDao.getCustomers(query.toFilter());
   }
 
 

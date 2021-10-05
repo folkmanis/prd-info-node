@@ -1,53 +1,52 @@
-import { Injectable, Inject, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
-import { Collection, FilterQuery, ObjectId } from 'mongodb';
-import { Customer } from '../entities/customer.entity';
+import { Inject, Injectable } from '@nestjs/common';
+import { Collection, ObjectId } from 'mongodb';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
-import { UpdateCustomerDto } from '../dto/update-customer.dto';
-import { ListCustomer } from '../dto/list-customer.dto';
-import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
 import { CustomersQuery } from '../dto/customers-query';
+import { ListCustomer } from '../dto/list-customer.dto';
+import { UpdateCustomerDto } from '../dto/update-customer.dto';
+import { Customer } from '../entities/customer.entity';
+import { CUSTOMERS_COLLECTION } from './customers-provider';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 
 @Injectable()
 export class CustomersDaoService {
 
     constructor(
-        @Inject('COLLECTION') private collection: Collection<Customer>,
+        @Inject(CUSTOMERS_COLLECTION) private readonly collection: Collection<Customer>,
     ) { }
 
 
-    async getCustomers(query: CustomersQuery): Promise<ListCustomer[]> {
-        const { start, limit, filter } = query.toFilter();
+    async getCustomers({ start, limit, filter }: FilterType<Customer>): Promise<ListCustomer[]> {
         return this.collection
-            .find(filter)
-            .project({
-                _id: 1,
-                CustomerName: 1,
-                code: 1,
-                disabled: 1,
-            })
-            .sort({ CustomerName: 1 })
-            .skip(start)
-            .limit(limit)
+            .find(
+                filter,
+                {
+                    projection: {
+                        _id: 1,
+                        CustomerName: 1,
+                        code: 1,
+                        disabled: 1,
+                    },
+                    sort: {
+                        CustomerName: 1
+                    },
+                    skip: start,
+                    limit,
+                }
+            )
             .toArray();
     }
 
     async getCustomerById(_id: ObjectId): Promise<Customer | null> {
         const customer = await this.collection.findOne({ _id });
-        if (!customer) {
-            throw new NotFoundException(`Customer with id ${_id} not found in database`);
-        }
         return customer;
     }
 
-    async getCustomerByName(CustomerName: string): Promise<Customer> {
-        const customer = await this.collection.findOne({ CustomerName });
-        if (!customer) {
-            throw new NotFoundException(`Unknown customer ${CustomerName}`);
-        }
-        return customer;
+    async getCustomerByName(CustomerName: string): Promise<Customer | null> {
+        return this.collection.findOne({ CustomerName });
     }
 
-    async insertOne(customer: CreateCustomerDto): Promise<Customer> {
+    async insertOne(customer: CreateCustomerDto): Promise<Customer | undefined> {
         const { CustomerName } = customer;
         const { value } = await this.collection
             .findOneAndReplace(
@@ -55,9 +54,6 @@ export class CustomersDaoService {
                 customer,
                 { returnDocument: 'after', upsert: true }
             );
-        if (!value) {
-            throw new UnprocessableEntityException(CustomerName);
-        }
         return value;
     }
 
@@ -66,30 +62,29 @@ export class CustomersDaoService {
         return insertedCount;
     }
 
-    async deleteOne(_id: ObjectId): Promise<number> {
+    async deleteOne(_id: ObjectId): Promise<number | undefined> {
         const { deletedCount } = await this.collection.deleteOne({ _id });
-        return deletedCount || 0;
+        return deletedCount;
     }
 
-    async updateOne(_id: ObjectId, customer: UpdateCustomerDto,): Promise<Customer> {
+    async updateOne(_id: ObjectId, customer: UpdateCustomerDto,): Promise<Customer | undefined> {
         const { value } = await this.collection.findOneAndUpdate(
             { _id },
             { $set: customer },
             { returnDocument: 'after' }
         );
-        if (!value) {
-            throw new UnprocessableEntityException(_id);
-        }
         return value;
     }
 
-    async validate<K extends keyof Customer>(
-        property: K,
-    ): Promise<Customer[K][]> {
+    async validate<K extends keyof Customer>(property: K): Promise<Customer[K][]> {
         return await this.collection
-            .find({})
-            .project({ _id: 0, [property]: 1 })
-            .map((data) => data[property])
+            .find(
+                {},
+                {
+                    projection: { _id: 0, [property]: 1 }
+                }
+            )
+            .map(data => data[property])
             .toArray();
     }
 

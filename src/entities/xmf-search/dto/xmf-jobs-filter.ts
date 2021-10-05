@@ -1,7 +1,10 @@
 import { intersection } from 'lodash';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
+import { ArchiveJob } from '../entities/xmf-archive.interface';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 
-export class XmfJobsFilter {
+export class XmfJobsFilter extends StartLimitFilter<ArchiveJob> {
 
     @IsOptional()
     @IsString()
@@ -22,9 +25,9 @@ export class XmfJobsFilter {
     @IsString({ each: true })
     customers: string[];
 
-    toFilter(): Record<string, any> {
+    toFilter(): FilterType<ArchiveJob> {
         const filter: Record<string, any> = {};
-        const { customerName, q, year, month } = this;
+        const { customerName, q, year, month, start, limit } = this;
         const customers = customerName ? intersection(customerName, this.customers) : this.customers;
         filter.CustomerName = {
             $in: customers,
@@ -41,7 +44,11 @@ export class XmfJobsFilter {
         if (month) {
             filter['Archives.monthIndex'] = { $in: month };
         }
-        return filter;
+        return {
+            start,
+            limit,
+            filter
+        };
     }
 
 }

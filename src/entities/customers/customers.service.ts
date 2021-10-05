@@ -1,6 +1,4 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { CustomersDaoService } from './customers-dao/customers-dao.service';
 import { Customer } from './entities/customer.entity';
 
@@ -12,7 +10,11 @@ export class CustomersService {
     ) { }
 
     async getCustomerByName(name: string): Promise<Customer> {
-        return this.customersDao.getCustomerByName(name);
+        const customer = await this.customersDao.getCustomerByName(name);
+        if (!customer) {
+            throw new UnprocessableEntityException(`Customer ${name} not found`);
+        }
+        return customer;
     }
 
 }

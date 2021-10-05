@@ -6,7 +6,7 @@ import { EquipmentDaoService } from './dao/equipment-dao.service';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
 import { Equipment } from './entities/equipment.entity';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { EquiomentFilterQuery as EquipmentFilterQuery } from './dto/filter-query.dto';
+import { EquipmentFilterQuery } from './dto/filter-query.dto';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
 
@@ -26,7 +26,7 @@ export class EquipmentController {
     return this.daoService.validationData(key);
   }
 
-  @Get(':id') // (^[0-9a-fA-F]{24}$)
+  @Get(':id')
   async getOne(
     @Param('id', ObjectIdPipe) id: ObjectId,
   ) {
@@ -48,7 +48,7 @@ export class EquipmentController {
     return this.daoService.insertOne(equipment);
   }
 
-  @Post(':id')
+  @Patch(':id')
   @Modules('jobs-admin')
   async post(
     @Param('id', ObjectIdPipe) id: ObjectId,

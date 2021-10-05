@@ -3,8 +3,8 @@ import { Collection } from 'mongodb';
 import { from, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatabaseService } from '../../../database';
-import { XmfJobsFilter } from '../dto/xmf-jobs-filter';
 import { ArchiveJob } from '../entities/xmf-archive.interface';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 
 @Injectable()
 export class XmfSearchDao {
@@ -20,13 +20,9 @@ export class XmfSearchDao {
     }
 
 
-    async findJobs(
-        filter: XmfJobsFilter,
-        start: number,
-        limit: number,
-    ) {
+    async findJobs({ start, limit, filter }: FilterType<ArchiveJob>) {
         return this.collection.find(
-            filter.toFilter(),
+            filter,
             {
                 projection: {
                     _id: 0,
@@ -50,13 +46,13 @@ export class XmfSearchDao {
             .toArray();
     }
 
-    async getCount(filter: XmfJobsFilter): Promise<number> {
-        return this.collection.countDocuments(filter.toFilter());
+    async getCount({ filter }: FilterType<ArchiveJob>): Promise<number> {
+        return this.collection.countDocuments(filter);
     }
 
-    async findFacet(filter: XmfJobsFilter) {
+    async findFacet({ filter }: FilterType<ArchiveJob>) {
         const pipeline = [
-            { $match: filter.toFilter() },
+            { $match: filter },
             {
                 $facet: {
                     customerName: [{ $sortByCount: '$CustomerName' }],

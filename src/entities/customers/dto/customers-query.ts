@@ -1,11 +1,10 @@
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { FilterQuery } from 'mongodb';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
-import { classToPlain, Transform, Type } from 'class-transformer';
-import { IsString, IsOptional, IsBoolean } from 'class-validator';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
 import { Customer } from '../entities/customer.entity';
 
-export class CustomersQuery extends StartAndLimit {
+export class CustomersQuery extends StartLimitFilter<Customer> {
 
     @IsString()
     @IsOptional()

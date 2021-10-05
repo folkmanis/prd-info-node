@@ -11,18 +11,6 @@ import {
 import Logger from '../lib/logger';
 import {
   Job,
-  JobResponse,
-  JobCategories,
-  JobQueryFilter,
-  JOBS_SCHEMA,
-  InvoiceProduct,
-  InvoiceResponse,
-  ProductTotals,
-  JobsWithoutInvoicesTotals,
-  KastesJob,
-  KastesJobPartial,
-  KastesJobResponse,
-  JobProduct,
 } from '../interfaces';
 import { Dao } from '../interfaces/dao.interface';
 
@@ -31,7 +19,7 @@ export class JobsProductionDao {
 
   async activeProduction({
     productionStatus,
-  }: { productionStatus?: number[] } = {}) {
+  }: { productionStatus?: number[]; } = {}) {
     let pipeline = [];
     if (productionStatus) {
       pipeline.push({

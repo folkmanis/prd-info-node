@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
 import { DatabaseService } from '../../../database';
-import { StartAndLimit } from '../../../lib/query-start-limit.pipe';
+import { StartLimit } from '../../../lib/start-limit-filter/start-limit-filter.class';
 import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class XmfUploadProgressDao {
         return insertedId;
     }
 
-    async findAll({ start, limit }: StartAndLimit): Promise<XmfUploadProgress[]> {
+    async findAll({ start, limit }: StartLimit): Promise<XmfUploadProgress[]> {
         return this.collection.find(
             {},
             {

@@ -1,10 +1,5 @@
-import { ObjectId, FilterQuery } from 'mongodb';
-
-export interface FilterType<T> {
-    limit: number;
-    start: number;
-    filter: FilterQuery<T>;
-};
+import { ObjectId } from 'mongodb';
+import { FilterType } from '../lib/start-limit-filter/filter-type.interface';
 
 export interface EntityDao<T extends { _id: ObjectId; }> {
     findAll(filter: FilterType<T>): Promise<Partial<T>[]>;
