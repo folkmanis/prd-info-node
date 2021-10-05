@@ -9,7 +9,6 @@ import { PreferencesDao } from './preferencesDAO';
 import { LoggerDao } from './loggerDAO';
 import { MessagesDao } from './messagesDAO';
 import { NotificationsDao } from './notificationsDAO';
-import { EquipmentDao } from './equipmentDAO';
 import { ProductionStagesDao } from './production-stagesDAO';
 
 const DAOS: Type<Dao>[] = [
@@ -20,7 +19,6 @@ const DAOS: Type<Dao>[] = [
   LoggerDao,
   MessagesDao,
   NotificationsDao,
-  EquipmentDao,
   ProductionStagesDao,
 ];
 

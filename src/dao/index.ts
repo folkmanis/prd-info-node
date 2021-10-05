@@ -5,5 +5,4 @@ export * from './usersDAO';
 export * from './loggerDAO';
 export * from './messagesDAO';
 export * from './notificationsDAO';
-export * from './equipmentDAO';
 export * from './production-stagesDAO';
