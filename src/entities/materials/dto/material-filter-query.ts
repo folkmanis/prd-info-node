@@ -24,7 +24,7 @@ export class MaterialFilterQuery extends StartLimitFilter<Material> {
             start,
             limit,
             filter: pickNotNull({
-                name: this.name,
+                name: this.name && { $regex: this.name, $options: 'gi' },
                 category: this.categories?.length ? { $in: this.categories } : undefined
             })
         };

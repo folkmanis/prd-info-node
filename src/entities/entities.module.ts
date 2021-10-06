@@ -8,6 +8,7 @@ import { XmfSearchModule } from './xmf-search/xmf-search.module';
 import { KastesModule } from './kastes/kastes.module';
 import { EquipmentModule } from './equipment/equipment.module';
 import { MaterialsModule } from './materials/materials.module';
+import { ProductionStagesModule } from './production-stages/production-stages.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { MaterialsModule } from './materials/materials.module';
         KastesModule,
         EquipmentModule,
         MaterialsModule,
+        ProductionStagesModule,
     ]
 })
 export class EntitiesModule { }
