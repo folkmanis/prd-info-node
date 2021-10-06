@@ -1,5 +1,4 @@
 export * from './countersDAO';
-export * from './materialsDAO';
 export * from './preferencesDAO';
 export * from './usersDAO';
 export * from './loggerDAO';

@@ -2,7 +2,6 @@ import { Db } from 'mongodb';
 import { Type } from '../interfaces/type';
 import { Dao } from '../interfaces/dao.interface';
 
-import { MaterialsDao } from './materialsDAO';
 import { CountersDao } from './countersDAO';
 import { UsersDao } from './usersDAO';
 import { PreferencesDao } from './preferencesDAO';
@@ -12,7 +11,6 @@ import { NotificationsDao } from './notificationsDAO';
 import { ProductionStagesDao } from './production-stagesDAO';
 
 const DAOS: Type<Dao>[] = [
-  MaterialsDao,
   CountersDao,
   UsersDao,
   PreferencesDao,

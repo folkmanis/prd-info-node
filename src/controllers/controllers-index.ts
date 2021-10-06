@@ -2,11 +2,9 @@ import { Type } from '../interfaces/type';
 import { Dao } from '../interfaces/dao.interface';
 import { DaoIndexMap } from '../dao/dao-map';
 
-import { MaterialsController } from './materials-controller';
 import { ProductionStagesController } from './production-stages.controller';
 
 const CONTROLLERS: Type<any>[] = [
-  MaterialsController,
   ProductionStagesController,
 ];
 
