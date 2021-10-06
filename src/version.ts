@@ -1,4 +1,7 @@
-import { Version } from './interfaces/version.interface';
+export interface Version {
+  apiBuild: number;
+  appBuild: number;
+}
 
 export const VERSION: Version = {
   apiBuild: 333,

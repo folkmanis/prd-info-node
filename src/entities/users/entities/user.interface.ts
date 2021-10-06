@@ -1,8 +1,8 @@
-import { Modules, MODULES } from '../../../interfaces/preferences.interface';
-import { Type } from 'class-transformer';
-import { IsDate, IsNotEmpty, IsNumber, IsBoolean, ArrayContains, IsInstance, IsString, IsArray, ValidateNested } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { Type } from 'class-transformer';
+import { IsArray, IsBoolean, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
 import { Message } from '../../../messages';
+import { SystemModules } from '../../../preferences';
 
 export class UserPreferences {
 
@@ -10,7 +10,7 @@ export class UserPreferences {
   customers: string[] = [];
 
   @IsArray()
-  modules: Modules[] = [];
+  modules: SystemModules[] = [];
 }
 
 export class User {
@@ -51,6 +51,6 @@ export interface UserSession {
 }
 
 export interface ModuleUserPreferences {
-  module: Modules;
+  module: SystemModules;
   options?: any;
 }

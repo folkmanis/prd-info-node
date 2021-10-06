@@ -5,8 +5,8 @@ import { UsersModule } from '../entities/users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { APP_GUARD } from '@nestjs/core';
-import { LoginGuard } from './login.guard';
-import { ModulesGuard } from './modules.guard';
+import { LoginGuard } from './guards/login.guard';
+import { ModulesGuard } from './guards/modules.guard';
 
 @Module({
   controllers: [LoginController],

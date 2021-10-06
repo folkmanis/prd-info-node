@@ -1,16 +1,8 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Post,
-  Req,
-  Session,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Post, Req, Session, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import * as session from 'express-session';
 import { User } from '../entities/users';
-import { LocalAuthGuard } from './local-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
 import { Usr } from '../session';
 
