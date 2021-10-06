@@ -19,6 +19,7 @@ export class MaterialsController {
   ) { }
 
   @Put()
+  @Modules('jobs-admin')
   async insertOne(
     @Body() material: CreateMaterialDto
   ) {
@@ -26,6 +27,7 @@ export class MaterialsController {
   }
 
   @Patch(':id')
+  @Modules('jobs-admin')
   async updateOne(
     @Param('id', ObjectIdPipe) id: ObjectId,
     @Body() material: UpdateMaterialDto,
@@ -34,6 +36,7 @@ export class MaterialsController {
   }
 
   @Delete(':id')
+  @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteOne(
     @Param('id', ObjectIdPipe) id: ObjectId,

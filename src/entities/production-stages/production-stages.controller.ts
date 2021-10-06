@@ -19,6 +19,7 @@ export class ProductionStagesController {
   ) { }
 
   @Put()
+  @Modules('jobs-admin')
   async insertOne(
     @Body() data: CreateProductionStageDto
   ) {
@@ -26,6 +27,7 @@ export class ProductionStagesController {
   }
 
   @Patch(':id')
+  @Modules('jobs-admin')
   async updateOne(
     @Param('id', ObjectIdPipe) id: ObjectId,
     @Body() update: UpdateProductionStageDto,
@@ -34,6 +36,7 @@ export class ProductionStagesController {
   }
 
   @Delete(':id')
+  @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteOne(
     @Param('id', ObjectIdPipe) id: ObjectId
