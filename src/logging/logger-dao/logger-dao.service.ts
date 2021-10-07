@@ -3,6 +3,7 @@ import { Collection, FilterQuery } from 'mongodb';
 import { DatabaseService } from '../../database';
 import { LogReadResponse, LogRecord } from '../interfaces/log-record.interface';
 import { LogQuery } from '../interfaces/log-query.class';
+import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
 
 @Injectable()
 export class LoggerDaoService {
@@ -22,35 +23,26 @@ export class LoggerDaoService {
         return this.collection.insertOne(record, { writeConcern: { w: 0 } });
     }
 
-    async read({ dateFrom, dateTo, limit, start, level }: LogQuery): Promise<LogReadResponse> {
-        const filter: FilterQuery<LogRecord> = {
-            $and: [
-                { timestamp: { $lte: dateTo } },
-                { timestamp: { $gte: dateFrom } },
-            ],
-            level: { $lte: level },
-        };
-        const resp = this.collection
-            .find(filter)
-            .sort({ timestamp: -1 });
-
-        return {
-            totalCount: await resp.count(),
-            logRecords: await resp.skip(start).limit(limit).toArray(),
-        };
+    async readAll({ limit, start, filter }: FilterType<LogRecord>): Promise<LogRecord[]> {
+        return this.collection.find(
+            filter,
+            {
+                sort: { timestamp: -1 },
+                skip: start,
+                limit,
+            }
+        ).toArray();
     }
 
-    async datesGroup({ dateFrom, dateTo, level }: LogQuery): Promise<string[]> {
+    async countDocuments({ filter }: FilterType<LogRecord>): Promise<number> {
+        return this.collection.countDocuments(filter);
+    }
+
+    async datesGroup({ filter }: FilterType<LogRecord>): Promise<string[]> {
 
         const pipeline: Array<any> = [
             {
-                $match: {
-                    $and: [
-                        { timestamp: { $lte: dateTo } },
-                        { timestamp: { $gte: dateFrom } },
-                    ],
-                    level: { $lte: level },
-                },
+                $match: filter,
             },
             {
                 $group: {

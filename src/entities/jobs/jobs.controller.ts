@@ -82,7 +82,7 @@ export class JobsController {
   }
 
   @Get('count')
-  @UseInterceptors(new ResponseWrapperInterceptor('documentsCount'))
+  @UseInterceptors(new ResponseWrapperInterceptor('count'))
   async getJobsCount(
     @Query() query: JobQuery
   ) {

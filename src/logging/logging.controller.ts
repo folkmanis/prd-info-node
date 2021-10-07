@@ -1,4 +1,5 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { UseInterceptors, Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
 import { Modules } from '../login';
 import { LogQuery } from './interfaces/log-query.class';
 import { LoggerDaoService } from './logger-dao/logger-dao.service';
@@ -13,17 +14,26 @@ export class LoggingController {
         private logDao: LoggerDaoService,
     ) { }
 
-    @Get('entries')
-    async getEntries(
+    @Get('count')
+    @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
+    async getCount(
         @Query() query: LogQuery
     ) {
-        return this.logDao.read(query);
+        return this.logDao.countDocuments(query.toFilter());
     }
 
     @Get('dates-groups')
     async getDatesGroups(
-        @Query(new ValidationPipe({ transform: true, whitelist: true })) query: LogQuery
+        @Query() query: LogQuery
     ) {
-        return this.logDao.datesGroup(query);
+        return this.logDao.datesGroup(query.toFilter());
     }
+
+    @Get()
+    async getEntries(
+        @Query() query: LogQuery
+    ) {
+        return this.logDao.readAll(query.toFilter());
+    }
+
 }

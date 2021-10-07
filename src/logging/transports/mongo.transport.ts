@@ -15,7 +15,7 @@ export class MongoTransport implements LoggerService {
         private loggerDao: LoggerDaoService,
         private logLevels: AppLogLevels,
         config: MongoTransportConfig = {
-            level: 'info',
+            level: 'warn',
         }
     ) {
         this.level = logLevels[config.level];
