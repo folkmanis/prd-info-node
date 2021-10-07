@@ -1,6 +1,6 @@
-export type NotificationModules = 'jobs' | 'system' | 'xmf-upload';
+import { NotificationModules } from './notification-modules';
 
-export abstract class NotificationBase<T extends NotificationModules = any> {
+export abstract class NotificationBase<T extends NotificationModules> {
     abstract readonly module: T;
     abstract payload: any;
 

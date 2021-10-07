@@ -1,14 +1,7 @@
-import {
-  Controller,
-  Get,
-  ParseIntPipe,
-  ParseArrayPipe,
-  Param,
-  Query,
-} from '@nestjs/common';
-import { NotificationsDaoService } from './notifications-dao/notifications-dao.service';
-import { NotificationModules, Notification } from './entities';
+import { Controller, Get, ParseArrayPipe, ParseIntPipe, Query } from '@nestjs/common';
 import { InstanceId } from '../preferences/instance-id.decorator';
+import { Notification, NotificationModules } from './entities';
+import { NotificationsDaoService } from './notifications-dao/notifications-dao.service';
 
 interface NotificationResponse {
   data: Notification[];
@@ -20,7 +13,7 @@ export class NotificationsController {
   constructor(private notificationsDao: NotificationsDaoService) { }
 
   @Get()
-  async getMessages(
+  async getNotifications(
     @Query('from', ParseIntPipe) fromDate: number,
     @Query('modules', ParseArrayPipe) modules: NotificationModules[],
     @InstanceId() instanceId: string,
