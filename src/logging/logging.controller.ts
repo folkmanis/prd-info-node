@@ -19,6 +19,8 @@ export class LoggingController {
     async getCount(
         @Query() query: LogQuery
     ) {
+        throw new Error('General error');
+
         return this.logDao.countDocuments(query.toFilter());
     }
 
