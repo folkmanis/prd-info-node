@@ -21,7 +21,7 @@ export interface KastesSystemPreference {
 
 export interface SystemSystemPreference {
   menuExpandedByDefault: boolean;
-  logLevels: Record<LogLevel, number>;
+  logLevels: [number, LogLevel][];
 }
 
 export interface ProductUnit {

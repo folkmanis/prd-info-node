@@ -1,15 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { Type, Transform } from 'class-transformer';
 import { IsNumber, IsString, IsMongoId, IsDate, IsBoolean, ValidateNested, IsOptional } from 'class-validator';
-// import { ProductProductionStage } from '../interfaces';
-
-export interface CustomerProduct {
-    category: string;
-    description: string;
-    productName: string;
-    customerName: string;
-    price: number;
-}
+import { ProductProductionStage } from './production-stage';
 
 export class ProductPrice {
 
@@ -40,20 +32,18 @@ export class Product {
     category: string;
 
     @IsString()
+    @IsOptional()
     description?: string;
+
+    @IsString()
+    units: string;
 
     @Type(() => ProductPrice)
     @ValidateNested({ each: true })
-    prices: ProductPrice[] = [];
-    //   productionStages?: ProductProductionStage[];
+    prices: ProductPrice[];
+
+    @Type(() => ProductProductionStage)
+    @ValidateNested({ each: true })
+    productionStages?: ProductProductionStage[];
+
 }
-
-// export type ProductNoId = Omit<Product, '_id'>;
-
-// export type ProductNoPrices = Omit<ProductNoId, 'prices'>;
-
-// export interface ProductPriceImport {
-//   product: string;
-//   customerName: string;
-//   price: number;
-// }

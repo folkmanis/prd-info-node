@@ -4,4 +4,5 @@ import { JobProduct } from './job-product.entity';
 
 export class JobOneProduct extends OmitType(Job, ['products']) {
     products: JobProduct;
+    productsIdx: number;
 }

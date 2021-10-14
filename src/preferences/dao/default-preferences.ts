@@ -15,15 +15,15 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
     module: 'system',
     settings: {
       menuExpandedByDefault: false,
-      logLevels: {
-        error: 0,
-        warn: 1,
-        info: 2,
-        http: 3,
-        verbose: 4,
-        debug: 5,
-        silly: 6
-      },
+      logLevels: [
+        [5, "debug"],
+        [0, "error"],
+        [2, "info"],
+        [6, "silly"],
+        [4, "verbose"],
+        [1, "warn"],
+        [3, 'http']
+      ],
     },
   },
   {

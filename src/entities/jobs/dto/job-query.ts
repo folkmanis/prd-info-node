@@ -6,17 +6,6 @@ import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-fi
 import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
 import { Job } from '../entities/job.entity';
 
-export interface JobQueryInterface {
-    receivedDate?: Date;
-    customer?: string;
-    invoiceId?: Record<string, boolean>;
-    name?: Record<string, string>;
-    'jobStatus.generalStatus'?: Record<string, number[]>;
-    category?: string;
-    start: number;
-    limit: number;
-}
-
 export class JobQuery extends StartLimitFilter<Job> {
 
     @Type(() => Date)
@@ -61,14 +50,6 @@ export class JobQuery extends StartLimitFilter<Job> {
     @IsOptional()
     @IsIn(JOB_CATEGORIES)
     category?: JobCategories;
-
-    @Type(() => Number)
-    @IsInt()
-    start = 0;
-
-    @Type(() => Number)
-    @IsInt()
-    limit = 100;
 
     toFilter(): FilterType<Job> {
         const { start, limit } = this;

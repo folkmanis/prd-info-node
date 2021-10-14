@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, Contains } from 'class-validator';
+import { Contains, IsBoolean } from 'class-validator';
 
 
 export const JOB_CATEGORIES = ['repro', 'perforated paper', 'print'] as const;
@@ -26,4 +26,9 @@ export class KastesProduction extends ProductionCategory {
     isLocked: boolean = false; // ir izveidots pakošanas saraksts
 }
 
-export type Production = ReproProduction | KastesProduction;
+export class PrintProduction extends ProductionCategory {
+    @Contains('print')
+    category: JobCategories = 'print';
+}
+
+export type Production = ReproProduction | KastesProduction | PrintProduction;

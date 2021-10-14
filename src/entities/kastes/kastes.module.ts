@@ -16,9 +16,9 @@ import { KastesJobsController } from './kastes-jobs.controller';
   controllers: [
     KastesJobsController,
     KastesPreferencesController,
+    VeikaliController,
     KastesController,
     XlsParserController,
-    VeikaliController,
   ],
   providers: [
     veikaliProvider,

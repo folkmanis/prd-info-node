@@ -53,4 +53,12 @@ export class KastesController {
     return this.kastesDao.setGatavs(pasutijums, kods, kaste, action);
   }
 
+  @Get(':jobId')
+  async getKastes(
+    @Param('jobId', ParseIntPipe) jobId: number
+  ): Promise<VeikalsKaste[]> {
+    return this.kastesDao.findAllKastes(jobId);
+  }
+
+
 }

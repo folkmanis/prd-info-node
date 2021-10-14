@@ -31,15 +31,21 @@ export class VeikaliController {
             jobIds,
         );
         await this.jobsService.setProduction(jobIds, { isLocked: true });
+        return resp;
     }
 
-    @Patch(':jobId/:kods')
+    @Get('veikali/:jobId')
+    async getVeikali(
+        @Param('jobId', ParseIntPipe) jobId: number
+    ) {
+        return this.veikaliDao.pasutijums(jobId);
+    }
+
+    @Patch('veikals')
     async updateOneOrderVeikals(
-        @Param('jobId', ParseIntPipe) jobId: number,
-        @Param('kods', ParseIntPipe) kods: number,
         @Body() veikals: VeikalsUpdateDto,
     ): Promise<Veikals | undefined> {
-        return this.veikaliDao.updateOne(jobId, kods, veikals);
+        return this.veikaliDao.updateOne(veikals);
     }
 
     @Get(':jobId/apjomi')
@@ -47,13 +53,6 @@ export class VeikaliController {
         @Param('jobId', ParseIntPipe) jobId: number
     ) {
         return this.veikaliDao.apjomi(jobId);
-    }
-
-    @Get(':jobId')
-    async getKastes(
-        @Param('jobId', ParseIntPipe) jobId: number
-    ): Promise<VeikalsKaste[]> {
-        return this.kastesDao.findAllKastes(jobId);
     }
 
     @Delete(':jobId')

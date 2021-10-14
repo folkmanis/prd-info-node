@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { Type } from 'class-transformer';
-import { ValidateNested, IsMongoId, IsString, IsBoolean, IsNumber, Min } from 'class-validator';
+import { ValidateNested, IsMongoId, IsString, IsBoolean, IsNumber, Min, IsOptional } from 'class-validator';
 
 export class MaterialPrices {
 
@@ -12,6 +12,7 @@ export class MaterialPrices {
     price: number;
 
     @IsString()
+    @IsOptional()
     description: string;
 }
 

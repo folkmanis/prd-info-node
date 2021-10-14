@@ -1,10 +1,9 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { BulkWriteOperation, Collection } from 'mongodb';
-import { Veikals } from '../entities/veikals';
-import { VEIKALI } from './veikali.injector';
+import { Inject, Injectable } from '@nestjs/common';
+import { Collection } from 'mongodb';
 import { VeikalsCreateDto } from '../dto/veikals-create.dto';
 import { VeikalsUpdateDto } from '../dto/veikals-update.dto';
-import { omit } from 'lodash';
+import { Veikals } from '../entities/veikals';
+import { VEIKALI } from './veikali.injector';
 
 @Injectable()
 export class VeikaliDaoService {
@@ -13,6 +12,19 @@ export class VeikaliDaoService {
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
   ) { }
+
+  async pasutijums(pasutijums: number): Promise<Veikals[]> {
+    return this.collection.find(
+      {
+        pasutijums,
+      },
+      {
+        sort: {
+          kods: 1
+        }
+      }
+    ).toArray();
+  }
 
   async apjomi(pasutijums: number): Promise<number[]> {
     const pipeline: Array<any> = [
@@ -61,11 +73,11 @@ export class VeikaliDaoService {
     return deletedCount || 0;
   }
 
-  async updateOne(pasutijums: number, kods: number, veikals: VeikalsUpdateDto): Promise<Veikals | undefined> {
+  async updateOne({ pasutijums, kods, ...update }: VeikalsUpdateDto): Promise<Veikals | undefined> {
     const { value } = await this.collection.findOneAndUpdate(
       { pasutijums, kods },
       {
-        $set: veikals,
+        $set: update,
         $currentDate: { lastModified: true },
       },
       { returnDocument: 'after' }

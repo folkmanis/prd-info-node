@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { IntersectionType } from '@nestjs/mapped-types';
-import { JOB_CATEGORIES, JobCategories, ReproProduction, KastesProduction, ProductionCategory } from './job-categories';
+import { JOB_CATEGORIES, JobCategories, ReproProduction, KastesProduction, ProductionCategory, PrintProduction } from './job-categories';
 import { Type } from 'class-transformer';
 import { Min, Max, IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
 import { JobProduct } from './job-product.entity';
@@ -76,12 +76,13 @@ export class Job {
             subTypes: [
                 { value: ReproProduction, name: 'repro' },
                 { value: KastesProduction, name: 'perforated paper' },
+                { value: PrintProduction, name: 'print' },
             ]
         },
         keepDiscriminatorProperty: true,
     })
     @IsOptional()
-    production?: ReproProduction | KastesProduction;
+    production: ReproProduction | KastesProduction | PrintProduction;
 
 
 }
@@ -92,4 +93,8 @@ export class KastesJob extends Job {
 
 export class ReproJob extends Job {
     production: ReproProduction;
+}
+
+export class PrintJob extends Job {
+    production: PrintProduction;
 }
