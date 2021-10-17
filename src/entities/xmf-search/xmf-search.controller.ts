@@ -23,7 +23,7 @@ export class XmfSearchController {
   }
 
   @Get('count')
-  @UseInterceptors(new ResponseWrapperInterceptor('count'))
+  @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
   async getCount(
     @QueryFilter() query: XmfJobsFilter,
   ) {
