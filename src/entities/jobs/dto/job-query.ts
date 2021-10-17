@@ -26,7 +26,7 @@ export class JobQuery extends StartLimitFilter<Job> {
     @IsIn([0, 1])
     invoice?: 0 | 1;
 
-    @Type(() => Boolean)
+    @Transform(({ value }) => !!JSON.parse(value))
     @IsOptional()
     @IsBoolean()
     unwindProducts?: boolean;
