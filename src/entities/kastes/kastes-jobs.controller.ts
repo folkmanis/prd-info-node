@@ -26,7 +26,6 @@ export class KastesJobsController {
         @Param('jobId', ParseIntPipe) jobId: number,
     ): Promise<KastesJob | undefined> {
         const job = await this.jobsService.getOne(jobId);
-        console.log(job);
         if (isKastesJob(job)) {
             return job;
         }
