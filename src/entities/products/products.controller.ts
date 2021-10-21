@@ -19,6 +19,13 @@ export class ProductsController {
     private readonly productsDao: ProductsDaoService,
   ) { }
 
+  @Get(':name/productionStages')
+  async getProductionStages(
+    @Param('name') name: string
+  ) {
+    return this.productsDao.getProductionStages(name);
+  }
+
   @Get('prices/customer/:customer')
   async getCustomerPrices(
     @Param('customer') customer: string
@@ -100,13 +107,6 @@ export class ProductsController {
         res.json(await this.productsDao.productPrices(name));
       }
     
-      @Get(':name/productionStages')
-      async getProductionStages(req: Request, res: Response) {
-        const name = req.params.name;
-        res.jsonOk({
-          data: await this.productsDao.getProductionStages(name),
-        });
-      }
    */
 
   /*     @Middleware(PrdSession.validateModule('jobs-admin'))

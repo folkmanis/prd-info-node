@@ -4,6 +4,7 @@ import { JOB_CATEGORIES, JobCategories, ReproProduction, KastesProduction, Produ
 import { Type } from 'class-transformer';
 import { Min, Max, IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
 import { JobProduct } from './job-product.entity';
+import { JobProductionStage } from './job-production-stage.entity';
 
 
 export class JobStatus {
@@ -70,6 +71,11 @@ export class Job {
     @IsOptional()
     files?: Files;
 
+    @Type(() => JobProductionStage)
+    @ValidateNested()
+    @IsOptional()
+    productionStages?: JobProductionStage[];
+
     @Type(() => ProductionCategory, {
         discriminator: {
             property: 'category',
@@ -83,7 +89,6 @@ export class Job {
     })
     @IsOptional()
     production: ReproProduction | KastesProduction | PrintProduction;
-
 
 }
 

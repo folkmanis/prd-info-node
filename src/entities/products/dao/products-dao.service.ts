@@ -8,6 +8,7 @@ import { ProductFilter, ProductQuery } from '../dto/product-query.dto';
 import { plainToClassFromExist, classToPlain, plainToClass } from 'class-transformer';
 import { isUndefined, pickBy } from 'lodash';
 import { CustomerProduct } from '../entities/customer-product.interface';
+import { ProductProductionStage } from '../entities/production-stage';
 
 @Injectable()
 export class ProductsDaoService {
@@ -141,54 +142,51 @@ export class ProductsDaoService {
             .toArray();
     }
 
+    async getProductionStages(name: string) {
+        const pipeline = [
+            {
+                $match: {
+                    name,
+                },
+            },
+            {
+                $unwind: {
+                    path: '$productionStages',
+                },
+            },
+            {
+                $replaceRoot: {
+                    newRoot: '$productionStages',
+                },
+            },
+            {
+                $lookup: {
+                    from: 'productionStages',
+                    localField: 'productionStageId',
+                    foreignField: '_id',
+                    as: 'stage',
+                },
+            },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: [{ $arrayElemAt: ['$stage', 0] }, '$$ROOT'],
+                    },
+                },
+            },
+            {
+                $project: {
+                    stage: 0,
+                    _id: 0,
+                },
+            },
+        ];
+        return this.collection.aggregate<ProductProductionStage>(pipeline).toArray();
+    }
+
 
     /*
     
-        async getProductionStages(name: string): Promise<ProductionStage[]> {
-            const pipeline = [
-                {
-                    $match: {
-                        name,
-                    },
-                },
-                {
-                    $unwind: {
-                        path: '$productionStages',
-                    },
-                },
-                {
-                    $replaceRoot: {
-                        newRoot: '$productionStages',
-                    },
-                },
-                {
-                    $lookup: {
-                        from: 'productionStages',
-                        localField: 'productionStageId',
-                        foreignField: '_id',
-                        as: 'stage',
-                    },
-                },
-                {
-                    $replaceRoot: {
-                        newRoot: {
-                            $mergeObjects: [{ $arrayElemAt: ['$stage', 0] }, '$$ROOT'],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        stage: 0,
-                        _id: 0,
-                    },
-                },
-            ];
-            const result = await this.products
-                .aggregate<ProductionStage>(pipeline)
-                .toArray();
-    
-            return result;
-        }
     
     
         private mapProdStage(stage: ProductProductionStage): ProductProductionStage {
