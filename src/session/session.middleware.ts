@@ -1,15 +1,20 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
+import { MongoClient } from 'mongodb';
 
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
   use = session({
     secret: 'HGG50EtOT7',
     store: MongoStore.create({
-      mongoUrl: this.config.get('DB_SRV'),
+      // mongoUrl: this.config.get('DB_SRV'),
+      client: this.connection,
       stringify: false,
+      mongoOptions: {
+        useUnifiedTopology: true,
+      }
     }),
     cookie: {
       maxAge: this.config.get('SESSION_EXPIRES')! * 1000,
@@ -22,5 +27,8 @@ export class SessionMiddleware implements NestMiddleware {
     rolling: true,
   });
 
-  constructor(private config: ConfigService) {}
+  constructor(
+    private config: ConfigService,
+    @Inject('MONGO_CLIENT') private connection: MongoClient,
+  ) { }
 }

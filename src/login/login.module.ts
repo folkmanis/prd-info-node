@@ -7,10 +7,15 @@ import { LocalStrategy } from './local.strategy';
 import { APP_GUARD } from '@nestjs/core';
 import { LoginGuard } from './guards/login.guard';
 import { ModulesGuard } from './guards/modules.guard';
+import { SessionTokenModule } from '../session/session-token';
 
 @Module({
   controllers: [LoginController],
-  imports: [UsersModule, PassportModule],
+  imports: [
+    UsersModule,
+    PassportModule,
+    SessionTokenModule,
+  ],
   providers: [
     LoginService,
     LocalStrategy,

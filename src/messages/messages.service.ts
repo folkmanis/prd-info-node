@@ -71,7 +71,7 @@ export class MessagesService {
 
   async add(msg: Message): Promise<ObjectId> {
     const { insertedId } = await this.collection.insertOne(msg);
-    await this.notifications.notify(new SystemNotification({
+    this.notifications.notify(new SystemNotification({
       id: insertedId,
       operation: Systemoperations.MESSAGE_ADDED,
     }));

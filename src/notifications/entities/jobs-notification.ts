@@ -8,8 +8,10 @@ export class JobsNotification extends NotificationBase<'jobs'> {
             jobId: number;
             operation: 'create' | 'delete' | 'update';
         },
+        instanceId: string | undefined,
     ) {
         super();
+        this.instanceId = instanceId;
     }
 }
 

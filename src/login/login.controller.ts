@@ -6,9 +6,17 @@ import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
 import { Usr } from '../session';
 import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
+import { SessionTokenService } from '../session/session-token';
+import { Session as Sess } from 'express-session';
+import { InstanceId } from '../preferences/instance-id.decorator';
 
 @Controller('login')
 export class LoginController {
+
+  constructor(
+    private readonly tokenService: SessionTokenService,
+  ) { }
+
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
   @Post()
@@ -33,6 +41,16 @@ export class LoginController {
     return 'logged out';
   }
 
+  @Get('session-token')
+  @UseInterceptors(new ResponseWrapperInterceptor('data'))
+  generateToken(
+    @Usr() user: User,
+    @Session() session: Sess,
+    @InstanceId() instanceId: string,
+  ) {
+    return this.tokenService.token(session, instanceId, user);
+  }
+
   @Get()
   @PublicRoute()
   user(
@@ -40,4 +58,5 @@ export class LoginController {
   ) {
     return user || {};
   }
+
 }

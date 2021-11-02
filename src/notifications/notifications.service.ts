@@ -1,17 +1,25 @@
 import { Injectable } from '@nestjs/common';
-import { Notification } from './entities';
-import { NotificationsDaoService } from './notifications-dao/notifications-dao.service';
-import { from, Observable } from 'rxjs';
+import { Notification, NotificationModules, SystemNotification } from './entities';
+import { from, Observable, Subject, interval } from 'rxjs';
+import { filter, map, mapTo, tap } from 'rxjs/operators';
+import { ObjectId } from 'mongodb';
 
 @Injectable()
 export class NotificationsService {
-  constructor(private notificationsDao: NotificationsDaoService) { }
 
-  notify(notification: Notification): Promise<boolean> {
-    return this.notificationsDao.insertOne(notification);
+  private readonly notifications$ = new Subject<Notification>();
+
+  constructor() { }
+
+  subscribeTo(modules: NotificationModules[], inst: string): Observable<Notification> {
+    return this.notifications$.pipe(
+      filter(notification => modules.includes(notification.module)),
+      filter(({ instanceId }) => instanceId === undefined || instanceId !== inst),
+    );
   }
 
-  notify$(notification: Notification): Observable<boolean> {
-    return from(this.notify(notification));
+  notify(notification: Notification) {
+    this.notifications$.next(notification);
   }
+
 }
