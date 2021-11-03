@@ -61,7 +61,7 @@ export class JobQuery extends StartLimitFilter<Job> {
 
                 receivedDate: this.fromDate && { '$gte': this.fromDate },
 
-                customer: this.customer,
+                customer: this.customer || undefined,
 
                 name: this.name && { $regex: this.name, $options: 'gi' },
 

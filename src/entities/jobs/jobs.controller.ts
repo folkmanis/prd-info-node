@@ -57,6 +57,7 @@ export class JobsController {
   }
 
   @Patch('')
+  @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
   async updateMany(
     @Body() jobsUpdate: UpdateJobDto[]
   ) {
