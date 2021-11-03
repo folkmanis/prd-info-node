@@ -1,17 +1,17 @@
-import { Body, Controller, Get, UseInterceptors, NotFoundException, ParseIntPipe, Patch, Put, Query, Req, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe, Patch, Put, Query, Req, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { Request } from 'express';
 import { ObjectId } from 'mongodb';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
+import { TouchProductInterceptor } from '../products/touch-product.interceptor';
 import { JobsDao } from './dao/jobs-dao.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobQuery } from './dto/job-query';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { JobId } from './job-id.decorator';
-import { JobsService } from './jobs.service';
-import { TouchProductInterceptor } from '../products/touch-product.interceptor';
 import { JobNotifyInterceptor } from './job-notify.interceptor';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { JobsService } from './jobs.service';
 
 @Controller('jobs')
 @Modules('jobs')
