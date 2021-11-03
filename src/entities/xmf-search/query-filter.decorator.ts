@@ -1,7 +1,7 @@
-import { SetMetadata, createParamDecorator, ExecutionContext, BadRequestException } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { XmfJobsFilter } from './dto/xmf-jobs-filter';
+import { BadRequestException, createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
+import { Request } from 'express';
+import { XmfJobsFilter } from './dto/xmf-jobs-filter';
 
 export const QueryFilter = createParamDecorator(
     (data: unknown, ctx: ExecutionContext) => {
@@ -9,11 +9,12 @@ export const QueryFilter = createParamDecorator(
         const value = req.query.query as string;
         try {
             const filter = value ? JSON.parse(value) : {};
+            const customers = req.session.user.preferences.customers;
             return plainToClass(
                 XmfJobsFilter,
                 {
                     ...filter,
-                    customers: req.query.customers,
+                    customers,
                 },
             );
         } catch (error) {
