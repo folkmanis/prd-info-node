@@ -64,11 +64,13 @@ export class InvoicesController {
     @Res() res: Response,
   ) {
     const data = await this.invoicesService.invoiceForReport(invoiceId);
-
     const pdf = new InvoiceReport(data).open();
+
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
+
+    return {}; // not null response for interceptor
   }
 
   @Put('report')
@@ -76,10 +78,13 @@ export class InvoicesController {
     @Body() invoice: InvoiceForReport,
     @Res() res: Response,
   ) {
+    console.log(invoice.jobs);
     const pdf = new InvoiceReport(invoice).open();
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
+
+    return {}; // not null response for interceptor
   }
 
   @Get(':invoiceId')
