@@ -1,17 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { User, ModuleUserPreferences } from './entities/user.interface';
 import { UsersDaoService } from './dao/users-dao.service';
 import { SystemModules } from '../../preferences';
+import { SessionsDaoService } from './dao/sessions-dao.service';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     private usersDao: UsersDaoService,
+    private sessionsDao: SessionsDaoService,
   ) { }
 
-  async getOne(username: string): Promise<User | undefined> {
-    return this.usersDao.getOne(username);
+  async getOne(username: string): Promise<User> {
+
+    const user = await this.usersDao.getOne(username);
+    if (!user) {
+      throw new NotFoundException('Invalid username');
+    }
+    const sessions = await this.sessionsDao.userSessions(username);
+    return {
+      ...user,
+      sessions,
+    };
+
   }
 
   async login(username: string, password: string): Promise<User | null> {

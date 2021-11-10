@@ -12,6 +12,7 @@ import { MessagesService } from './messages.service';
 import { NotificationsService, SystemNotification, Systemoperations } from '../notifications';
 import { ObjectIdPipe } from '../lib/object-id.pipe';
 import { Usr } from '../session';
+import { InstanceId } from '../preferences/instance-id.decorator';
 
 @Controller('messages')
 export class MessagesController {
@@ -35,16 +36,19 @@ export class MessagesController {
   }
 
   @Delete('allRead')
-  async allMessagesRead(@Usr() user: User) {
+  async allMessagesRead(
+    @Usr() user: User,
+    @InstanceId() instanceId: string,
+  ) {
     const modifiedCount = await this.messagesService.markAs(
       'seenBy',
       user.username,
     );
 
     if (modifiedCount > 0) {
-      this.notificationsService.notify(
-        new SystemNotification({ operation: Systemoperations.MESSAGE_ALL_READ }),
-      );
+      const n = new SystemNotification({ operation: Systemoperations.MESSAGE_ALL_READ });
+      n.instanceId = instanceId;
+      this.notificationsService.notify(n);
     }
     return modifiedCount;
   }
@@ -52,7 +56,8 @@ export class MessagesController {
   @Delete(':id')
   async deleteMessage(
     @Param('id', ObjectIdPipe) _id: ObjectId,
-    @Usr() user: User
+    @Usr() user: User,
+    @InstanceId() instanceId: string,
   ) {
     const deletedCount = await this.messagesService.markAs(
       'deletedBy',
@@ -61,9 +66,9 @@ export class MessagesController {
     );
 
     if (deletedCount > 0) {
-      this.notificationsService.notify(
-        new SystemNotification({ operation: Systemoperations.MESSAGE_DELETED }),
-      );
+      const n = new SystemNotification({ operation: Systemoperations.MESSAGE_DELETED });
+      n.instanceId = instanceId;
+      this.notificationsService.notify(n);
     }
     return deletedCount;
   }

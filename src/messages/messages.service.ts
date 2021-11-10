@@ -71,10 +71,11 @@ export class MessagesService {
 
   async add(msg: Message): Promise<ObjectId> {
     const { insertedId } = await this.collection.insertOne(msg);
-    this.notifications.notify(new SystemNotification({
+    const n = new SystemNotification({
       id: insertedId,
       operation: Systemoperations.MESSAGE_ADDED,
-    }));
+    });
+    this.notifications.notify(n);
     return insertedId;
   }
 

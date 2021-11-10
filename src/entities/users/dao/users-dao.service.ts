@@ -9,8 +9,6 @@ import { USERS } from './users.provider';
 @Injectable()
 export class UsersDaoService {
 
-    private logger = new Logger(UsersDaoService.name);
-
     constructor(
         @Inject(USERS) private collection: Collection<User>,
         private sessionsDao: SessionsDaoService,
@@ -30,43 +28,32 @@ export class UsersDaoService {
         return this.collection.find({}).project(projection).toArray();
     }
 
-    async getOne(username: string): Promise<User | undefined> {
-        const pipeline = [
+    async validationData<K extends keyof User>(key: K): Promise<User[K][]> {
+        return this.collection.find(
+            {},
             {
-                $match: { username },
+                projection: {
+                    [key]: 1,
+                    _id: 0,
+                }
+            }
+        )
+            .map(val => val[key])
+            .toArray();
+    }
+
+    async getOne(username: string): Promise<User | null> {
+        return this.collection.findOne(
+            {
+                username,
             },
             {
-                $lookup: {
-                    from: 'sessions',
-                    let: { user: '$username' },
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $eq: ['$session.user.username', '$$user'],
-                                },
-                            },
-                        },
-                        {
-                            $project: {
-                                lastSeen: '$session.lastSeen',
-                            },
-                        },
-                    ],
-                    as: 'sessions',
-                },
-            },
-            {
-                $project: {
+                projection: {
                     _id: 0,
                     password: 0,
-                },
-            },
-        ];
-        return this.collection
-            .aggregate<User>(pipeline)
-            .toArray()
-            .then((usr) => usr[0]);
+                }
+            }
+        );
     }
 
     async addOne(user: User): Promise<User | undefined> {
@@ -83,23 +70,15 @@ export class UsersDaoService {
     }
 
     async updateOne({ username, ...user }: Pick<User, 'username'> & Partial<User>): Promise<User | undefined> {
-        const dbSession = this.connection.startSession();
+
         const { value } = await this.collection.findOneAndUpdate(
             { username },
             { $set: user },
             {
                 writeConcern: { w: 'majority' },
-                session: dbSession,
                 returnDocument: 'after'
             },
         );
-        if (value) {
-            await this.sessionsDao.deleteUserSessions(
-                username,
-                dbSession
-            );
-        }
-        dbSession.endSession();
         return value;
     }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, UsePipes, ValidationPipe, UseInterceptors, ParseArrayPipe, Query, NotFoundException } from '@nestjs/common';
 import { Modules } from '../../login';
 import { SessionsDaoService } from './dao/sessions-dao.service';
 import { UsersDaoService } from './dao/users-dao.service';
@@ -6,6 +6,9 @@ import { User } from './entities/user.interface';
 import { PasswordPipe } from './password.pipe';
 import { PasswordDto } from './dto/password-dto.class';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { UsersService } from './users.service';
 
 @Controller('users')
 @Modules('admin')
@@ -16,11 +19,21 @@ export class UsersController {
     constructor(
         private usersDao: UsersDaoService,
         private sessionsDao: SessionsDaoService,
+        private usersService: UsersService,
     ) { }
 
+    @Get('validate/:property')
+    async getProperty(
+        @Param('property', new ValidateObjectKeyPipe('username', 'name')) key: keyof User,
+    ) {
+        return this.usersDao.validationData(key);
+    }
+
     @Get(':id')
-    async getOne(@Param('id') username: string) {
-        return this.usersDao.getOne(username);
+    async getOne(
+        @Param('id') username: string
+    ) {
+        return this.usersService.getOne(username);
     }
 
     @Get()
@@ -51,14 +64,20 @@ export class UsersController {
         @Param('id') username: string,
         @Body() user: UpdateUserDto,
     ) {
-        return this.usersDao.updateOne({ ...user, username });
+        const result = await this.usersDao.updateOne({ ...user, username });
+        if (!result) {
+            throw new NotFoundException('Invalid username');
+        }
+        return this.usersService.getOne(username);
     }
 
-    @Delete('session/:sessionId')
+    @Delete(':id/session')
+    @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
     async deleteSession(
-        @Param('sessionId') sessionId: string
+        @Param('id') username: string,
+        @Query('ids', ParseArrayPipe) sessionIds: string[],
     ) {
-        return this.sessionsDao.deleteSession(sessionId);
+        return this.sessionsDao.deleteSessions(username, sessionIds);
     }
 
     @Delete(':id')

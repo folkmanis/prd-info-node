@@ -51,10 +51,19 @@ export class LoginController {
     return this.tokenService.token(session, instanceId, user);
   }
 
+  @Get('session-id')
+  sessionId(
+    @Session() session: Sess,
+  ) {
+    return {
+      sessionId: session.id,
+    };
+  }
+
   @Get()
   @PublicRoute()
   user(
-    @Usr() user: User | undefined
+    @Usr() user: User | undefined,
   ) {
     return user || {};
   }
