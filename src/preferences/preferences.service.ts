@@ -15,11 +15,8 @@ export class PreferencesService {
   ) { }
 
   async getUserPreferences(username: string): Promise<UserPreferences> {
-    const user = await this.usersService.getOne(username);
-    if (!user) {
-      throw new Error('Invalid username');
-    }
-    return user.preferences;
+    const { preferences } = await this.usersService.getOne(username);
+    return preferences;
   }
 
   async getSystemPreferences(): Promise<SystemPreferenceModule[]> {
