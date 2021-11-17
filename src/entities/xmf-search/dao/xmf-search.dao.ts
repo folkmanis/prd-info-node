@@ -40,6 +40,7 @@ export class XmfSearchDao {
                 sort: {
                     'Archives.yearIndex': -1,
                     'Archives.monthIndex': -1,
+                    'JobID': -1,
                 }
             }
         )
@@ -109,6 +110,7 @@ export class XmfSearchDao {
                 key: {
                     'Archives.yearIndex': -1,
                     'Archives.monthIndex': -1,
+                    'JobID': -1,
                 },
                 name: 'yearIndex_monthIndex',
             },
