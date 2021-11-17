@@ -32,7 +32,7 @@ export class User {
   preferences: UserPreferences;
 
   @IsArray()
-  userPreferences: ModuleUserPreferences[] = [];
+  userPreferences: ModuleUserPreferences[];
 
   last_login?: Date;
   sessions?: UserSession[];
