@@ -78,7 +78,6 @@ export class InvoicesController {
     @Body() invoice: InvoiceForReport,
     @Res() res: Response,
   ) {
-    console.log(invoice.jobs);
     const pdf = new InvoiceReport(invoice).open();
     res.contentType('application/pdf');
     pdf.pipe(res);
