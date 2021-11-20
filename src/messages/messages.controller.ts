@@ -1,18 +1,11 @@
-import {
-  Controller,
-  Delete,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-} from '@nestjs/common';
+import { Controller, Delete, Get, Param } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { User } from '../entities/users';
-import { MessagesService } from './messages.service';
-import { NotificationsService, SystemNotification, Systemoperations } from '../notifications';
 import { ObjectIdPipe } from '../lib/object-id.pipe';
-import { Usr } from '../session';
+import { NotificationsService, SystemNotification, Systemoperations } from '../notifications';
 import { InstanceId } from '../preferences/instance-id.decorator';
+import { Usr } from '../session';
+import { MessagesService } from './messages.service';
 
 @Controller('messages')
 export class MessagesController {

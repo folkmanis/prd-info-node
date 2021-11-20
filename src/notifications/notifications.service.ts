@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Notification, NotificationModules, SystemNotification } from './entities';
-import { from, Observable, Subject, interval } from 'rxjs';
-import { filter, map, mapTo, tap } from 'rxjs/operators';
-import { ObjectId } from 'mongodb';
+import { Observable, Subject } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { Notification, NotificationModules } from './entities';
 
 @Injectable()
 export class NotificationsService {
