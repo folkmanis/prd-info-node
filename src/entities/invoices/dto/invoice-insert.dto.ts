@@ -4,7 +4,7 @@ import { IsString, IsNumber } from 'class-validator';
 
 export class InvoiceInsert {
 
-    @IsNumber()
+    @IsNumber(undefined, { each: true })
     jobIds: number[];
 
     @IsString()

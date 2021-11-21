@@ -168,7 +168,7 @@ export class InvoicesDao {
         return value;
     }
 
-    async updateInvoice({ invoiceId, ...update }: InvoiceUpdate): Promise<Invoice | undefined> {
+    async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<Invoice | undefined> {
         const { value } = await this.collection.findOneAndUpdate(
             { invoiceId },
             { $set: update },

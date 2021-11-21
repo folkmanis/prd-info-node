@@ -38,7 +38,7 @@ export class InvoicesController {
     @Param('id') invoiceId: string,
     @Body() update: InvoiceUpdate,
   ) {
-    return this.invoicesDao.updateInvoice({ ...update, invoiceId });
+    return this.invoicesDao.updateInvoice(invoiceId, update);
   }
 
   @Delete(':id')

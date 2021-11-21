@@ -46,4 +46,8 @@ export class Product {
     @ValidateNested({ each: true })
     productionStages?: ProductProductionStage[];
 
+    @IsNumber()
+    @IsOptional()
+    paytraqId?: number;
+
 }
