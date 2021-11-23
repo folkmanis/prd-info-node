@@ -11,7 +11,7 @@ import { NotificationsWebSocket } from './notifications-websocket.interface';
 import { WsModulesGuard } from './ws-modules.guard';
 import { SessionService } from '../session';
 
-@WebSocketGateway({ path: '/data/notifications' })
+@WebSocketGateway({ path: '/ws-notifications' })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(NotificationsGateway.name);
@@ -81,7 +81,6 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     };
   }
 
-  @UseGuards(TokenGuard)
   @SubscribeMessage('unsubs')
   hendleUnsubscribe(
     @MessageBody('module') module: NotificationModules, // require
