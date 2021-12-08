@@ -26,6 +26,7 @@ export class Material {
     name: string;
 
     @IsString()
+    @IsOptional()
     description: string;
 
     @IsString()
