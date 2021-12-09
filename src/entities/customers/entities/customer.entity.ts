@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
-import { IsMongoId, IsString, IsBoolean, IsDate, IsNotEmpty, ValidateNested, IsOptional, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsMongoId, IsString, IsBoolean, IsDate, IsNotEmpty, ValidateNested, IsOptional, IsNumber, IsObject } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 
 class Financial {
 
@@ -14,7 +14,8 @@ class Financial {
 export class Customer {
 
     @Type(() => ObjectId)
-    @IsMongoId()
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
     _id: ObjectId;
 
     @IsString()

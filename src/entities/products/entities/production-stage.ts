@@ -1,11 +1,12 @@
-import { Type } from 'class-transformer';
-import { IsMongoId, IsNumber, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsMongoId, IsNumber, IsObject, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 
 export class ProductProductionStageMaterial {
 
     @Type(() => ObjectId)
-    @IsMongoId()
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
     materialId: ObjectId;
 
     @IsNumber()
@@ -18,7 +19,8 @@ export class ProductProductionStageMaterial {
 export class ProductProductionStage {
 
     @Type(() => ObjectId)
-    @IsMongoId()
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
     productionStageId: ObjectId;
 
     @IsNumber()

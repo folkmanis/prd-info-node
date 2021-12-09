@@ -1,13 +1,14 @@
 import { ObjectId } from 'mongodb';
-import { Type } from 'class-transformer';
-import { Min, Max, IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { Min, Max, IsMongoId, IsObject, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn } from 'class-validator';
 
 
 export class JobProductionStageMaterial {
 
     @Type(() => ObjectId)
-    @IsMongoId()
-    materialId: string;
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
+    materialId: ObjectId;
 
     @IsString()
     @IsOptional()
@@ -23,8 +24,9 @@ export class JobProductionStageMaterial {
 export class JobProductionStage {
 
     @Type(() => ObjectId)
-    @IsMongoId()
-    productionStageId: string;
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
+    productionStageId: ObjectId;
 
     @IsString()
     @IsOptional()

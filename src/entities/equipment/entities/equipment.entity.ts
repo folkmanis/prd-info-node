@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb';
-import { Type } from 'class-transformer';
-import { IsMongoId, IsString, IsOptional } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsMongoId, IsString, IsOptional, IsObject } from 'class-validator';
 
 export class Equipment {
 
     @Type(() => ObjectId)
-    @IsMongoId()
+    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+    @IsObject()
     _id: ObjectId;
 
     @IsString()
