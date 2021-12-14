@@ -13,7 +13,8 @@ export class ProductionStage {
     name: string;
 
     @IsString()
-    description: string;
+    @IsOptional()
+    description?: string;
 
     @Type(() => ObjectId)
     @Transform(({ value }) => [...value].map(id => new ObjectId(id)), { toClassOnly: true })
