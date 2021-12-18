@@ -10,7 +10,7 @@ export const veikaliProvider: FactoryProvider = {
     useFactory: async (dbService: DatabaseService) => {
         try {
             const db = dbService.db();
-            const collection = db.collection('kastes-kastes');
+            const collection = db.collection<Veikals>('kastes-kastes');
 
             await upgradeDb(collection);
             createIndexes(collection);

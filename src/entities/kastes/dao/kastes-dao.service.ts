@@ -105,7 +105,7 @@ export class KastesDaoService {
         return this.findOneById(data._id, data.kaste!);
     }
 
-    async setGatavs(pasutijums: number, kods: number, kaste: number, value: boolean): Promise<VeikalsKaste | undefined> {
+    async setGatavs(pasutijums: number, kods: number, kaste: number, value: boolean): Promise<VeikalsKaste | null | undefined> {
 
         const { value: veikals } = await this.collection.findOneAndUpdate(
             { pasutijums, kods },

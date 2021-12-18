@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { BulkWriteUpdateOneOperation, Collection, UpdateQuery } from 'mongodb';
+import { AnyBulkWriteOperation, Collection, UpdateFilter } from 'mongodb';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { UpdateJobDto } from '../dto/update-job.dto';
 import { JobProduct } from '../entities/job-product.entity';
@@ -15,11 +15,11 @@ export class JobsDao {
         @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
     ) { }
 
-    async getAll(query: FilterType<Job>, unwindProducts: boolean) {
+    async getAll(query: FilterType<Job>, unwindProducts: boolean): Promise<Job[]> {
 
         const aggr = findAllPipeline(query, unwindProducts);
 
-        return this.collection.aggregate(aggr).toArray();
+        return this.collection.aggregate(aggr).toArray() as Promise<Job[]>;
 
     }
 
@@ -32,7 +32,7 @@ export class JobsDao {
         return this.collection.findOne({ jobId });
     }
 
-    async insertOne(job: Job): Promise<Job | undefined> {
+    async insertOne(job: Job): Promise<Job | null> {
         const { value } = await this.collection.findOneAndReplace(
             { jobId: job.jobId },
             job,
@@ -48,7 +48,7 @@ export class JobsDao {
         return Object.values(insertedIds).map(id => id.toHexString());
     }
 
-    async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | undefined> {
+    async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | null> {
         const { value } = await this.collection.findOneAndUpdate(
             {
                 jobId,
@@ -61,7 +61,7 @@ export class JobsDao {
     }
 
     async updateJobs(jobsUpdate: UpdateJobDto[]): Promise<number> {
-        const operations: BulkWriteUpdateOneOperation<Job>[] =
+        const operations: AnyBulkWriteOperation<Job>[] =
             jobsUpdate.map(jobUpdate);
 
         const { modifiedCount } = await this.collection.bulkWrite(operations);
@@ -85,9 +85,9 @@ export class JobsDao {
 }
 
 
-function jobUpdate({ jobId, ...job }: UpdateJobDto): BulkWriteUpdateOneOperation<Job> {
+function jobUpdate({ jobId, ...job }: UpdateJobDto): AnyBulkWriteOperation<Job> {
 
-    const update: UpdateQuery<Job> = {
+    const update: UpdateFilter<Job> = {
         $set: { ...job },
     };
 

@@ -1,20 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { defaultsDeep } from 'lodash';
-import { BulkWriteOperation, Collection } from 'mongodb';
+import { AnyBulkWriteOperation, Collection } from 'mongodb';
 import { DatabaseService } from '../../database/database.service';
 import { flattenObject } from '../../lib/flatten-object';
 import { SystemModules } from '../interfaces/system-modules.interface';
-import {
-  SystemPreferenceModule,
-  SystemPreference,
-} from '../interfaces/system-preferences.interface';
+import { SystemPreferenceModule, SystemPreference, } from '../interfaces/system-preferences.interface';
 import { DEFAULT_PREFERENCES } from './default-preferences';
 
 interface BulkUpdateOne {
   updateOne: {
-    filter: { [key: string]: any };
+    filter: { [key: string]: any; };
     update: {
-      $set: { [key: string]: any };
+      $set: { [key: string]: any; };
     };
     upsert?: boolean;
   };
@@ -80,7 +77,7 @@ export class PreferencesDao {
 
   private async insertDefaults(def: SystemPreferenceModule[]) {
     const modules = await this.preferences.find({}).toArray();
-    const missing: BulkWriteOperation<SystemPreferenceModule>[] = [];
+    const missing: AnyBulkWriteOperation<SystemPreferenceModule>[] = [];
     for (const mod of def) {
       const modDb = modules.find((md) => md.module === mod.module);
       if (modDb) {

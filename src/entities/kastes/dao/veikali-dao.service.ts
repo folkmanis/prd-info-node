@@ -73,7 +73,7 @@ export class VeikaliDaoService {
     return deletedCount || 0;
   }
 
-  async updateOne({ pasutijums, kods, ...update }: VeikalsUpdateDto): Promise<Veikals | undefined> {
+  async updateOne({ pasutijums, kods, ...update }: VeikalsUpdateDto): Promise<Veikals | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { pasutijums, kods },
       {

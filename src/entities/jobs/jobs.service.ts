@@ -30,7 +30,7 @@ export class JobsService {
     return this.jobsDao.getOne(jobId);
   }
 
-  async addFolderPathToJob(jobId: number): Promise<Job | undefined> {
+  async addFolderPathToJob(jobId: number): Promise<Job | null> {
 
     const job = await this.jobsDao.getOne(jobId);
     if (!job) {
@@ -60,7 +60,7 @@ export class JobsService {
 
   }
 
-  async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | undefined> {
+  async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | null> {
     let fileNames = files?.fileNames || [];
     const path = files?.path!;
     fileNames = await this.filesystemService.writeFormFile(path, req, fileNames);

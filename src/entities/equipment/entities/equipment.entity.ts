@@ -1,6 +1,6 @@
-import { ObjectId } from 'mongodb';
 import { Transform, Type } from 'class-transformer';
-import { IsMongoId, IsString, IsOptional, IsObject } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
+import { ObjectId } from 'mongodb';
 
 export class Equipment {
 

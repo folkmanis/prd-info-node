@@ -1,13 +1,8 @@
-import { ParseIntPipe, Controller, UseInterceptors, Get, Post, Body, Patch, Param, Delete, ParseBoolPipe } from '@nestjs/common';
-import { VeikalsCreateDto } from './dto/veikals-create.dto';
-import { VeikalsUpdateDto } from './dto/veikals-update.dto';
-import { Modules } from '../../login';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
+import { Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { Kaste } from './entities/kaste.entity';
+import { ObjectIdPipe } from '../../lib/object-id.pipe';
+import { Modules } from '../../login';
 import { KastesDaoService } from './dao/kastes-dao.service';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Veikals } from './entities/veikals';
 import { VeikalsKaste } from './dto/veikals-kaste.dto';
 
 @Controller('kastes')
@@ -49,7 +44,7 @@ export class KastesController {
     @Param('kods', ParseIntPipe) kods: number,
     @Param('kaste', ParseIntPipe) kaste: number,
     @Param('action', ParseBoolPipe) action: boolean,
-  ): Promise<VeikalsKaste | undefined> {
+  ): Promise<VeikalsKaste | null | undefined> {
     return this.kastesDao.setGatavs(pasutijums, kods, kaste, action);
   }
 

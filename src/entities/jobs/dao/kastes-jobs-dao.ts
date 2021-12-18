@@ -1,9 +1,9 @@
-import { Injectable, Inject } from '@nestjs/common';
-import { MongoClient, Collection, ObjectId, FilterQuery, UpdateQuery, BulkWriteUpdateOneOperation, BulkWriteUpdateOperation, Db, } from 'mongodb';
-
+import { Inject, Injectable } from '@nestjs/common';
+import { Collection } from 'mongodb';
+import { KastesJob } from '../entities/job.entity';
 import { JOBS_COLLECTION } from './jobs-collection.provider';
 
-import { KastesJob } from '../entities/job.entity';
+
 
 @Injectable()
 export class KastesJobsDao {

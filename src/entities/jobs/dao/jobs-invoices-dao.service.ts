@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection, FilterQuery, UpdateQuery } from 'mongodb';
+import { Collection, Filter, UpdateFilter } from 'mongodb';
 import { InvoiceProduct, ProductTotals } from '../../invoices/entities/invoice.entity';
 import { JobsWithoutInvoicesTotals } from '../dto/jobs-without-invoices-totals.interface';
 import { Job } from '../entities/job.entity';
@@ -15,11 +15,11 @@ export class JobsInvoicesDao {
 
 
     async setInvoice(jobIds: number[], invoiceId: string,): Promise<number[]> {
-        const filter: FilterQuery<Job> = {
+        const filter: Filter<Job> = {
             jobId: { $in: jobIds },
             invoiceId: { $exists: false },
         };
-        const update: UpdateQuery<Job> = {
+        const update: UpdateFilter<Job> = {
             $set: {
                 invoiceId,
                 jobStatus: {

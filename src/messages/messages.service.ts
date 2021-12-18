@@ -66,7 +66,7 @@ export class MessagesService {
       });
     }
 
-    return this.collection.aggregate(pipeline).toArray();
+    return this.collection.aggregate(pipeline).toArray() as Promise<Message[]>;
   }
 
   async add(msg: Message): Promise<ObjectId> {

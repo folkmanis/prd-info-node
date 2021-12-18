@@ -44,7 +44,7 @@ export class VeikaliController {
     @Patch('veikals')
     async updateOneOrderVeikals(
         @Body() veikals: VeikalsUpdateDto,
-    ): Promise<Veikals | undefined> {
+    ): Promise<Veikals | null> {
         return this.veikaliDao.updateOne(veikals);
     }
 

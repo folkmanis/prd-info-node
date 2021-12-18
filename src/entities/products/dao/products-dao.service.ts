@@ -1,25 +1,23 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
-import { PRODUCTS_COLLECTION } from './products-collection.provider';
-import { Product } from '../entities/product.entity';
-import { Collection, FilterQuery, UpdateQuery } from 'mongodb';
-import { CreateProductDto } from '../dto/create-product.dto';
-import { UpdateProductDto } from '../dto/update-product.dto';
-import { ProductFilter, ProductQuery } from '../dto/product-query.dto';
-import { plainToClassFromExist, classToPlain, plainToClass } from 'class-transformer';
+import { Inject, Injectable } from '@nestjs/common';
+import { classToPlain, plainToClass } from 'class-transformer';
 import { isUndefined, pickBy } from 'lodash';
+import { Collection } from 'mongodb';
+import { CreateProductDto } from '../dto/create-product.dto';
+import { ProductFilter, ProductQuery } from '../dto/product-query.dto';
+import { UpdateProductDto } from '../dto/update-product.dto';
 import { CustomerProduct } from '../entities/customer-product.interface';
+import { Product } from '../entities/product.entity';
 import { ProductProductionStage } from '../entities/production-stage';
+import { PRODUCTS_COLLECTION } from './products-collection.provider';
 
 @Injectable()
 export class ProductsDaoService {
-
-    // private readonly logger = new Logger(ProductsDaoService.name);
 
     constructor(
         @Inject(PRODUCTS_COLLECTION) private readonly collection: Collection<Product>
     ) { }
 
-    async insertOne(product: CreateProductDto): Promise<Product | undefined> {
+    async insertOne(product: CreateProductDto): Promise<Product | null> {
         const { value } = await this.collection.findOneAndReplace(
             { name: product.name },
             product,
@@ -28,7 +26,7 @@ export class ProductsDaoService {
         return value;
     }
 
-    async updateOne(name: string, product: UpdateProductDto): Promise<Product | undefined> {
+    async updateOne(name: string, product: UpdateProductDto): Promise<Product | null> {
         const { value } = await this.collection.findOneAndUpdate(
             { name },
             { $set: product },
@@ -183,181 +181,6 @@ export class ProductsDaoService {
         ];
         return this.collection.aggregate<ProductProductionStage>(pipeline).toArray();
     }
-
-
-    /*
-    
-    
-    
-        private mapProdStage(stage: ProductProductionStage): ProductProductionStage {
-            if (stage.materials) {
-                stage.materials = stage.materials.map((mat) => ({
-                    ...mat,
-                    materialId: new ObjectId(mat.materialId),
-                }));
-            }
-            stage.productionStageId = new ObjectId(stage.productionStageId);
-            return stage;
-        }
-    
-        async productPrices(name: string): Promise<ProductResult> {
-            const result = await this.products.findOne(
-                { name },
-                { projection: { prices: 1 } },
-            );
-            return {
-                error: !result,
-                prices: result ? result.prices : [],
-            };
-        }
-    
-        async updatePrice(
-            name: string,
-            customer: string,
-            price: number,
-        ): Promise<ProductResult> {
-            const result = await this.products.updateOne(
-                { name, 'prices.customer': customer },
-                {
-                    $set: {
-                        'prices.$.price': +price,
-                    },
-                },
-            );
-            return {
-                modifiedCount: result.modifiedCount,
-                result: result.result,
-                error: !result.result.ok,
-            };
-        }
-    
-        async addPrice(
-            name: string,
-            customerName: string,
-            price: number,
-        ): Promise<ProductResult> {
-            const result = await this.products.updateOne(
-                { name },
-                {
-                    $addToSet: {
-                        prices: { customerName, price },
-                    },
-                },
-            );
-            return {
-                modifiedCount: result.modifiedCount,
-                result: result.result,
-                error: !result.result.ok,
-            };
-        }
-    
-        async addPrices(prices: ProductPriceImport[]): Promise<ProductResult> {
-            if (!(prices && prices.length > 0)) {
-                return { error: null, insertedCount: 0 };
-            }
-            const update: BulkWriteOperation<Product>[] = [];
-            for (const { price, product, customerName } of prices) {
-                update.push({
-                    updateOne: {
-                        filter: {
-                            name: product,
-                        },
-                        update: {
-                            $addToSet: {
-                                prices: { customerName, price },
-                            },
-                        },
-                    },
-                });
-            }
-            return this.products
-                .bulkWrite(update)
-                .then((result) => ({
-                    error: !result.result,
-                    insertedCount: result.modifiedCount,
-                }))
-                .catch((error) => ({ error }));
-        }
-    
-        async deletePrice(
-            name: string,
-            customerName: string,
-        ): Promise<ProductResult> {
-            const result = await this.products.updateOne(
-                { name },
-                {
-                    $pull: {
-                        prices: {
-                            customerName,
-                        },
-                    },
-                },
-            );
-            return {
-                deletedCount: result.modifiedCount,
-                result: result.result,
-                error: !result.result.ok,
-            };
-        }
-        
-        async getCustomersProducts(
-            customerProducts: {
-                customerName: string;
-                product: string;
-            }[],
-        ): Promise<ProductResult> {
-            const aggr = [
-                {
-                    $unwind: { path: '$prices' },
-                },
-                {
-                    $addFields: {
-                        'custPrice.customerName': '$prices.customerName',
-                        'custPrice.product': '$name',
-                    },
-                },
-                {
-                    $match: {
-                        custPrice: {
-                            $in: customerProducts,
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        _id: 0,
-                        product: '$name',
-                        customerName: '$custPrice.customerName',
-                        price: '$prices.price',
-                    },
-                },
-            ];
-            try {
-                const result = await this.products.aggregate(aggr).toArray();
-                return {
-                    data: result,
-                    error: null,
-                };
-            } catch (error) {
-                return { error };
-            }
-        }
-     */
-
-    /*     async insertNewProducts(prod: ProductNoPrices[]): Promise<ProductResult> {
-    if (!(prod && prod.length)) {
-        return { error: null, insertedCount: 0 };
-    }
-    return this.products
-        .insertMany(prod)
-        .then((result) => ({
-            insertedCount: result.insertedCount,
-            error: !result.result.ok,
-        }))
-        .catch((error) => ({ error }));
-}
-*/
-
 
 
 }

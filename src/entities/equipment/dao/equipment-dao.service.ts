@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { classToPlain } from 'class-transformer';
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, WithoutId } from 'mongodb';
 import { DatabaseService } from '../../../database';
 import { EntityDao } from '../../entityDao.interface';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
@@ -33,10 +33,10 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
     ).toArray();
   }
 
-  async insertOne(equipment: CreateEquipmentDto): Promise<Equipment | undefined> {
+  async insertOne(equipment: CreateEquipmentDto): Promise<Equipment | null> {
     const { value } = await this.collection.findOneAndReplace(
       { name: equipment.name },
-      classToPlain(equipment),
+      classToPlain(equipment) as WithoutId<Equipment>,
       { upsert: true, returnDocument: 'after' }
     );
     return value;
@@ -46,7 +46,7 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
     return this.collection.findOne({ _id });
   }
 
-  async updateOne(_id: ObjectId, update: UpdateEquipmentDto): Promise<Equipment | undefined> {
+  async updateOne(_id: ObjectId, update: UpdateEquipmentDto): Promise<Equipment | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
       { $set: classToPlain(update) },
@@ -90,41 +90,3 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
 
 
 }
-
-/*
-
-
-  async addOne(entity: Equipment): Promise<InsertOneWriteOpResult<Equipment>> {
-    const resp = await this.equipment.insertOne(entity);
-    return resp;
-  }
-
-  updateOne(
-    id: string,
-    entity: Partial<Equipment>,
-  ): Promise<UpdateWriteOpResult> {
-    return this.equipment.updateOne(
-      { _id: new ObjectId(id) },
-      {
-        $set: entity,
-      },
-    );
-  }
-
-  deleteOneById(id: string): Promise<DeleteWriteOpResultObject> {
-    return this.equipment.deleteOne({ _id: new ObjectId(id) });
-  }
-
-  async validationData<K extends keyof Equipment>(
-    key: K,
-  ): Promise<Array<Equipment[K]>> {
-    const resp = await this.equipment
-      .find()
-      .project({ _id: 0, [key]: 1 })
-      .toArray();
-    return resp.map((data) => data[key]);
-  }
-
-}
-
-*/

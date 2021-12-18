@@ -38,7 +38,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
         return this.collection.findOne({ _id: id });
     }
 
-    async insertOne(material: CreateMaterialDto): Promise<Material | undefined> {
+    async insertOne(material: CreateMaterialDto): Promise<Material | null> {
         const { value } = await this.collection.findOneAndReplace(
             { name: material.name },
             material,
@@ -47,7 +47,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
         return value;
     }
 
-    async updateOne(id: ObjectId, material: UpdateMaterialDto): Promise<Material | undefined> {
+    async updateOne(id: ObjectId, material: UpdateMaterialDto): Promise<Material | null> {
         const { value } = await this.collection.findOneAndUpdate(
             { _id: id },
             { $set: material },

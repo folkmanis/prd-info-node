@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Collection, FilterQuery } from 'mongodb';
+import { Collection, Filter } from 'mongodb';
 import { DatabaseService } from '../../database';
 import { LogReadResponse, LogRecord } from '../interfaces/log-record.interface';
 import { LogQuery } from '../interfaces/log-query.class';

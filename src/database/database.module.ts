@@ -1,20 +1,21 @@
 import { Module, Global, FactoryProvider } from '@nestjs/common';
-import { MongoClient } from 'mongodb';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from './database.service';
 
 const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   provide: 'MONGO_CLIENT',
   useFactory: async (conf: ConfigService) =>
-    MongoClient.connect(conf.get('DB_SRV')!, {
-      poolSize: 50,
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      connectTimeoutMS: 5000,
-      writeConcern: {
-        wtimeout: 2500,
-      },
-    }),
+    new MongoClient(
+      conf.get('DB_SRV')!,
+      {
+        connectTimeoutMS: 5000,
+        writeConcern: {
+          wtimeout: 2500,
+        },
+      } as MongoClientOptions
+    )
+      .connect(),
   inject: [ConfigService],
 };
 
@@ -23,4 +24,4 @@ const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   providers: [connectionFactory, DatabaseService],
   exports: ['MONGO_CLIENT', DatabaseService],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

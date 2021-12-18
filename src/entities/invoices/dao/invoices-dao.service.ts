@@ -68,7 +68,7 @@ export class InvoicesDao {
                 },
             },
         ];
-        return this.collection.aggregate(pipeline).toArray();
+        return this.collection.aggregate(pipeline).toArray() as Promise<InvoiceResponse[]>;
     }
 
     async getOne(invoiceId: string): Promise<InvoiceForReport> {
@@ -160,7 +160,7 @@ export class InvoicesDao {
         return result[0] || undefined;
     }
 
-    async insertOne(invoice: Invoice): Promise<Invoice | undefined> {
+    async insertOne(invoice: Invoice): Promise<Invoice | null> {
         const { value } = await this.collection.findOneAndReplace(
             { invoiceId: invoice.invoiceId },
             invoice,
@@ -168,7 +168,7 @@ export class InvoicesDao {
         return value;
     }
 
-    async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<Invoice | undefined> {
+    async updateInvoice(invoiceId: string, update: InvoiceUpdate): Promise<Invoice | null> {
         const { value } = await this.collection.findOneAndUpdate(
             { invoiceId },
             { $set: update },

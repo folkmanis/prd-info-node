@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
-import { CustomersQuery } from '../dto/customers-query';
 import { ListCustomer } from '../dto/list-customer.dto';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { Customer } from '../entities/customer.entity';
 import { CUSTOMERS_COLLECTION } from './customers-provider';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 
 @Injectable()
 export class CustomersDaoService {
@@ -46,7 +45,7 @@ export class CustomersDaoService {
         return this.collection.findOne({ CustomerName });
     }
 
-    async insertOne(customer: CreateCustomerDto): Promise<Customer | undefined> {
+    async insertOne(customer: CreateCustomerDto): Promise<Customer | null> {
         const { CustomerName } = customer;
         const { value } = await this.collection
             .findOneAndReplace(
@@ -67,7 +66,7 @@ export class CustomersDaoService {
         return deletedCount;
     }
 
-    async updateOne(_id: ObjectId, customer: UpdateCustomerDto,): Promise<Customer | undefined> {
+    async updateOne(_id: ObjectId, customer: UpdateCustomerDto): Promise<Customer | null> {
         const { value } = await this.collection.findOneAndUpdate(
             { _id },
             { $set: customer },

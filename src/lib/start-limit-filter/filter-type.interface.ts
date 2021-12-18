@@ -1,7 +1,7 @@
-import { FilterQuery } from 'mongodb';
+import { Filter } from 'mongodb';
 
 export interface FilterType<T> {
     limit: number;
     start: number;
-    filter: FilterQuery<T>;
+    filter: Filter<T>;
 };

@@ -1,5 +1,5 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Collection, FilterQuery, MongoClient } from 'mongodb';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Collection, Filter, MongoClient } from 'mongodb';
 import { Message } from '../../../messages/entities/message.interface';
 import { SystemModules } from '../../../preferences';
 import { ModuleUserPreferences, User } from '../entities/user.interface';
@@ -56,7 +56,7 @@ export class UsersDaoService {
         );
     }
 
-    async addOne(user: User): Promise<User | undefined> {
+    async addOne(user: User): Promise<User | null> {
         const { value } = await this.collection.findOneAndReplace(
             { username: user.username },
             user,
@@ -69,7 +69,7 @@ export class UsersDaoService {
         return value;
     }
 
-    async updateOne({ username, ...user }: Pick<User, 'username'> & Partial<User>): Promise<User | undefined> {
+    async updateOne({ username, ...user }: Pick<User, 'username'> & Partial<User>): Promise<User | null> {
 
         const { value } = await this.collection.findOneAndUpdate(
             { username },
@@ -102,7 +102,7 @@ export class UsersDaoService {
     }
 
     async login(username: string, password: string): Promise<User | null> {
-        const filter: FilterQuery<User> = {
+        const filter: Filter<User> = {
             username,
             password,
             userDisabled: { $not: { $eq: true } },
