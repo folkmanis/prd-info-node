@@ -2,10 +2,8 @@ import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Put, UseInte
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
 import { JobsService } from '../jobs/jobs.service';
-import { KastesDaoService } from './dao/kastes-dao.service';
 import { VeikaliDaoService } from './dao/veikali-dao.service';
 import { VeikalsCreateDto } from './dto/veikals-create.dto';
-import { VeikalsKaste } from './dto/veikals-kaste.dto';
 import { VeikalsUpdateDto } from './dto/veikals-update.dto';
 import { Veikals } from './entities/veikals';
 
@@ -17,7 +15,6 @@ export class VeikaliController {
     constructor(
         private readonly veikaliDao: VeikaliDaoService,
         private readonly jobsService: JobsService,
-        private readonly kastesDao: KastesDaoService,
     ) { }
 
     @Put()

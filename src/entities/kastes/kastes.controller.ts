@@ -13,6 +13,23 @@ export class KastesController {
     private readonly kastesDao: KastesDaoService,
   ) { }
 
+  @Patch(':id/:kaste/gatavs/:action')
+  async setGatavs(
+    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('kaste', ParseIntPipe) kaste: number,
+    @Param('action', ParseBoolPipe) action: boolean,
+  ): Promise<VeikalsKaste | null | undefined> {
+    return this.kastesDao.setGatavs(id, kaste, action);
+  }
+
+  @Patch(':pasutijums/:kods/label')
+  async setLabel(
+    @Param('pasutijums', ParseIntPipe) pasutijums: number,
+    @Param('kods', ParseIntPipe) kods: number,
+  ): Promise<VeikalsKaste | undefined> {
+    return this.kastesDao.setLabel(pasutijums, kods);
+  }
+
   @Get('id/:id/:kaste')
   async getKasteById(
     @Param('id', ObjectIdPipe) id: ObjectId,
@@ -28,24 +45,6 @@ export class KastesController {
     @Param('kaste', ParseIntPipe) kaste: number,
   ): Promise<VeikalsKaste | undefined> {
     return this.kastesDao.findOneByPasutijums(pasutijums, kods, kaste);
-  }
-
-  @Patch(':pasutijums/:kods/label')
-  async setLabel(
-    @Param('pasutijums', ParseIntPipe) pasutijums: number,
-    @Param('kods', ParseIntPipe) kods: number,
-  ): Promise<VeikalsKaste | undefined> {
-    return this.kastesDao.setLabel(pasutijums, kods);
-  }
-
-  @Patch(':pasutijums/:kods/:kaste/gatavs/:action')
-  async setGatavs(
-    @Param('pasutijums', ParseIntPipe) pasutijums: number,
-    @Param('kods', ParseIntPipe) kods: number,
-    @Param('kaste', ParseIntPipe) kaste: number,
-    @Param('action', ParseBoolPipe) action: boolean,
-  ): Promise<VeikalsKaste | null | undefined> {
-    return this.kastesDao.setGatavs(pasutijums, kods, kaste, action);
   }
 
   @Get(':jobId')

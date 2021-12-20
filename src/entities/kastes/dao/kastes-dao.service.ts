@@ -105,10 +105,10 @@ export class KastesDaoService {
         return this.findOneById(data._id, data.kaste!);
     }
 
-    async setGatavs(pasutijums: number, kods: number, kaste: number, value: boolean): Promise<VeikalsKaste | null | undefined> {
+    async setGatavs(_id: ObjectId, kaste: number, value: boolean): Promise<VeikalsKaste | null | undefined> {
 
         const { value: veikals } = await this.collection.findOneAndUpdate(
-            { pasutijums, kods },
+            { _id },
             {
                 $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${value} }`),
                 $currentDate: { lastModified: true },

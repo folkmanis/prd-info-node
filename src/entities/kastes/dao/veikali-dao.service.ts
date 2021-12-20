@@ -73,9 +73,9 @@ export class VeikaliDaoService {
     return deletedCount || 0;
   }
 
-  async updateOne({ pasutijums, kods, ...update }: VeikalsUpdateDto): Promise<Veikals | null> {
+  async updateOne({ _id, ...update }: VeikalsUpdateDto): Promise<Veikals | null> {
     const { value } = await this.collection.findOneAndUpdate(
-      { pasutijums, kods },
+      { _id },
       {
         $set: update,
         $currentDate: { lastModified: true },

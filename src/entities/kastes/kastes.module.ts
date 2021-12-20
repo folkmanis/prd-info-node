@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { KastesService } from './kastes.service';
 import { KastesController } from './kastes.controller';
 import { VeikaliDaoService } from './dao/veikali-dao.service';
 import { veikaliProvider } from './dao/veikali.injector';
@@ -24,7 +23,6 @@ import { KastesJobsController } from './kastes-jobs.controller';
     veikaliProvider,
     VeikaliDaoService,
     KastesDaoService,
-    KastesService,
     XlsParserService,
   ],
   imports: [
