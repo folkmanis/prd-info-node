@@ -88,14 +88,13 @@ export class KastesDaoService {
                 },
             },
         ];
-        const [data] = await this.collection.aggregate(pipeline).toArray();
+        const [data] = await this.collection.aggregate(pipeline).toArray() as VeikalsKaste[];
         if (!data) {
             return undefined;
         }
         await this.collection.updateOne(
             {
-                pasutijums,
-                kods,
+                _id: data._id,
             },
             {
                 $set: JSON.parse(`{ "kastes.${data.kaste}.uzlime": true }`),
