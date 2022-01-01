@@ -10,6 +10,8 @@ import { CustomersModule } from '../customers/customers.module';
 import { JobsCounterService } from './dao/counters.service';
 import { ProductsModule } from '../products/products.module';
 import { NotificationsModule } from '../../notifications';
+import { ProductsController } from './products.controller';
+import { JobsProductsDaoService } from './dao/jobs-products-dao.service';
 
 @Module({
   imports: [
@@ -18,7 +20,10 @@ import { NotificationsModule } from '../../notifications';
     ProductsModule,
     NotificationsModule,
   ],
-  controllers: [JobsController],
+  controllers: [
+    ProductsController,
+    JobsController,
+  ],
   providers: [
     JobsService,
     jobsCollectionProvider,
@@ -26,6 +31,7 @@ import { NotificationsModule } from '../../notifications';
     JobsInvoicesDao,
     KastesJobsDao,
     JobsCounterService,
+    JobsProductsDaoService,
   ],
   exports: [
     JobsService,
