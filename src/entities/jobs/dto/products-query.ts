@@ -1,12 +1,11 @@
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { deserializeArray, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { JobOneProduct } from '../entities/job-one-product';
-import { JobProduct } from '../entities/job-product.entity';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { startOfDay, endOfDay } from 'date-fns';
+import { deserializeArray, Transform } from 'class-transformer';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { endOfDay, startOfDay } from 'date-fns';
 import { Filter } from 'mongodb';
+import { pickNotNull } from '../../../lib/pick-not-null';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
+import { JobProduct } from '../entities/job-product.entity';
 import { Job } from '../entities/job.entity';
 
 export class ProductsQuery extends StartLimitFilter<Job> {
@@ -44,7 +43,7 @@ export class ProductsQuery extends StartLimitFilter<Job> {
             'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
         };
         if (this.fromDate || this.toDate) {
-            filter.dueDate = pickNotNull({
+            filter['jobStatus.timestamp'] = pickNotNull({
                 $gte: this.fromDate,
                 $lte: this.toDate,
             });

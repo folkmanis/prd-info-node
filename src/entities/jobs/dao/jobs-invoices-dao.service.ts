@@ -24,6 +24,7 @@ export class JobsInvoicesDao {
                 invoiceId,
                 jobStatus: {
                     generalStatus: 50,
+                    timestamp: new Date(),
                 },
             },
         };

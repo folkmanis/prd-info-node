@@ -1,4 +1,4 @@
-import { Module, FactoryProvider } from '@nestjs/common';
+import { FactoryProvider } from '@nestjs/common';
 import { Collection, Db } from 'mongodb';
 import { DatabaseService } from '../../../database';
 
@@ -115,6 +115,29 @@ async function upgradeDb(collection: Collection): Promise<void> {
                 ["isLocked", "category"]
         }]
     );
+    await collection.updateMany(
+        {
+            _v: { $lt: 3 },
+            'jobStatus.timestamp': { $exists: false },
+        },
+        [
+            {
+                $set: {
+                    'jobStatus.timestamp': '$dueDate',
+                }
+            }
+        ],
+    );
+    await collection.updateMany(
+        {
+            _v: { $lt: 3 }
+        },
+        {
+            $set: {
+                _v: 3,
+            }
+        }
+    );
 };
 
 
@@ -148,21 +171,3 @@ function createIndexes(collection: Collection): void {
     ]);
 };
 
-
-const upgradeV2 = [{
-    $match: {
-        $or: [
-            { _v: { $lt: 2 } },
-            { _v: { $exists: false } }
-        ]
-    }
-}, {
-    $addFields: {
-        _v: 2,
-        "production.isLocked": "$isLocked",
-        "production.category": "$category"
-    }
-}, {
-    $unset:
-        ["isLocked", "category"]
-}];

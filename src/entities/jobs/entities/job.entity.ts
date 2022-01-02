@@ -1,8 +1,7 @@
-import { ObjectId } from 'mongodb';
-import { IntersectionType } from '@nestjs/mapped-types';
-import { JOB_CATEGORIES, JobCategories, ReproProduction, KastesProduction, ProductionCategory, PrintProduction } from './job-categories';
 import { Transform, Type } from 'class-transformer';
-import { Min, Max, IsMongoId, IsString, IsDate, IsInt, IsOptional, ValidateNested, IsNumber, IsBoolean, IsIn, IsObject } from 'class-validator';
+import { IsDate, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import { ObjectId } from 'mongodb';
+import { KastesProduction, PrintProduction, ProductionCategory, ReproProduction } from './job-categories';
 import { JobProduct } from './job-product.entity';
 import { JobProductionStage } from './job-production-stage.entity';
 
@@ -10,6 +9,10 @@ import { JobProductionStage } from './job-production-stage.entity';
 export class JobStatus {
     @IsNumber()
     generalStatus: number;
+
+    @Type(() => Date)
+    @IsDate()
+    timestamp: Date;
 }
 
 export class Files {
@@ -22,14 +25,14 @@ export class Files {
 }
 
 export class Job {
-    @Type(() => ObjectId)
+
     @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
     @IsObject()
     _id: ObjectId;
 
-    @Min(2)
-    @Max(2)
-    _v = 2;
+    @Min(3)
+    @Max(3)
+    _v: number;
 
     @IsNumber()
     jobId: number;
