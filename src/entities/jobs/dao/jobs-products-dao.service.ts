@@ -5,6 +5,12 @@ import { JobsWithoutInvoicesTotals } from '../dto/jobs-without-invoices-totals.i
 import { Job } from '../entities/job.entity';
 import { JOBS_COLLECTION } from './jobs-collection.provider';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
+import { SortOrder } from '../dto/products-query';
+
+interface ProductsTotalsOptions {
+    category?: string[];
+    sort?: SortOrder;
+}
 
 @Injectable()
 export class JobsProductsDaoService {
@@ -13,7 +19,7 @@ export class JobsProductsDaoService {
         @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
     ) { }
 
-    async getProductsTotals({ start, limit, filter }: FilterType<Job>, category: string[] | undefined) {
+    async getProductsTotals({ start, limit, filter }: FilterType<Job>, options: ProductsTotalsOptions = {}) {
         const pipeline: Record<string, any>[] = [
             {
                 $match: filter
@@ -54,11 +60,11 @@ export class JobsProductsDaoService {
                 }
             }
         ];
-        if (category) {
+        if (options.category) {
             pipeline.push(
                 {
                     $match: {
-                        category: { $in: category },
+                        category: { $in: options.category },
                     }
                 }
             );
@@ -70,22 +76,22 @@ export class JobsProductsDaoService {
                     paytraqId: 0,
                     productionStages: 0,
                 }
-            },
-            {
-                $sort: {
-                    category: 1,
-                    sum: -1,
-                }
-            },
+            }
         );
-        if (start > 0) {
-            pipeline.push(
-                { $skip: start }
-            );
+
+        let $sort: Record<string, 1 | -1> = { name: 1 };
+        if (options.sort) {
+            $sort = {
+                [options.sort.column]: options.sort.direction,
+                name: options.sort.column === 'name' ? options.sort.direction : 1,
+            };
         }
-        pipeline.push(
-            { $limit: limit }
-        );
+        pipeline.push({ $sort });
+
+        if (start > 0) {
+            pipeline.push({ $skip: start });
+        }
+        pipeline.push({ $limit: limit });
 
         return this.collection.aggregate(pipeline).toArray();
     }

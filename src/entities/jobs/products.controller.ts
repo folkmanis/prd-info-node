@@ -16,7 +16,7 @@ export class ProductsController {
     async jobProducts(
         @Query() query: ProductsQuery,
     ) {
-        return this.dao.getProductsTotals(query.toFilter(), query.category);
+        return this.dao.getProductsTotals(query.toFilter(), query);
     }
 
 }
