@@ -50,7 +50,4 @@ export interface UserSession {
   };
 }
 
-export interface ModuleUserPreferences {
-  module: SystemModules;
-  options?: any;
-}
+export type ModuleUserPreferences = Record<string, any>;

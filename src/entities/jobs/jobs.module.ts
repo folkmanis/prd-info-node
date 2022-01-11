@@ -12,6 +12,8 @@ import { ProductsModule } from '../products/products.module';
 import { NotificationsModule } from '../../notifications';
 import { ProductsController } from './products.controller';
 import { JobsProductsDaoService } from './dao/jobs-products-dao.service';
+import { JobsPreferencesController } from './jobs-preferences.controller';
+import { UsersModule } from '../users';
 
 @Module({
   imports: [
@@ -19,8 +21,10 @@ import { JobsProductsDaoService } from './dao/jobs-products-dao.service';
     CustomersModule,
     ProductsModule,
     NotificationsModule,
+    UsersModule,
   ],
   controllers: [
+    JobsPreferencesController,
     ProductsController,
     JobsController,
   ],
