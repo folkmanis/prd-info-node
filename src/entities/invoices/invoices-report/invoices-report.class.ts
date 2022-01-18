@@ -6,14 +6,9 @@ import {
     Cell, DocumentDefinition,
     Table, Txt
 } from 'pdfmake-wrapper/server';
+import { InvoiceForReport, JobBase } from '../entities/invoice-for-report.interface';
 import { InvoiceProduct } from '../entities/invoice.entity';
-import { InvoiceForReport } from '../entities/invoice-for-report.interface';
 
-// TODO
-import { JobProduct } from '../../jobs/entities/job-product.entity';
-import { Job } from '../../jobs/entities/job.entity';
-import { JobOneProduct } from '../../jobs/entities/job-one-product';
-import { JobBase } from '../entities/invoice-for-report.interface';
 
 export class InvoiceReport {
     private pdf = new DocumentDefinition();
