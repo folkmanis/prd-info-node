@@ -73,7 +73,7 @@ export class ProductsQuery extends StartLimitFilter<Job> {
         return {
             start,
             limit,
-            filter: pickNotNull(filter)
+            filter: pickNotNull(filter) as Filter<Job>
         };
     }
 }
