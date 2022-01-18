@@ -1,4 +1,9 @@
-import { ArgumentMetadata, Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  Injectable,
+  PipeTransform,
+  BadRequestException,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 
 @Injectable()
@@ -11,7 +16,9 @@ export class ObjectIdPipe implements PipeTransform {
     try {
       return new ObjectId(value);
     } catch (error) {
-      throw new BadRequestException(`id must be a single String of 12 bytes or a string of 24 hex characters`);
+      throw new BadRequestException(
+        `id must be a single String of 12 bytes or a string of 24 hex characters`,
+      );
     }
   }
 }

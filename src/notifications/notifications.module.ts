@@ -4,17 +4,9 @@ import { NotificationsGateway } from './notifications.gateway';
 import { SessionTokenModule, SessionModule } from '../session';
 
 @Module({
-  imports: [
-    SessionTokenModule,
-    SessionModule,
-  ],
+  imports: [SessionTokenModule, SessionModule],
   controllers: [],
-  providers: [
-    NotificationsService,
-    NotificationsGateway
-  ],
-  exports: [
-    NotificationsService
-  ],
+  providers: [NotificationsService, NotificationsGateway],
+  exports: [NotificationsService],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

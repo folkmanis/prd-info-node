@@ -6,7 +6,7 @@ import { SystemPreferenceModule } from './interfaces/system-preferences.interfac
 
 @Controller('preferences')
 export class PreferencesController {
-  constructor(private preferencesDao: PreferencesDao) { }
+  constructor(private preferencesDao: PreferencesDao) {}
 
   @Modules('admin')
   @Patch()

@@ -3,11 +3,7 @@ import { EquipmentController } from './equipment.controller';
 import { EquipmentDaoService } from './dao/equipment-dao.service';
 
 @Module({
-  controllers: [
-    EquipmentController
-  ],
-  providers: [
-    EquipmentDaoService
-  ]
+  controllers: [EquipmentController],
+  providers: [EquipmentDaoService],
 })
-export class EquipmentModule { }
+export class EquipmentModule {}

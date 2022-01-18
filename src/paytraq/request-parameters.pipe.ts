@@ -1,14 +1,9 @@
-import {
-  ArgumentMetadata,
-  Injectable,
-  PipeTransform,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
 import { RequestParametersSchema } from './interfaces/request-parameters.schema';
 
 @Injectable()
 export class RequestParametersPipe implements PipeTransform {
-  transform(inputValue: any, metadata: ArgumentMetadata) {
+  transform(inputValue: any) {
     const { value, error } = RequestParametersSchema.validate(inputValue);
 
     if (error) {

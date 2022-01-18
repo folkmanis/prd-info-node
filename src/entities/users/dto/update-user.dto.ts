@@ -1,4 +1,4 @@
-import { PickType, IntersectionType, PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/mapped-types';
 import { User } from '../entities/user.interface';
 
-export class UpdateUserDto extends PartialType(OmitType(User, ['username'])) { }
+export class UpdateUserDto extends PartialType(OmitType(User, ['username'])) {}

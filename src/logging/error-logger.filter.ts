@@ -1,9 +1,8 @@
-import { ArgumentsHost, Catch, ExceptionFilter, Logger, HttpException } from '@nestjs/common';
+import { ArgumentsHost, Catch, HttpException, Logger } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 
 @Catch()
 export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
-
   private readonly logger = new Logger('HTTP Error');
 
   catch(exception: T, host: ArgumentsHost) {
@@ -12,5 +11,4 @@ export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
     }
     super.catch(exception, host);
   }
-
 }

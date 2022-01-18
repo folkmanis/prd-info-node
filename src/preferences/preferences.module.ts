@@ -10,4 +10,4 @@ import { PreferencesController } from './preferences.controller';
   exports: [PreferencesService],
   controllers: [PreferencesController],
 })
-export class PreferencesModule { }
+export class PreferencesModule {}

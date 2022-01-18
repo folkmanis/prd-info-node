@@ -7,15 +7,14 @@ const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   provide: 'MONGO_CLIENT',
   useFactory: async (conf: ConfigService) =>
     new MongoClient(
-      conf.get('DB_SRV')!,
+      conf.get('DB_SRV') as string,
       {
         connectTimeoutMS: 5000,
         writeConcern: {
           wtimeout: 2500,
         },
-      } as MongoClientOptions
-    )
-      .connect(),
+      } as MongoClientOptions,
+    ).connect(),
   inject: [ConfigService],
 };
 
@@ -24,4 +23,4 @@ const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   providers: [connectionFactory, DatabaseService],
   exports: ['MONGO_CLIENT', DatabaseService],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

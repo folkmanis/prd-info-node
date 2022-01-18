@@ -1,20 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { URL, URLSearchParams } from 'url';
+import { URL } from 'url';
 import https from 'https';
 import { IncomingMessage } from 'http';
 import { PaytraqClients, PaytraqClient } from '../interfaces/client';
 import { PaytraqProduct, PaytraqProducts } from '../interfaces/product';
 import { PaytraqSales, PaytraqSale } from '../interfaces/sale';
 import { RequestParameters } from '../interfaces/request-parameters';
-import {
-  PaytraqConnectionParams,
-  PaytraqSystemPreference,
-} from '../../preferences/interfaces/system-preferences.interface';
+import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface';
 import { xmlToJs, Options, jsToXml } from './xml-converter';
-import { method } from 'lodash';
 import { ApiURLWithQuery } from './api-url-with-query';
 import { ApiURL } from './api-url.class';
-import { PreferencesService, SystemModules } from '../../preferences';
+import { PreferencesService } from '../../preferences';
 import { SalesInput } from '../interfaces/sales-input';
 
 const CLIENT_OPTIONS: Options = { stringFields: ['RegNumber', 'Zip', 'Phone'] };

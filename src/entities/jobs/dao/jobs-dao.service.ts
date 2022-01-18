@@ -6,157 +6,150 @@ import { JobProduct } from '../entities/job-product.entity';
 import { Job } from '../entities/job.entity';
 import { JOBS_COLLECTION } from './jobs-collection.provider';
 
-
 @Injectable()
 export class JobsDao {
+  constructor(
+    @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
+  ) {}
 
+  async getAll(
+    query: FilterType<Job>,
+    unwindProducts: boolean,
+  ): Promise<Job[]> {
+    const aggr = findAllPipeline(query, unwindProducts);
 
-    constructor(
-        @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-    ) { }
+    return this.collection.aggregate(aggr).toArray() as Promise<Job[]>;
+  }
 
-    async getAll(query: FilterType<Job>, unwindProducts: boolean): Promise<Job[]> {
+  async getCount({ filter }: FilterType<Job>): Promise<number> {
+    return this.collection.countDocuments(filter);
+  }
 
-        const aggr = findAllPipeline(query, unwindProducts);
+  async getOne(jobId: number): Promise<Job | null> {
+    return this.collection.findOne({ jobId });
+  }
 
-        return this.collection.aggregate(aggr).toArray() as Promise<Job[]>;
+  async insertOne(job: Job): Promise<Job | null> {
+    const { value } = await this.collection.findOneAndReplace(
+      { jobId: job.jobId },
+      job,
+      { upsert: true, returnDocument: 'after' },
+    );
+    return value;
+  }
 
-    }
+  async insertJobs(insertJobs: Job[]): Promise<string[]> {
+    const { insertedIds } = await this.collection.insertMany(insertJobs);
+    return Object.values(insertedIds).map((id) => id.toHexString());
+  }
 
-    async getCount({ filter }: FilterType<Job>): Promise<number> {
-        return this.collection.countDocuments(filter);
-    }
+  async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | null> {
+    const { value } = await this.collection.findOneAndUpdate(
+      {
+        jobId,
+        invoiceId: { $exists: false },
+      },
+      { $set: job },
+      { returnDocument: 'after' },
+    );
+    return value;
+  }
 
+  async updateJobs(jobsUpdate: UpdateJobDto[]): Promise<number> {
+    const operations: AnyBulkWriteOperation<Job>[] = jobsUpdate.map(jobUpdate);
 
-    async getOne(jobId: number): Promise<Job | null> {
-        return this.collection.findOne({ jobId });
-    }
+    const { modifiedCount } = await this.collection.bulkWrite(operations);
+    return modifiedCount || 0;
+  }
 
-    async insertOne(job: Job): Promise<Job | null> {
-        const { value } = await this.collection.findOneAndReplace(
-            { jobId: job.jobId },
-            job,
-            { upsert: true, returnDocument: 'after' }
-        );
-        return value;
-    }
+  async updateJobProduct(jobId: number, idx: number, jobProduct: JobProduct) {
+    const update = (Object.keys(JobProduct) as Array<keyof JobProduct>).map(
+      (key) => ({ [`products.${idx}.${key}`]: jobProduct[key] }),
+    );
 
-    async insertJobs(insertJobs: Job[]): Promise<string[]> {
-        const { insertedIds } = await this.collection.insertMany(
-            insertJobs,
-        );
-        return Object.values(insertedIds).map(id => id.toHexString());
-    }
+    const { modifiedCount } = await this.collection.updateOne(
+      { jobId },
+      Object.assign({}, ...update),
+    );
 
-    async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | null> {
-        const { value } = await this.collection.findOneAndUpdate(
-            {
-                jobId,
-                invoiceId: { $exists: false },
-            },
-            { $set: job },
-            { returnDocument: 'after' }
-        );
-        return value;
-    }
-
-    async updateJobs(jobsUpdate: UpdateJobDto[]): Promise<number> {
-        const operations: AnyBulkWriteOperation<Job>[] =
-            jobsUpdate.map(jobUpdate);
-
-        const { modifiedCount } = await this.collection.bulkWrite(operations);
-        return modifiedCount || 0;
-    }
-
-    async updateJobProduct(jobId: number, idx: number, jobProduct: JobProduct) {
-        const update = (Object.keys(JobProduct) as Array<keyof JobProduct>)
-            .map(key => ({ [`products.${idx}.${key}`]: jobProduct[key] }));
-
-        const { modifiedCount } = await this.collection.updateOne(
-            { jobId },
-            Object.assign({}, ...update)
-        );
-
-        return modifiedCount;
-
-    }
-
-
+    return modifiedCount;
+  }
 }
 
+function jobUpdate({
+  jobId,
+  ...job
+}: UpdateJobDto): AnyBulkWriteOperation<Job> {
+  const update: UpdateFilter<Job> = {
+    $set: { ...job },
+  };
 
-function jobUpdate({ jobId, ...job }: UpdateJobDto): AnyBulkWriteOperation<Job> {
-
-    const update: UpdateFilter<Job> = {
-        $set: { ...job },
-    };
-
-    return {
-        updateOne:
-        {
-            filter: { jobId },
-            update,
-            upsert: false,
-        },
-    };
+  return {
+    updateOne: {
+      filter: { jobId },
+      update,
+      upsert: false,
+    },
+  };
 }
 
-function findAllPipeline(query: FilterType<Job>, unwindProducts: boolean): any[] {
-    const { start, limit, filter } = query;
+function findAllPipeline(
+  query: FilterType<Job>,
+  unwindProducts: boolean,
+): any[] {
+  const { start, limit, filter } = query;
 
-    const aggr: any[] = [
-        {
-            $match: filter,
-        },
-        {
-            $lookup: {
-                from: 'customers',
-                localField: 'customer',
-                foreignField: 'CustomerName',
-                as: 'custCode',
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                jobId: 1,
-                customer: 1,
-                name: 1,
-                customerJobId: 1,
-                receivedDate: 1,
-                dueDate: 1,
-                products: 1,
-                invoiceId: 1,
-                jobStatus: 1,
-                'production.category': 1,
-                custCode: { $arrayElemAt: ['$custCode.code', 0] },
-            },
-        },
-        {
-            $sort: {
-                jobId: -1,
-            },
-        },
-    ];
-    if (unwindProducts) {
-        aggr.push({
-            $unwind: {
-                path: '$products',
-                includeArrayIndex: 'productsIdx',
-                preserveNullAndEmptyArrays: true,
-            },
-        });
-    }
-    if (start > 0) {
-        aggr.push({
-            $skip: start,
-        });
-    }
+  const aggr: any[] = [
+    {
+      $match: filter,
+    },
+    {
+      $lookup: {
+        from: 'customers',
+        localField: 'customer',
+        foreignField: 'CustomerName',
+        as: 'custCode',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        jobId: 1,
+        customer: 1,
+        name: 1,
+        customerJobId: 1,
+        receivedDate: 1,
+        dueDate: 1,
+        products: 1,
+        invoiceId: 1,
+        jobStatus: 1,
+        'production.category': 1,
+        custCode: { $arrayElemAt: ['$custCode.code', 0] },
+      },
+    },
+    {
+      $sort: {
+        jobId: -1,
+      },
+    },
+  ];
+  if (unwindProducts) {
     aggr.push({
-        $limit: limit,
+      $unwind: {
+        path: '$products',
+        includeArrayIndex: 'productsIdx',
+        preserveNullAndEmptyArrays: true,
+      },
     });
+  }
+  if (start > 0) {
+    aggr.push({
+      $skip: start,
+    });
+  }
+  aggr.push({
+    $limit: limit,
+  });
 
-
-    return aggr;
-
+  return aggr;
 }

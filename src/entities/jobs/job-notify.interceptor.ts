@@ -1,35 +1,49 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
-import { from, Observable, of } from 'rxjs';
-import { mergeMap, mapTo, tap } from 'rxjs/operators';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { NotificationsService, JobsNotification } from '../../notifications';
 import { Request } from 'express';
 import { Job } from './entities/job.entity';
 
 @Injectable()
 export class JobNotifyInterceptor implements NestInterceptor<Job, Job> {
+  constructor(private readonly notifications: NotificationsService) {}
 
-  constructor(
-    private readonly notifications: NotificationsService,
-  ) { }
-
-  intercept(context: ExecutionContext, next: CallHandler<Job>): Observable<Job> {
-
-    const { method, instanceId } = context.switchToHttp().getRequest() as Request;
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<Job>,
+  ): Observable<Job> {
+    const { method, instanceId } = context
+      .switchToHttp()
+      .getRequest() as Request;
     const operation = methodOperation(method);
 
     if (!operation) {
       return next.handle();
     }
 
-    return next.handle().pipe(
-      tap(({ jobId }) => jobId && this.notifications.notify(
-        new JobsNotification({ jobId, operation }, instanceId)
-      )));
+    return next
+      .handle()
+      .pipe(
+        tap(
+          ({ jobId }) =>
+            jobId &&
+            this.notifications.notify(
+              new JobsNotification({ jobId, operation }, instanceId),
+            ),
+        ),
+      );
   }
-
 }
 
-function methodOperation(method: string): 'create' | 'delete' | 'update' | undefined {
+function methodOperation(
+  method: string,
+): 'create' | 'delete' | 'update' | undefined {
   if (method === 'PUT') {
     return 'create';
   }

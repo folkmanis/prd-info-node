@@ -1,109 +1,120 @@
 import { Transform, Type } from 'class-transformer';
-import { IsDate, IsNumber, IsObject, IsOptional, IsString, Max, Min, ValidateNested } from 'class-validator';
+import {
+  IsDate,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { ObjectId } from 'mongodb';
-import { KastesProduction, PrintProduction, ProductionCategory, ReproProduction } from './job-categories';
+import {
+  KastesProduction,
+  PrintProduction,
+  ProductionCategory,
+  ReproProduction,
+} from './job-categories';
 import { JobProduct } from './job-product.entity';
 import { JobProductionStage } from './job-production-stage.entity';
 
-
 export class JobStatus {
-    @IsNumber()
-    generalStatus: number;
+  @IsNumber()
+  generalStatus: number;
 
-    @Type(() => Date)
-    @IsDate()
-    timestamp: Date;
+  @Type(() => Date)
+  @IsDate()
+  timestamp: Date;
 }
 
 export class Files {
-    @IsString({ each: true })
-    path: string[];
+  @IsString({ each: true })
+  path: string[];
 
-    @IsString({ each: true })
-    @IsOptional()
-    fileNames?: string[];
+  @IsString({ each: true })
+  @IsOptional()
+  fileNames?: string[];
 }
 
 export class Job {
+  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @IsObject()
+  _id: ObjectId;
 
-    @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
-    @IsObject()
-    _id: ObjectId;
+  @Min(3)
+  @Max(3)
+  _v: number;
 
-    @Min(3)
-    @Max(3)
-    _v: number;
+  @IsNumber()
+  jobId: number;
 
-    @IsNumber()
-    jobId: number;
+  @IsString()
+  customer: string;
 
-    @IsString()
-    customer: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    name: string;
+  @IsString()
+  customerJobId?: string;
 
-    @IsString()
-    customerJobId?: string;
+  @Type(() => Date)
+  @IsDate()
+  receivedDate: Date;
 
-    @Type(() => Date)
-    @IsDate()
-    receivedDate: Date;
+  @Type(() => Date)
+  @IsDate()
+  dueDate: Date;
 
-    @Type(() => Date)
-    @IsDate()
-    dueDate: Date;
+  @IsString()
+  @IsOptional()
+  comment?: string;
 
-    @IsString()
-    @IsOptional()
-    comment?: string;
+  @IsString()
+  @IsOptional()
+  invoiceId?: string;
 
-    @IsString()
-    @IsOptional()
-    invoiceId?: string;
+  @Type(() => JobProduct)
+  @ValidateNested({ each: true })
+  products: JobProduct[];
 
-    @Type(() => JobProduct)
-    @ValidateNested({ each: true })
-    products: JobProduct[];
+  @Type(() => JobStatus)
+  @ValidateNested()
+  jobStatus: JobStatus;
 
-    @Type(() => JobStatus)
-    @ValidateNested()
-    jobStatus: JobStatus;
+  @Type(() => Files)
+  @ValidateNested()
+  @IsOptional()
+  files?: Files;
 
-    @Type(() => Files)
-    @ValidateNested()
-    @IsOptional()
-    files?: Files;
+  @Type(() => JobProductionStage)
+  @ValidateNested()
+  @IsOptional()
+  productionStages?: JobProductionStage[];
 
-    @Type(() => JobProductionStage)
-    @ValidateNested()
-    @IsOptional()
-    productionStages?: JobProductionStage[];
-
-    @Type(() => ProductionCategory, {
-        discriminator: {
-            property: 'category',
-            subTypes: [
-                { value: ReproProduction, name: 'repro' },
-                { value: KastesProduction, name: 'perforated paper' },
-                { value: PrintProduction, name: 'print' },
-            ]
-        },
-        keepDiscriminatorProperty: true,
-    })
-    @IsOptional()
-    production: ReproProduction | KastesProduction | PrintProduction;
-
+  @Type(() => ProductionCategory, {
+    discriminator: {
+      property: 'category',
+      subTypes: [
+        { value: ReproProduction, name: 'repro' },
+        { value: KastesProduction, name: 'perforated paper' },
+        { value: PrintProduction, name: 'print' },
+      ],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  @IsOptional()
+  production: ReproProduction | KastesProduction | PrintProduction;
 }
 
 export class KastesJob extends Job {
-    production: KastesProduction;
+  production: KastesProduction;
 }
 
 export class ReproJob extends Job {
-    production: ReproProduction;
+  production: ReproProduction;
 }
 
 export class PrintJob extends Job {
-    production: PrintProduction;
+  production: PrintProduction;
 }

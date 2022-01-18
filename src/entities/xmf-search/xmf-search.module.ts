@@ -10,25 +10,19 @@ import { XmfUploadProgressDao } from './dao/xmf-upload-progress.dao';
 import { AddUserCustomersMiddleware } from './add-user-customers.middleware';
 
 @Module({
-  imports: [
-    PreferencesModule,
-    MessagesModule,
-  ],
-  controllers: [
-    XmfSearchController,
-    XmfUploadController,
-  ],
+  imports: [PreferencesModule, MessagesModule],
+  controllers: [XmfSearchController, XmfUploadController],
   providers: [
     XmfSearchDao,
     UploadProgressService,
     XmfParserService,
     XmfUploadProgressDao,
-  ]
+  ],
 })
 export class XmfSearchModule implements NestModule {
-
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(AddUserCustomersMiddleware)
+    consumer
+      .apply(AddUserCustomersMiddleware)
       .exclude('customers')
       .forRoutes(XmfSearchController);
   }

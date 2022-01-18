@@ -11,7 +11,9 @@ describe('ProductionStagesController', () => {
       providers: [ProductionStagesService],
     }).compile();
 
-    controller = module.get<ProductionStagesController>(ProductionStagesController);
+    controller = module.get<ProductionStagesController>(
+      ProductionStagesController,
+    );
   });
 
   it('should be defined', () => {

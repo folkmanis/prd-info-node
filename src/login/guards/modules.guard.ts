@@ -7,7 +7,7 @@ import { intersection } from 'lodash';
 
 @Injectable()
 export class ModulesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(
     context: ExecutionContext,

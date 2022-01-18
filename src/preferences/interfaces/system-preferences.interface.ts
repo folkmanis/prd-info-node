@@ -1,6 +1,13 @@
 import { SystemModules } from './system-modules.interface';
 
-export type LogLevel = 'error' | 'warn' | 'info' | 'http' | 'verbose' | 'debug' | 'silly';
+export type LogLevel =
+  | 'error'
+  | 'warn'
+  | 'info'
+  | 'http'
+  | 'verbose'
+  | 'debug'
+  | 'silly';
 
 export type AppLogLevels = Record<LogLevel, number>;
 
@@ -16,7 +23,7 @@ export interface SystemPreferenceModule {
 }
 
 export interface KastesSystemPreference {
-  colors: { [key: string]: string; };
+  colors: { [key: string]: string };
 }
 
 export interface SystemSystemPreference {

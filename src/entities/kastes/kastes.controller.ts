@@ -1,4 +1,11 @@
-import { Controller, Get, Param, ParseBoolPipe, ParseIntPipe, Patch } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseIntPipe,
+  Patch,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
 import { Modules } from '../../login';
@@ -8,10 +15,7 @@ import { VeikalsKaste } from './dto/veikals-kaste.dto';
 @Controller('kastes')
 @Modules('kastes')
 export class KastesController {
-
-  constructor(
-    private readonly kastesDao: KastesDaoService,
-  ) { }
+  constructor(private readonly kastesDao: KastesDaoService) {}
 
   @Patch(':id/:kaste/gatavs/:action')
   async setGatavs(
@@ -49,10 +53,8 @@ export class KastesController {
 
   @Get(':jobId')
   async getKastes(
-    @Param('jobId', ParseIntPipe) jobId: number
+    @Param('jobId', ParseIntPipe) jobId: number,
   ): Promise<VeikalsKaste[]> {
     return this.kastesDao.findAllKastes(jobId);
   }
-
-
 }

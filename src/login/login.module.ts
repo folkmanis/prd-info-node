@@ -11,11 +11,7 @@ import { SessionTokenModule } from '../session/session-token';
 
 @Module({
   controllers: [LoginController],
-  imports: [
-    UsersModule,
-    PassportModule,
-    SessionTokenModule,
-  ],
+  imports: [UsersModule, PassportModule, SessionTokenModule],
   providers: [
     LoginService,
     LocalStrategy,
@@ -29,4 +25,4 @@ import { SessionTokenModule } from '../session/session-token';
     },
   ],
 })
-export class LoginModule { }
+export class LoginModule {}

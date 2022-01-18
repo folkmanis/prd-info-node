@@ -11,17 +11,17 @@ import { MaterialsModule } from './materials/materials.module';
 import { ProductionStagesModule } from './production-stages/production-stages.module';
 
 @Module({
-    imports: [
-        UsersModule,
-        CustomersModule,
-        InvoicesModule,
-        JobsModule,
-        ProductsModule,
-        XmfSearchModule,
-        KastesModule,
-        EquipmentModule,
-        MaterialsModule,
-        ProductionStagesModule,
-    ]
+  imports: [
+    UsersModule,
+    CustomersModule,
+    InvoicesModule,
+    JobsModule,
+    ProductsModule,
+    XmfSearchModule,
+    KastesModule,
+    EquipmentModule,
+    MaterialsModule,
+    ProductionStagesModule,
+  ],
 })
-export class EntitiesModule { }
+export class EntitiesModule {}

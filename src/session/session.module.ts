@@ -8,24 +8,12 @@ import { SessionService } from './session.service';
 import { SessionDaoService } from './session-dao.service';
 
 @Module({
-  imports: [
-    UsersModule,
-    SessionTokenModule
-  ],
-  providers: [
-    sessionProvider,
-    SessionDaoService,
-    SessionService,
-  ],
-  exports: [
-    SessionService,
-  ]
+  imports: [UsersModule, SessionTokenModule],
+  providers: [sessionProvider, SessionDaoService, SessionService],
+  exports: [SessionService],
 })
 export class SessionModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(
-      SessionMiddleware,
-      userSessionMiddleware
-    ).forRoutes('*');
+    consumer.apply(SessionMiddleware, userSessionMiddleware).forRoutes('*');
   }
 }

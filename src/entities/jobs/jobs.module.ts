@@ -23,11 +23,7 @@ import { UsersModule } from '../users';
     NotificationsModule,
     UsersModule,
   ],
-  controllers: [
-    JobsPreferencesController,
-    ProductsController,
-    JobsController,
-  ],
+  controllers: [JobsPreferencesController, ProductsController, JobsController],
   providers: [
     JobsService,
     jobsCollectionProvider,
@@ -37,8 +33,6 @@ import { UsersModule } from '../users';
     JobsCounterService,
     JobsProductsDaoService,
   ],
-  exports: [
-    JobsService,
-  ]
+  exports: [JobsService],
 })
-export class JobsModule { }
+export class JobsModule {}

@@ -7,23 +7,23 @@ import { VEIKALI } from './veikali.injector';
 
 @Injectable()
 export class VeikaliDaoService {
-
-
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-  ) { }
+  ) {}
 
   async pasutijums(pasutijums: number): Promise<Veikals[]> {
-    return this.collection.find(
-      {
-        pasutijums,
-      },
-      {
-        sort: {
-          kods: 1
-        }
-      }
-    ).toArray();
+    return this.collection
+      .find(
+        {
+          pasutijums,
+        },
+        {
+          sort: {
+            kods: 1,
+          },
+        },
+      )
+      .toArray();
   }
 
   async apjomi(pasutijums: number): Promise<number[]> {
@@ -50,10 +50,11 @@ export class VeikaliDaoService {
         },
       },
     ];
-    const result = await this.collection.aggregate<{ total: number; }>(pipeline).toArray();
-    return result.map(total => total.total);
+    const result = await this.collection
+      .aggregate<{ total: number }>(pipeline)
+      .toArray();
+    return result.map((total) => total.total);
   }
-
 
   async insertMany(
     veikali: VeikalsCreateDto[],
@@ -62,30 +63,33 @@ export class VeikaliDaoService {
     await this.collection.deleteMany({
       pasutijums: {
         $in: orderIds,
-      }
+      },
     });
     const { insertedCount } = await this.collection.insertMany(veikali);
     return insertedCount;
   }
 
   async deleteOrder(jobId: number): Promise<number> {
-    const { deletedCount } = await this.collection.deleteMany({ pasutijums: jobId });
+    const { deletedCount } = await this.collection.deleteMany({
+      pasutijums: jobId,
+    });
     return deletedCount || 0;
   }
 
-  async updateOne({ _id, ...update }: VeikalsUpdateDto): Promise<Veikals | null> {
+  async updateOne({
+    _id,
+    ...update
+  }: VeikalsUpdateDto): Promise<Veikals | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
       {
         $set: update,
         $currentDate: { lastModified: true },
       },
-      { returnDocument: 'after' }
+      { returnDocument: 'after' },
     );
     return value;
   }
-
-
 }
 
 /*

@@ -5,9 +5,6 @@ import { ProductionStagesDaoService } from './dao/production-stages-dao.service'
 
 @Module({
   controllers: [ProductionStagesController],
-  providers: [
-    productionStagesProvidder,
-    ProductionStagesDaoService,
-  ]
+  providers: [productionStagesProvidder, ProductionStagesDaoService],
 })
-export class ProductionStagesModule { }
+export class ProductionStagesModule {}

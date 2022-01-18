@@ -1,9 +1,8 @@
-import { Module, FactoryProvider } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import { CustomersController } from './customers.controller';
 import { CustomersDaoService } from './customers-dao/customers-dao.service';
 import { customersCollectionProvider } from './customers-dao/customers-provider';
-
 
 @Module({
   controllers: [CustomersController],
@@ -12,8 +11,6 @@ import { customersCollectionProvider } from './customers-dao/customers-provider'
     customersCollectionProvider,
     CustomersDaoService,
   ],
-  exports: [
-    CustomersService,
-  ]
+  exports: [CustomersService],
 })
-export class CustomersModule { }
+export class CustomersModule {}

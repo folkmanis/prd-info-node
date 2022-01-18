@@ -17,16 +17,10 @@ import { ErrorLoggerFilter } from './error-logger.filter';
     {
       provide: APP_FILTER,
       useClass: ErrorLoggerFilter,
-    }
+    },
   ],
-  imports: [
-    PreferencesModule,
-  ],
-  controllers: [
-    LoggingController
-  ],
-  exports: [
-    APP_LOGGER,
-  ]
+  imports: [PreferencesModule],
+  controllers: [LoggingController],
+  exports: [APP_LOGGER],
 })
-export class LoggingModule { }
+export class LoggingModule {}

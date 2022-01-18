@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, ValidationPipe, UsePipes, Query, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Put,
+  ValidationPipe,
+  UsePipes,
+  Query,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductFilter, ProductQuery } from './dto/product-query.dto';
+import { ProductQuery } from './dto/product-query.dto';
 import { Modules } from '../../login';
 import { ProductsDaoService } from './dao/products-dao.service';
 import { Product } from './entities/product.entity';
@@ -13,53 +25,42 @@ import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.intercept
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProductsController {
-
   constructor(
     private readonly productsService: ProductsService,
     private readonly productsDao: ProductsDaoService,
-  ) { }
+  ) {}
 
   @Get(':name/productionStages')
-  async getProductionStages(
-    @Param('name') name: string
-  ) {
+  async getProductionStages(@Param('name') name: string) {
     return this.productsDao.getProductionStages(name);
   }
 
   @Get('prices/customer/:customer')
-  async getCustomerPrices(
-    @Param('customer') customer: string
-  ) {
+  async getCustomerPrices(@Param('customer') customer: string) {
     return this.productsDao.getCustomerProducts(customer);
   }
 
   @Get('validate/:property')
   async validate(
-    @Param('property', new ValidateObjectKeyPipe<Product>('name')) property: keyof Product
+    @Param('property', new ValidateObjectKeyPipe<Product>('name'))
+    property: keyof Product,
   ) {
     return this.productsDao.validate(property);
   }
 
   @Get(':name')
-  async getone(
-    @Param('name') name: string
-  ) {
+  async getone(@Param('name') name: string) {
     return this.productsDao.getOne(name);
   }
 
-
   @Get()
-  async getAll(
-    @Query() query: ProductQuery
-  ) {
+  async getAll(@Query() query: ProductQuery) {
     return this.productsDao.getAll(query);
   }
 
   @Modules('jobs-admin')
   @Put()
-  async insertOne(
-    @Body() product: CreateProductDto,
-  ) {
+  async insertOne(@Body() product: CreateProductDto) {
     return this.productsDao.insertOne(product);
   }
 
@@ -75,9 +76,7 @@ export class ProductsController {
   @Modules('jobs-admin')
   @Delete(':name')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteProducts(
-    @Param('name') name: string
-  ) {
+  async deleteProducts(@Param('name') name: string) {
     return this.productsDao.deleteOne(name);
   }
 
@@ -152,5 +151,4 @@ private async updatePrices(req: Request, res: Response) {
   res.json({ name, product });
 }
 */
-
 }

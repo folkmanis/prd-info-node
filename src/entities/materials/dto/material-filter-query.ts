@@ -6,27 +6,26 @@ import { deserializeArray, Transform } from 'class-transformer';
 import { pickNotNull } from '../../../lib/pick-not-null';
 
 export class MaterialFilterQuery extends StartLimitFilter<Material> {
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    name?: string;
+  @Transform(({ value }) => deserializeArray(String, `[${value}]`))
+  @IsOptional()
+  @IsString({ each: true })
+  categories?: string[];
 
-    @Transform(
-        ({ value }) => deserializeArray(String, `[${value}]`),
-    )
-    @IsOptional()
-    @IsString({ each: true })
-    categories?: string[];
-
-    toFilter(): FilterType<Material> {
-        const { start, limit } = this;
-        return {
-            start,
-            limit,
-            filter: pickNotNull({
-                name: this.name && { $regex: this.name, $options: 'gi' },
-                category: this.categories?.length ? { $in: this.categories } : undefined
-            })
-        };
-    }
+  toFilter(): FilterType<Material> {
+    const { start, limit } = this;
+    return {
+      start,
+      limit,
+      filter: pickNotNull({
+        name: this.name && { $regex: this.name, $options: 'gi' },
+        category: this.categories?.length
+          ? { $in: this.categories }
+          : undefined,
+      }),
+    };
+  }
 }

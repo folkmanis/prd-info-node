@@ -11,27 +11,24 @@ import { UploadProgressService } from './upload-progress.service';
 
 @Injectable()
 export class XmfParserService {
+  constructor(
+    private readonly progress: UploadProgressService,
+    private readonly xmfDao: XmfSearchDao,
+  ) {}
 
-    constructor(
-        private readonly progress: UploadProgressService,
-        private readonly xmfDao: XmfSearchDao,
-    ) { }
+  parseRequest(req: Request): Observable<XmfUploadProgress> {
+    this.progress.username = req.session.user?.username;
 
-    parseRequest(req: Request): Observable<XmfUploadProgress> {
-
-        this.progress.username = req.session.user?.username;
-
-        return rxBusboy(req).pipe(
-            tap(({ filename }) => this.progress.file(filename)),
-            concatMap(({ file }) => lineReader(file, this.progress.bytes)),
-            tap(this.progress.line),
-            linesToObject(),
-            tap(this.progress.record),
-            toArray(),
-            concatMap(job => this.xmfDao.insertManyRx(job)),
-            map(this.progress.dbRecords),
-            finalize(() => this.progress.finished()),
-        );
-    }
-
+    return rxBusboy(req).pipe(
+      tap(({ filename }) => this.progress.file(filename)),
+      concatMap(({ file }) => lineReader(file, this.progress.bytes)),
+      tap(this.progress.line),
+      linesToObject(),
+      tap(this.progress.record),
+      toArray(),
+      concatMap((job) => this.xmfDao.insertManyRx(job)),
+      map(this.progress.dbRecords),
+      finalize(() => this.progress.finished()),
+    );
+  }
 }

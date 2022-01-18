@@ -25,9 +25,6 @@ import { KastesJobsController } from './kastes-jobs.controller';
     KastesDaoService,
     XlsParserService,
   ],
-  imports: [
-    JobsModule,
-    UsersModule,
-  ]
+  imports: [JobsModule, UsersModule],
 })
-export class KastesModule { }
+export class KastesModule {}

@@ -33,6 +33,8 @@ describe('Should create correct path', () => {
 
 describe('should sanitize pathname', () => {
   test('should replace diactrics and remove forbidden symbols', () => {
-    expect(FolderPathService.sanitizeFileName(fileName)).toEqual(fileNameSanitized);
+    expect(FolderPathService.sanitizeFileName(fileName)).toEqual(
+      fileNameSanitized,
+    );
   });
 });

@@ -6,20 +6,16 @@ import { SessionTokenService } from './session-token.service';
 const SECRET = 'IvI3cS3wIZ';
 
 @Module({
-    imports: [
-        JwtModule.register({
-            secret: SECRET,
-            signOptions: {
-                expiresIn: '1h', // TODO
-            }
-        })
-    ],
-    providers: [
-        SessionTokenService,
-    ],
-    exports: [
-        SessionTokenService,
-    ],
-    controllers: []
+  imports: [
+    JwtModule.register({
+      secret: SECRET,
+      signOptions: {
+        expiresIn: '1h', // TODO
+      },
+    }),
+  ],
+  providers: [SessionTokenService],
+  exports: [SessionTokenService],
+  controllers: [],
 })
-export class SessionTokenModule { }
+export class SessionTokenModule {}

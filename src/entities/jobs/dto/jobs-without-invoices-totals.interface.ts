@@ -1,5 +1,5 @@
 export interface JobsWithoutInvoicesTotals {
-    _id: string;
-    jobs: number;
-    totals: number;
+  _id: string;
+  jobs: number;
+  totals: number;
 }

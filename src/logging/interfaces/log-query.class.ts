@@ -6,33 +6,31 @@ import { LogRecord } from './log-record.interface';
 import { pickNotNull } from '../../lib/pick-not-null';
 
 export class LogQuery extends StartLimitFilter<LogRecord> {
+  @Type(() => Number)
+  @IsNumber()
+  @IsOptional()
+  level: number;
 
-    @Type(() => Number)
-    @IsNumber()
-    @IsOptional()
-    level: number;
+  @Type(() => Date)
+  @IsDate()
+  dateTo: Date = new Date();
 
-    @Type(() => Date)
-    @IsDate()
-    dateTo: Date = new Date();
+  @Type(() => Date)
+  @IsDate()
+  dateFrom: Date = new Date(0);
 
-    @Type(() => Date)
-    @IsDate()
-    dateFrom: Date = new Date(0);
-
-    toFilter(): FilterType<LogRecord> {
-        const { start, limit } = this;
-        return {
-            start,
-            limit,
-            filter: pickNotNull({
-                $and: [
-                    { timestamp: { $lte: this.dateTo } },
-                    { timestamp: { $gte: this.dateFrom } },
-                ],
-                level: this.level && { $lte: this.level },
-
-            })
-        };
-    }
+  toFilter(): FilterType<LogRecord> {
+    const { start, limit } = this;
+    return {
+      start,
+      limit,
+      filter: pickNotNull({
+        $and: [
+          { timestamp: { $lte: this.dateTo } },
+          { timestamp: { $gte: this.dateFrom } },
+        ],
+        level: this.level && { $lte: this.level },
+      }),
+    };
+  }
 }

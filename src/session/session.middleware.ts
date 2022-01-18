@@ -13,7 +13,7 @@ export class SessionMiddleware implements NestMiddleware {
       stringify: false,
     }),
     cookie: {
-      maxAge: this.config.get('SESSION_EXPIRES')! * 1000,
+      maxAge: this.config.get('SESSION_EXPIRES') * 1000,
       httpOnly: true,
       sameSite: true,
     },
@@ -26,5 +26,5 @@ export class SessionMiddleware implements NestMiddleware {
   constructor(
     private config: ConfigService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) { }
+  ) {}
 }

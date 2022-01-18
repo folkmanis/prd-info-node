@@ -4,21 +4,19 @@ import { pickNotNull } from '../../../lib/pick-not-null';
 import { ProductionStage } from '../entities/production-stage.entity';
 import { IsString, IsOptional } from 'class-validator';
 
-export class ProductionStageQueryFilter extends StartLimitFilter<ProductionStage>{
+export class ProductionStageQueryFilter extends StartLimitFilter<ProductionStage> {
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    name?: string;
-
-    toFilter(): FilterType<ProductionStage> {
-        const { limit, start } = this;
-        return {
-            limit,
-            start,
-            filter: pickNotNull({
-                name: this.name && { $regex: this.name, $options: 'gi' },
-            })
-        };
-    }
-
+  toFilter(): FilterType<ProductionStage> {
+    const { limit, start } = this;
+    return {
+      limit,
+      start,
+      filter: pickNotNull({
+        name: this.name && { $regex: this.name, $options: 'gi' },
+      }),
+    };
+  }
 }

@@ -8,55 +8,55 @@ import { FolderPathService } from './folder-path.service';
 
 @Injectable()
 export class FilesystemService {
+  protected readonly rootPath = this.configService.get<string>('JOBS_INPUT')!;
 
-    constructor(
-        private configService: ConfigService,
-        private folderPathService: FolderPathService,
-    ) { }
+  constructor(
+    private configService: ConfigService,
+    private folderPathService: FolderPathService,
+  ) {}
 
-    protected readonly rootPath = this.configService.get<string>('JOBS_INPUT')!;
-
-    async createFolder(folder: string[]) {
-        const fullPath = path.resolve(this.rootPath, ...folder);
-        const created = await fsPromises.mkdir(fullPath, { recursive: true });
-        if (!created) {
-            throw new Error(`Unable to create folder ${path.join(...folder)}`);
-        }
-        return created;
+  async createFolder(folder: string[]) {
+    const fullPath = path.resolve(this.rootPath, ...folder);
+    const created = await fsPromises.mkdir(fullPath, { recursive: true });
+    if (!created) {
+      throw new Error(`Unable to create folder ${path.join(...folder)}`);
     }
+    return created;
+  }
 
-    resolveFullPath(...relativePathWithFilename: string[]): string {
-        return path.resolve(this.rootPath, ...relativePathWithFilename);
-    }
+  resolveFullPath(...relativePathWithFilename: string[]): string {
+    return path.resolve(this.rootPath, ...relativePathWithFilename);
+  }
 
+  private writeFile(
+    file: NodeJS.ReadableStream,
+    folder: string[],
+    filename: string,
+  ) {
+    const fullPath = this.resolveFullPath(...folder, filename);
+    file.pipe(createWriteStream(fullPath));
+  }
 
+  async writeFormFile(
+    path: string[],
+    req: Request,
+    filenames?: string[],
+  ): Promise<string[]> {
+    const busboy = Busboy({ headers: req.headers });
 
-    private writeFile(file: NodeJS.ReadableStream, folder: string[], filename: string) {
-        const fullPath = this.resolveFullPath(...folder, filename);
-        file.pipe(createWriteStream(fullPath));
-    }
+    const fileNames = new Set<string>(filenames);
 
-    async writeFormFile(path: string[], req: Request, filenames?: string[]): Promise<string[]> {
+    return new Promise((resolve) => {
+      busboy.on('file', (_, file, fName) => {
+        const name = this.folderPathService.sanitizeFileName(fName.filename);
+        fileNames.add(name);
+        this.writeFile(file, path, fName.filename);
+      });
 
-        const busboy = Busboy({ headers: req.headers });
-
-        const fileNames = new Set<string>(filenames);
-
-        return new Promise(resolve => {
-
-            busboy.on('file', (_, file, fName) => {
-                const name = this.folderPathService.sanitizeFileName(fName.filename);
-                fileNames.add(name);
-                this.writeFile(file, path, fName.filename);
-            });
-
-            busboy.on('finish', () => {
-                resolve([...fileNames.values()]);
-            });
-            req.pipe(busboy);
-
-        });
-
-    }
-
+      busboy.on('finish', () => {
+        resolve([...fileNames.values()]);
+      });
+      req.pipe(busboy);
+    });
+  }
 }

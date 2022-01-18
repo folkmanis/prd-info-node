@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, Param, ParseArrayPipe, Patch, Put, Query, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Patch,
+  Put,
+  Query,
+  Res,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Response } from 'express';
 import { Modules } from '../../login';
 import { JobsService } from '../jobs/jobs.service';
@@ -14,23 +27,22 @@ import { InvoicesService } from './invoices.service';
 @Modules('jobs', 'calculations')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class InvoicesController {
-
   constructor(
     private readonly invoicesDao: InvoicesDao,
     private readonly jobsService: JobsService,
     private readonly invoicesService: InvoicesService,
-  ) { }
-
+  ) {}
 
   @Put('')
   async newInvoice(
-    @Body() { jobIds, customerId }: InvoiceInsert
+    @Body() { jobIds, customerId }: InvoiceInsert,
   ): Promise<InvoiceForReport> {
-
-    const invoiceId = await this.invoicesService.createInvoice({ jobIds, customerId });
+    const invoiceId = await this.invoicesService.createInvoice({
+      jobIds,
+      customerId,
+    });
 
     return this.invoicesService.invoiceForReport(invoiceId);
-
   }
 
   @Patch(':id')
@@ -42,9 +54,7 @@ export class InvoicesController {
   }
 
   @Delete(':id')
-  async deleteInvoice(
-    @Param('id') invoiceId: string,
-  ) {
+  async deleteInvoice(@Param('id') invoiceId: string) {
     const modifiedCount = await this.jobsService.unsetInvoices(invoiceId);
     if (modifiedCount > 0) {
       return this.invoicesDao.deleteInvoice(invoiceId);
@@ -53,7 +63,7 @@ export class InvoicesController {
 
   @Get('totals')
   async getTotals(
-    @Query('jobsId', new ParseArrayPipe({ items: Number })) jobsId: number[]
+    @Query('jobsId', new ParseArrayPipe({ items: Number })) jobsId: number[],
   ) {
     return this.jobsService.getJobsTotals(jobsId);
   }
@@ -74,10 +84,7 @@ export class InvoicesController {
   }
 
   @Put('report')
-  async prepareReport(
-    @Body() invoice: InvoiceForReport,
-    @Res() res: Response,
-  ) {
+  async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
     const pdf = new InvoiceReport(invoice).open();
     res.contentType('application/pdf');
     pdf.pipe(res);
@@ -87,16 +94,12 @@ export class InvoicesController {
   }
 
   @Get(':invoiceId')
-  async getInvoice(
-    @Param('invoiceId') invoiceId: string,
-  ) {
+  async getInvoice(@Param('invoiceId') invoiceId: string) {
     return this.invoicesService.invoiceForReport(invoiceId);
   }
 
   @Get('')
-  async getInvoices(
-    @Query('customer') customer?: string
-  ) {
+  async getInvoices(@Query('customer') customer?: string) {
     const filter: InvoicesFilter = {};
     if (customer) {
       filter.customer = customer;
@@ -104,4 +107,3 @@ export class InvoicesController {
     return this.invoicesDao.getAll(filter);
   }
 }
-

@@ -5,16 +5,8 @@ import { ProductsCollectionProvider } from './dao/products-collection.provider';
 import { ProductsDaoService } from './dao/products-dao.service';
 
 @Module({
-  controllers: [
-    ProductsController
-  ],
-  providers: [
-    ProductsCollectionProvider,
-    ProductsDaoService,
-    ProductsService,
-  ],
-  exports: [
-    ProductsService,
-  ]
+  controllers: [ProductsController],
+  providers: [ProductsCollectionProvider, ProductsDaoService, ProductsService],
+  exports: [ProductsService],
 })
-export class ProductsModule { }
+export class ProductsModule {}

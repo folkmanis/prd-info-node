@@ -4,7 +4,7 @@ import { User, UsersService } from '../entities/users';
 
 @Injectable()
 export class LoginService {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   async validateUser(username: string, password: string): Promise<User | null> {
     return this.usersService.login(

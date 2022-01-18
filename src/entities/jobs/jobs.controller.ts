@@ -1,4 +1,16 @@
-import { Body, Controller, Get, ParseIntPipe, Patch, Put, Query, Req, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Patch,
+  Put,
+  Query,
+  Req,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { ObjectId } from 'mongodb';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
@@ -18,32 +30,23 @@ import { JobsService } from './jobs.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
-
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
-  ) { }
-
+  ) {}
 
   @Put(':jobId/file')
-  async uploadFile(
-    @JobId(ParseIntPipe) jobId: number,
-    @Req() req: Request,
-  ) {
-
+  async uploadFile(@JobId(ParseIntPipe) jobId: number, @Req() req: Request) {
     const job = await this.jobsService.addFolderPathToJob(jobId);
     if (!job) {
       return undefined;
     }
     return this.jobsService.writeJobFile(job, req);
-
   }
 
   @Patch(':jobId/createFolder')
-  async createFolder(
-    @JobId(ParseIntPipe) jobId: number,
-  ) {
+  async createFolder(@JobId(ParseIntPipe) jobId: number) {
     return this.jobsService.addFolderPathToJob(jobId);
   }
 
@@ -58,17 +61,13 @@ export class JobsController {
 
   @Patch('')
   @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
-  async updateMany(
-    @Body() jobsUpdate: UpdateJobDto[]
-  ) {
+  async updateMany(@Body() jobsUpdate: UpdateJobDto[]) {
     return this.jobsDao.updateJobs(jobsUpdate);
   }
 
   @Put('')
   @UseInterceptors(TouchProductInterceptor)
-  async insertOne(
-    @Body() job: CreateJobDto
-  ) {
+  async insertOne(@Body() job: CreateJobDto) {
     const document = {
       ...job,
       _id: new ObjectId(),
@@ -84,25 +83,17 @@ export class JobsController {
 
   @Get('count')
   @UseInterceptors(new ResponseWrapperInterceptor('count'))
-  async getJobsCount(
-    @Query() query: JobQuery
-  ) {
+  async getJobsCount(@Query() query: JobQuery) {
     return this.jobsDao.getCount(query.toFilter());
   }
 
   @Get(':jobId')
-  async getJob(
-    @JobId(ParseIntPipe) jobId: number,
-  ) {
+  async getJob(@JobId(ParseIntPipe) jobId: number) {
     return this.jobsService.getOne(jobId);
   }
 
   @Get('')
-  async getJobs(
-    @Query() query: JobQuery
-  ) {
+  async getJobs(@Query() query: JobQuery) {
     return this.jobsService.getAll(query.toFilter(), !!query.unwindProducts);
   }
-
 }
-

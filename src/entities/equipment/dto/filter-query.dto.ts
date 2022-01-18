@@ -4,22 +4,18 @@ import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-fi
 import { Equipment } from '../entities/equipment.entity';
 
 export class EquipmentFilterQuery extends StartLimitFilter<Equipment> {
+  @IsString()
+  @IsOptional()
+  name?: string;
 
-    @IsString()
-    @IsOptional()
-    name?: string;
-
-    toFilter() {
-        const { start, limit } = this;
-        return {
-            start,
-            limit,
-            filter: pickNotNull(
-                {
-                    name: this.name && new RegExp(this.name, 'gi')
-                }
-            )
-        };
-    }
-
+  toFilter() {
+    const { start, limit } = this;
+    return {
+      start,
+      limit,
+      filter: pickNotNull({
+        name: this.name && new RegExp(this.name, 'gi'),
+      }),
+    };
+  }
 }

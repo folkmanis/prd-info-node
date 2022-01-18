@@ -8,16 +8,11 @@ import { AppLogLevels } from '../preferences';
 export const APP_LOGGER = 'APP_LOGGER';
 
 export const loggerFactory: Provider = {
-    provide: APP_LOGGER,
-    useFactory: async (
-        daoService: LoggerDaoService,
-        logLevels: AppLogLevels,
-    ) => new LoggingService([
-        new ConsoleTransport('App', { timestamp: true }),
-        new MongoTransport(daoService, logLevels),
+  provide: APP_LOGGER,
+  useFactory: async (daoService: LoggerDaoService, logLevels: AppLogLevels) =>
+    new LoggingService([
+      new ConsoleTransport('App', { timestamp: true }),
+      new MongoTransport(daoService, logLevels),
     ]),
-    inject: [
-        LoggerDaoService,
-        'LOG_LEVELS',
-    ]
+  inject: [LoggerDaoService, 'LOG_LEVELS'],
 };

@@ -12,32 +12,33 @@ const EQUIPMENT_COLLECTION_NAME = 'equipment';
 
 @Injectable()
 export class EquipmentDaoService implements EntityDao<Equipment> {
+  private readonly collection: Collection<Equipment> = this.dbService
+    .db()
+    .collection(EQUIPMENT_COLLECTION_NAME);
 
-  private readonly collection: Collection<Equipment> =
-    this.dbService.db().collection(EQUIPMENT_COLLECTION_NAME);
-
-  constructor(
-    private readonly dbService: DatabaseService,
-  ) {
+  constructor(private readonly dbService: DatabaseService) {
     this.createIndexes();
   }
 
-  async findAll({ start, limit, filter }: FilterType<Equipment>): Promise<Partial<Equipment>[]> {
-    return this.collection.find(
-      filter,
-      {
+  async findAll({
+    start,
+    limit,
+    filter,
+  }: FilterType<Equipment>): Promise<Partial<Equipment>[]> {
+    return this.collection
+      .find(filter, {
         sort: { name: 1 },
         limit,
         skip: start,
-      }
-    ).toArray();
+      })
+      .toArray();
   }
 
   async insertOne(equipment: CreateEquipmentDto): Promise<Equipment | null> {
     const { value } = await this.collection.findOneAndReplace(
       { name: equipment.name },
       classToPlain(equipment) as WithoutId<Equipment>,
-      { upsert: true, returnDocument: 'after' }
+      { upsert: true, returnDocument: 'after' },
     );
     return value;
   }
@@ -46,11 +47,14 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
     return this.collection.findOne({ _id });
   }
 
-  async updateOne(_id: ObjectId, update: UpdateEquipmentDto): Promise<Equipment | null> {
+  async updateOne(
+    _id: ObjectId,
+    update: UpdateEquipmentDto,
+  ): Promise<Equipment | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
       { $set: classToPlain(update) },
-      { returnDocument: 'after' }
+      { returnDocument: 'after' },
     );
     return value;
   }
@@ -60,19 +64,22 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
     return deletedCount || 0;
   }
 
-  async validationData<K extends keyof Equipment>(key: K): Promise<Array<Equipment[K]>> {
-    const result = await this.collection.find(
-      {},
-      {
-        projection: {
-          [key]: 1,
-          _id: 0,
-        }
-      }
-    ).toArray();
-    return result.map(obj => obj[key]);
+  async validationData<K extends keyof Equipment>(
+    key: K,
+  ): Promise<Array<Equipment[K]>> {
+    const result = await this.collection
+      .find(
+        {},
+        {
+          projection: {
+            [key]: 1,
+            _id: 0,
+          },
+        },
+      )
+      .toArray();
+    return result.map((obj) => obj[key]);
   }
-
 
   private createIndexes(): void {
     try {
@@ -87,6 +94,4 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
       process.exit(1);
     }
   }
-
-
 }

@@ -1,4 +1,13 @@
-import { UseInterceptors, Controller, Delete, Get, Post, Req, Session, UseGuards } from '@nestjs/common';
+import {
+  UseInterceptors,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Req,
+  Session,
+  UseGuards,
+} from '@nestjs/common';
 import { Request } from 'express';
 import * as session from 'express-session';
 import { User } from '../entities/users';
@@ -12,17 +21,12 @@ import { InstanceId } from '../preferences/instance-id.decorator';
 
 @Controller('login')
 export class LoginController {
-
-  constructor(
-    private readonly tokenService: SessionTokenService,
-  ) { }
+  constructor(private readonly tokenService: SessionTokenService) {}
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
   @Post()
-  async login(
-    @Req() req: Request
-  ) {
+  async login(@Req() req: Request) {
     req.session.user = req.user as User;
     req.session.lastSeen = {
       ip: req.ip,
@@ -34,10 +38,8 @@ export class LoginController {
   @Delete()
   @PublicRoute()
   @UseInterceptors(new ResponseWrapperInterceptor('response'))
-  async logout(
-    @Session() sess: session.Session
-  ) {
-    await new Promise(resolve => sess.destroy(resolve));
+  async logout(@Session() sess: session.Session) {
+    await new Promise((resolve) => sess.destroy(resolve));
     return 'logged out';
   }
 
@@ -52,9 +54,7 @@ export class LoginController {
   }
 
   @Get('session-id')
-  sessionId(
-    @Session() session: Sess,
-  ) {
+  sessionId(@Session() session: Sess) {
     return {
       sessionId: session.id,
     };
@@ -62,10 +62,7 @@ export class LoginController {
 
   @Get()
   @PublicRoute()
-  user(
-    @Usr() user: User | undefined,
-  ) {
+  user(@Usr() user: User | undefined) {
     return user || {};
   }
-
 }

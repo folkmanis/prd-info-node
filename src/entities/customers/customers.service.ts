@@ -4,17 +4,13 @@ import { Customer } from './entities/customer.entity';
 
 @Injectable()
 export class CustomersService {
+  constructor(private readonly customersDao: CustomersDaoService) {}
 
-    constructor(
-        private readonly customersDao: CustomersDaoService,
-    ) { }
-
-    async getCustomerByName(name: string): Promise<Customer> {
-        const customer = await this.customersDao.getCustomerByName(name);
-        if (!customer) {
-            throw new UnprocessableEntityException(`Customer ${name} not found`);
-        }
-        return customer;
+  async getCustomerByName(name: string): Promise<Customer> {
+    const customer = await this.customersDao.getCustomerByName(name);
+    if (!customer) {
+      throw new UnprocessableEntityException(`Customer ${name} not found`);
     }
-
+    return customer;
+  }
 }

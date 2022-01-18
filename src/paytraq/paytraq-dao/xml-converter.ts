@@ -46,7 +46,7 @@ function clearObject<T>(
   );
 }
 
-function clearArray<A extends any>(
+function clearArray<A>(
   obj: Array<A>,
   key = '',
   stringFields: string[] = [],

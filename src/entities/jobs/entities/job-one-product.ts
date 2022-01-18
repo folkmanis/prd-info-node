@@ -5,11 +5,10 @@ import { JobProduct } from './job-product.entity';
 import { Job } from './job.entity';
 
 export class JobOneProduct extends OmitType(Job, ['products']) {
+  @Type(() => JobProduct)
+  @ValidateNested({ each: true })
+  products: JobProduct;
 
-    @Type(() => JobProduct)
-    @ValidateNested({ each: true })
-    products: JobProduct;
-
-    @IsNumber()
-    productsIdx: number;
+  @IsNumber()
+  productsIdx: number;
 }

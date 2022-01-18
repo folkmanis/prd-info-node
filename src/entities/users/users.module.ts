@@ -6,13 +6,8 @@ import { SessionsDaoService } from './dao/sessions-dao.service';
 import { usersProvider } from './dao/users.provider';
 
 @Module({
-  providers: [
-    usersProvider,
-    UsersService,
-    UsersDaoService,
-    SessionsDaoService,
-  ],
+  providers: [usersProvider, UsersService, UsersDaoService, SessionsDaoService],
   exports: [UsersService],
   controllers: [UsersController],
 })
-export class UsersModule { }
+export class UsersModule {}

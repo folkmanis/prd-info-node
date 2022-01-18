@@ -1,9 +1,9 @@
-import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
+import { Injectable, PipeTransform } from '@nestjs/common';
 import crypto from 'crypto';
 
 @Injectable()
 export class PasswordPipe implements PipeTransform {
-  transform(value: any, metadata: ArgumentMetadata) {
+  transform(value: any) {
     if (typeof value.password === 'string') {
       value.password = hashPassword(value.password);
     }

@@ -8,14 +8,7 @@ import { CustomersModule } from '../customers/customers.module';
 
 @Module({
   controllers: [InvoicesController],
-  providers: [
-    InvoicesService,
-    InvoicesDao,
-    InvoicesCounterService,
-  ],
-  imports: [
-    JobsModule,
-    CustomersModule,
-  ]
+  providers: [InvoicesService, InvoicesDao, InvoicesCounterService],
+  imports: [JobsModule, CustomersModule],
 })
-export class InvoicesModule { }
+export class InvoicesModule {}

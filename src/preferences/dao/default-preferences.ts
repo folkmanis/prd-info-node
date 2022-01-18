@@ -1,4 +1,4 @@
-import { SystemPreferenceModule, } from '../interfaces/system-preferences.interface';
+import { SystemPreferenceModule } from '../interfaces/system-preferences.interface';
 
 export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
   {
@@ -16,13 +16,13 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
     settings: {
       menuExpandedByDefault: false,
       logLevels: [
-        [5, "debug"],
-        [0, "error"],
-        [2, "info"],
-        [6, "silly"],
-        [4, "verbose"],
-        [1, "warn"],
-        [3, 'http']
+        [5, 'debug'],
+        [0, 'error'],
+        [2, 'info'],
+        [6, 'silly'],
+        [4, 'verbose'],
+        [1, 'warn'],
+        [3, 'http'],
       ],
     },
   },

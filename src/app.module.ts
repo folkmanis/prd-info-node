@@ -46,4 +46,4 @@ const dotEnvConfig = Joi.object({
   ],
   controllers: [],
 })
-export class AppModule { }
+export class AppModule {}

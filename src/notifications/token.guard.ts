@@ -5,15 +5,11 @@ import { NotificationsWebSocket } from './notifications-websocket.interface';
 
 @Injectable()
 export class TokenGuard implements CanActivate {
-
-  constructor(
-    private readonly tokenService: SessionTokenService,
-  ) { }
+  constructor(private readonly tokenService: SessionTokenService) {}
 
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-
     const { token } = context.switchToWs().getData();
     const client: NotificationsWebSocket = context.switchToWs().getClient();
 

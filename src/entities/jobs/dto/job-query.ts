@@ -1,5 +1,12 @@
 import { deserializeArray, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsDate, IsIn, IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsIn,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { pickNotNull } from '../../../lib/pick-not-null';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
@@ -7,75 +14,69 @@ import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
 import { Job } from '../entities/job.entity';
 
 export class JobQuery extends StartLimitFilter<Job> {
+  @Type(() => Date)
+  @IsOptional()
+  @IsDate()
+  fromDate?: Date;
 
-    @Type(() => Date)
-    @IsOptional()
-    @IsDate()
-    fromDate?: Date;
+  @IsOptional()
+  @IsString()
+  customer?: string;
 
-    @IsOptional()
-    @IsString()
-    customer?: string;
+  @IsOptional()
+  @IsString()
+  name?: string;
 
-    @IsOptional()
-    @IsString()
-    name?: string;
+  @Type(() => Number)
+  @IsOptional()
+  @IsIn([0, 1])
+  invoice?: 0 | 1;
 
-    @Type(() => Number)
-    @IsOptional()
-    @IsIn([0, 1])
-    invoice?: 0 | 1;
+  @Transform(({ value }) => !!JSON.parse(value))
+  @IsOptional()
+  @IsBoolean()
+  unwindProducts?: boolean;
 
-    @Transform(({ value }) => !!JSON.parse(value))
-    @IsOptional()
-    @IsBoolean()
-    unwindProducts?: boolean;
+  @Transform(({ value }) => deserializeArray(Number, `[${value}]`), {
+    toClassOnly: true,
+  })
+  @IsOptional()
+  @IsNumber(undefined, { each: true })
+  jobStatus?: number[];
 
-    @Transform(
-        ({ value }) => deserializeArray(Number, `[${value}]`),
-        { toClassOnly: true }
-    )
-    @IsOptional()
-    @IsNumber(undefined, { each: true })
-    jobStatus?: number[];
+  @Transform(({ value }) => deserializeArray(Number, `[${value}]`), {
+    toClassOnly: true,
+  })
+  @IsOptional()
+  @IsNumber(undefined, { each: true })
+  jobsId: number[];
 
-    @Transform(
-        ({ value }) => deserializeArray(Number, `[${value}]`),
-        { toClassOnly: true }
-    )
-    @IsOptional()
-    @IsNumber(undefined, { each: true })
-    jobsId: number[];
+  @IsOptional()
+  @IsIn(JOB_CATEGORIES)
+  category?: JobCategories;
 
-    @IsOptional()
-    @IsIn(JOB_CATEGORIES)
-    category?: JobCategories;
+  toFilter(): FilterType<Job> {
+    const { start, limit } = this;
 
-    toFilter(): FilterType<Job> {
-        const { start, limit } = this;
+    return {
+      start,
+      limit,
+      filter: pickNotNull({
+        receivedDate: this.fromDate && { $gte: this.fromDate },
 
-        return {
-            start,
-            limit,
-            filter: pickNotNull({
+        customer: this.customer || undefined,
 
-                receivedDate: this.fromDate && { '$gte': this.fromDate },
+        name: this.name && { $regex: this.name, $options: 'gi' },
 
-                customer: this.customer || undefined,
+        invoiceId:
+          this.invoice !== undefined ? { $exists: !!this.invoice } : undefined,
 
-                name: this.name && { $regex: this.name, $options: 'gi' },
+        jobId: this.jobsId && { $in: this.jobsId },
 
-                invoiceId: this.invoice !== undefined ? { $exists: !!this.invoice } : undefined,
+        'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
 
-                jobId: this.jobsId && { $in: this.jobsId },
-
-                'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
-
-                'production.category': this.category,
-
-            })
-        };
-
-
-    }
+        'production.category': this.category,
+      }),
+    };
+  }
 }

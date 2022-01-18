@@ -12,7 +12,6 @@ import { Job } from './entities/job.entity';
 
 @Injectable()
 export class JobsService {
-
   constructor(
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
@@ -20,9 +19,12 @@ export class JobsService {
     private readonly folderPathService: FolderPathService,
     private readonly filesystemService: FilesystemService,
     private readonly counters: JobsCounterService,
-  ) { }
+  ) {}
 
-  async getAll(filter: FilterType<Job>, unwindProducts: boolean): Promise<Job[]> {
+  async getAll(
+    filter: FilterType<Job>,
+    unwindProducts: boolean,
+  ): Promise<Job[]> {
     return this.jobsDao.getAll(filter, unwindProducts);
   }
 
@@ -31,7 +33,6 @@ export class JobsService {
   }
 
   async addFolderPathToJob(jobId: number): Promise<Job | null> {
-
     const job = await this.jobsDao.getOne(jobId);
     if (!job) {
       throw new NotFoundException(`Job ${jobId} not found`);
@@ -54,22 +55,28 @@ export class JobsService {
       jobId: job.jobId,
       files: {
         ...job.files,
-        path
-      }
+        path,
+      },
     });
-
   }
 
   async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | null> {
     let fileNames = files?.fileNames || [];
-    const path = files?.path!;
-    fileNames = await this.filesystemService.writeFormFile(path, req, fileNames);
+    const path = files?.path;
+    if (!path || !fileNames.length) {
+      return null;
+    }
+    fileNames = await this.filesystemService.writeFormFile(
+      path,
+      req,
+      fileNames,
+    );
     return this.jobsDao.updateJob({
       jobId,
       files: {
         path,
-        fileNames: fileNames,
-      }
+        fileNames,
+      },
     });
   }
 
@@ -94,8 +101,16 @@ export class JobsService {
   }
 
   async setProduction(jobsId: number[], production: Partial<Production>) {
-    const update = Object.assign({}, ...Object.keys(production).map((key) => ({ ['production.' + key]: production[key as keyof Production] })));
-    const jobsUpdate: UpdateJobDto[] = jobsId.map(jobId => ({ ...update, jobId }));
+    const update = Object.assign(
+      {},
+      ...Object.keys(production).map((key) => ({
+        ['production.' + key]: production[key as keyof Production],
+      })),
+    );
+    const jobsUpdate: UpdateJobDto[] = jobsId.map((jobId) => ({
+      ...update,
+      jobId,
+    }));
     return this.jobsDao.updateJobs(jobsUpdate);
   }
 }
