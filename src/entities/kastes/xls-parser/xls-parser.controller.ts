@@ -20,7 +20,7 @@ export class XlsParserController {
 
         const table: Buffer = await new Promise(resolve => {
 
-            const busboy = new Busboy({ headers: req.headers });
+            const busboy = Busboy({ headers: req.headers });
             let buffer: Buffer;
 
             busboy.on('file', (_, file) => {

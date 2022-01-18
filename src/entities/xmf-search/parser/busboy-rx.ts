@@ -14,7 +14,7 @@ export function rxBusboy(req: Request): Observable<FileStream> {
 
     return new Observable(subscriber => {
 
-        const busboy = new Busboy({ headers: req.headers });
+        const busboy = Busboy({ headers: req.headers });
         busboy.on('file', (fieldname: string, file: NodeJS.ReadableStream, filename: string) =>
             subscriber.next({
                 fieldname, file, filename

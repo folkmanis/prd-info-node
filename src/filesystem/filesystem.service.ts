@@ -38,16 +38,16 @@ export class FilesystemService {
 
     async writeFormFile(path: string[], req: Request, filenames?: string[]): Promise<string[]> {
 
-        const busboy = new Busboy({ headers: req.headers });
+        const busboy = Busboy({ headers: req.headers });
 
         const fileNames = new Set<string>(filenames);
 
         return new Promise(resolve => {
 
             busboy.on('file', (_, file, fName) => {
-                const name = this.folderPathService.sanitizeFileName(fName);
+                const name = this.folderPathService.sanitizeFileName(fName.filename);
                 fileNames.add(name);
-                this.writeFile(file, path, fName);
+                this.writeFile(file, path, fName.filename);
             });
 
             busboy.on('finish', () => {
