@@ -12,7 +12,7 @@ import { Job } from './entities/job.entity';
 
 @Injectable()
 export class JobNotifyInterceptor implements NestInterceptor<Job, Job> {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(private readonly notifications: NotificationsService) { }
 
   intercept(
     context: ExecutionContext,
@@ -31,11 +31,9 @@ export class JobNotifyInterceptor implements NestInterceptor<Job, Job> {
       .handle()
       .pipe(
         tap(
-          ({ jobId }) =>
-            jobId &&
-            this.notifications.notify(
-              new JobsNotification({ jobId, operation }, instanceId),
-            ),
+          job => job?.jobId && this.notifications.notify(
+            new JobsNotification({ jobId: job.jobId, operation }, instanceId),
+          ),
         ),
       );
   }

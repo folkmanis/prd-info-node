@@ -19,7 +19,7 @@ export class JobsService {
     private readonly folderPathService: FolderPathService,
     private readonly filesystemService: FilesystemService,
     private readonly counters: JobsCounterService,
-  ) {}
+  ) { }
 
   async getAll(
     filter: FilterType<Job>,
@@ -61,21 +61,21 @@ export class JobsService {
   }
 
   async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | null> {
-    let fileNames = files?.fileNames || [];
+    const existingFilenames = files?.fileNames;
     const path = files?.path;
-    if (!path || !fileNames.length) {
-      return null;
+    if (!path) {
+      throw new Error('Path variable not set');
     }
-    fileNames = await this.filesystemService.writeFormFile(
+    const filenamesUpdated = await this.filesystemService.writeFormFile(
       path,
       req,
-      fileNames,
+      existingFilenames,
     );
     return this.jobsDao.updateJob({
       jobId,
       files: {
         path,
-        fileNames,
+        fileNames: filenamesUpdated,
       },
     });
   }

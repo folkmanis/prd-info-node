@@ -13,7 +13,7 @@ export class FilesystemService {
   constructor(
     private configService: ConfigService,
     private folderPathService: FolderPathService,
-  ) {}
+  ) { }
 
   async createFolder(folder: string[]) {
     const fullPath = path.resolve(this.rootPath, ...folder);
@@ -40,17 +40,17 @@ export class FilesystemService {
   async writeFormFile(
     path: string[],
     req: Request,
-    filenames?: string[],
+    existingFilenames?: string[],
   ): Promise<string[]> {
     const busboy = Busboy({ headers: req.headers });
 
-    const fileNames = new Set<string>(filenames);
+    const fileNames = new Set<string>(existingFilenames);
 
     return new Promise((resolve) => {
       busboy.on('file', (_, file, fName) => {
         const name = this.folderPathService.sanitizeFileName(fName.filename);
         fileNames.add(name);
-        this.writeFile(file, path, fName.filename);
+        this.writeFile(file, path, name);
       });
 
       busboy.on('finish', () => {

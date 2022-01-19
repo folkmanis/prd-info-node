@@ -34,7 +34,7 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
-  ) {}
+  ) { }
 
   @Put(':jobId/file')
   async uploadFile(@JobId(ParseIntPipe) jobId: number, @Req() req: Request) {
