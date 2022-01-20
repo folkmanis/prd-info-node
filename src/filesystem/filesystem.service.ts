@@ -28,29 +28,22 @@ export class FilesystemService {
     return path.resolve(this.rootPath, ...relativePathWithFilename);
   }
 
-  private writeFile(
-    file: NodeJS.ReadableStream,
-    folder: string[],
-    filename: string,
-  ) {
-    const fullPath = this.resolveFullPath(...folder, filename);
-    file.pipe(createWriteStream(fullPath));
-  }
-
   async writeFormFile(
     path: string[],
     req: Request,
     existingFilenames?: string[],
   ): Promise<string[]> {
+
     const busboy = Busboy({ headers: req.headers });
 
     const fileNames = new Set<string>(existingFilenames);
 
     return new Promise((resolve) => {
-      busboy.on('file', (_, file, fName) => {
-        const name = this.folderPathService.sanitizeFileName(fName.filename);
+      busboy.on('file', (_, file, fileInfo) => {
+        const name = this.folderPathService.sanitizeFileName(fileInfo.filename);
         fileNames.add(name);
-        this.writeFile(file, path, name);
+        const fullPath = this.resolveFullPath(...path, name);
+        file.pipe(createWriteStream(fullPath));
       });
 
       busboy.on('finish', () => {
