@@ -6,12 +6,10 @@ import {
   Patch,
   Put,
   Query,
-  Req,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { ObjectId } from 'mongodb';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
@@ -30,20 +28,13 @@ import { JobsService } from './jobs.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
+
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
   ) { }
 
-  @Put(':jobId/file')
-  async uploadFile(@JobId(ParseIntPipe) jobId: number, @Req() req: Request) {
-    const job = await this.jobsService.addFolderPathToJob(jobId);
-    if (!job) {
-      return undefined;
-    }
-    return this.jobsService.writeJobFile(job, req);
-  }
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId(ParseIntPipe) jobId: number) {

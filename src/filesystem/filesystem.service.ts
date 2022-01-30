@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { createWriteStream, promises as fsPromises } from 'fs';
+import { createWriteStream } from 'fs';
+import { mkdir } from 'fs/promises';
 import path from 'path';
 import { FolderPathService } from './folder-path.service';
+
+const TEMP_FOLDER = 'TemporaryUploads';
 
 @Injectable()
 export class FilesystemService {
@@ -16,40 +19,44 @@ export class FilesystemService {
   ) { }
 
   async createFolder(folder: string[]) {
-    const fullPath = path.resolve(this.rootPath, ...folder);
-    const created = await fsPromises.mkdir(fullPath, { recursive: true });
-    if (!created) {
-      throw new Error(`Unable to create folder ${path.join(...folder)}`);
-    }
-    return created;
-  }
-
-  resolveFullPath(...relativePathWithFilename: string[]): string {
-    return path.resolve(this.rootPath, ...relativePathWithFilename);
+    const fullPath = this.resolveFullPath(...folder);
+    await mkdir(fullPath, { recursive: true });
   }
 
   async writeFormFile(
     path: string[],
     req: Request,
-    existingFilenames?: string[],
   ): Promise<string[]> {
+
+    await this.createFolder(path);
 
     const busboy = Busboy({ headers: req.headers });
 
-    const fileNames = new Set<string>(existingFilenames);
+    const fileNames: string[] = [];
 
     return new Promise((resolve) => {
       busboy.on('file', (_, file, fileInfo) => {
         const name = this.folderPathService.sanitizeFileName(fileInfo.filename);
-        fileNames.add(name);
+        fileNames.push(name);
         const fullPath = this.resolveFullPath(...path, name);
+
         file.pipe(createWriteStream(fullPath));
       });
 
       busboy.on('finish', () => {
-        resolve([...fileNames.values()]);
+        resolve(fileNames);
       });
       req.pipe(busboy);
     });
   }
+
+  async writeTempfiles(req: Request): Promise<string[]> {
+    return this.writeFormFile([TEMP_FOLDER], req);
+  }
+
+  private resolveFullPath(...relativePath: string[]): string {
+    return path.resolve(this.rootPath, ...relativePath);
+  }
+
+
 }

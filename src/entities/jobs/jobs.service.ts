@@ -61,21 +61,22 @@ export class JobsService {
   }
 
   async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | null> {
-    const existingFilenames = files?.fileNames;
+
     const path = files?.path;
     if (!path) {
       throw new Error('Path variable not set');
     }
-    const filenamesUpdated = await this.filesystemService.writeFormFile(
-      path,
-      req,
-      existingFilenames,
-    );
+
+    const uplFileNames = await this.filesystemService.writeFormFile(path, req);
+
+    const fileNames = new Set(files?.fileNames);
+    uplFileNames.forEach(name => fileNames.add(name));
+
     return this.jobsDao.updateJob({
       jobId,
       files: {
         path,
-        fileNames: filenamesUpdated,
+        fileNames: [...fileNames.values()],
       },
     });
   }
