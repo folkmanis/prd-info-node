@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
 import { Request } from 'express';
 import { FilesystemService, FolderPathService } from '../../filesystem';
 import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
@@ -8,7 +8,8 @@ import { JobsDao } from './dao/jobs-dao.service';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { Production } from './entities/job-categories';
-import { Job } from './entities/job.entity';
+import { Job, Files } from './entities/job.entity';
+import { last } from 'lodash';
 
 @Injectable()
 export class JobsService {
@@ -32,8 +33,8 @@ export class JobsService {
     return this.jobsDao.getOne(jobId);
   }
 
-  async addFolderPathToJob(jobId: number): Promise<Job | null> {
-    const job = await this.jobsDao.getOne(jobId);
+  async addFolderPathToJob(jobId: number): Promise<Job> {
+    let job = await this.jobsDao.getOne(jobId);
     if (!job) {
       throw new NotFoundException(`Job ${jobId} not found`);
     }
@@ -51,27 +52,29 @@ export class JobsService {
     });
     await this.filesystemService.createFolder(path);
 
-    return this.jobsDao.updateJob({
+    job = await this.jobsDao.updateJob({
       jobId: job.jobId,
       files: {
         ...job.files,
         path,
       },
     });
+    if (!job) {
+      throw new InternalServerErrorException(`Failed to update ${jobId}`);
+    }
+    return job;
   }
 
-  async writeJobFile({ jobId, files }: Job, req: Request): Promise<Job | null> {
+  async writeJobFile(jobId: number, req: Request): Promise<Job | null> {
+
+    const { files } = await this.addFolderPathToJob(jobId);
 
     const path = files?.path;
-    if (!path) {
-      throw new Error('Path variable not set');
-    }
+    assert(path instanceof Array, 'Path variable not set');
 
-    const uplFileNames = await this.filesystemService.writeFormFile(path, req);
+    await this.filesystemService.writeFormFile(path, req);
 
-    const fileNames = new Set(files?.fileNames);
-    uplFileNames.forEach(name => fileNames.add(name));
-
+    const fileNames = await this.filesystemService.readJobDir(path);
     return this.jobsDao.updateJob({
       jobId,
       files: {
@@ -79,6 +82,27 @@ export class JobsService {
         fileNames: [...fileNames.values()],
       },
     });
+  }
+
+  async moveFilesToJob(jobId: number, sourcePath: string[], names: string[]): Promise<Job | null> {
+
+    const { files } = await this.addFolderPathToJob(jobId);
+    const path = files?.path;
+    assert(path instanceof Array, 'Path variable not set');
+
+    await Promise.all(
+      names.map(name => this.filesystemService.moveUserFile([...sourcePath, name], [...path, name]))
+    );
+
+    const fileNames = await this.filesystemService.readJobDir(path);
+    return this.jobsDao.updateJob({
+      jobId,
+      files: {
+        path,
+        fileNames,
+      },
+    });
+
   }
 
   async nexJobId(): Promise<number> {
@@ -113,5 +137,11 @@ export class JobsService {
       jobId,
     }));
     return this.jobsDao.updateJobs(jobsUpdate);
+  }
+}
+
+function assert(condition: any, msg?: string): asserts condition {
+  if (!condition) {
+    throw new Error(msg);
   }
 }

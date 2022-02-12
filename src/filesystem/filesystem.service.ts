@@ -1,13 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Busboy from 'busboy';
 import { Request } from 'express';
 import { createWriteStream } from 'fs';
-import { mkdir } from 'fs/promises';
+import { mkdir, mkdtemp, rm, rename, readdir } from 'fs/promises';
 import path from 'path';
 import { FolderPathService } from './folder-path.service';
 
-const TEMP_FOLDER = 'TemporaryUploads';
+const HOMES_ROOT = 'UserFiles';
 
 @Injectable()
 export class FilesystemService {
@@ -21,6 +21,28 @@ export class FilesystemService {
   async createFolder(folder: string[]) {
     const fullPath = this.resolveFullPath(...folder);
     await mkdir(fullPath, { recursive: true });
+  }
+
+  async uploadUserFiles(path: string[], req: Request) {
+    return this.writeFormFile([HOMES_ROOT, ...path], req);
+  }
+
+  async removeUserFile(path: string[], filename: string): Promise<number> {
+    try {
+
+      await rm(
+        this.resolveFullPath(
+          HOMES_ROOT,
+          ...path,
+          filename,
+        ),
+        { recursive: true }
+      );
+      return 1;
+
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 
   async writeFormFile(
@@ -50,8 +72,21 @@ export class FilesystemService {
     });
   }
 
-  async writeTempfiles(req: Request): Promise<string[]> {
-    return this.writeFormFile([TEMP_FOLDER], req);
+  async moveUserFile(source: string[], dest: string[]) {
+    try {
+      await rename(
+        this.resolveFullPath(HOMES_ROOT, ...source),
+        this.resolveFullPath(this.rootPath, ...dest)
+      );
+    } catch (error) {
+      throw new NotFoundException(error);
+    }
+  }
+
+  async readJobDir(path: string[]): Promise<string[]> {
+    return readdir(
+      this.resolveFullPath(this.rootPath, ...path)
+    );
   }
 
   private resolveFullPath(...relativePath: string[]): string {

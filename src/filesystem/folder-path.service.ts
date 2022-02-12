@@ -55,4 +55,8 @@ export class FolderPathService {
       )
     );
   }
+
+  toDateString(date: Date): string {
+    return new Intl.DateTimeFormat('lv').format(date);
+  }
 }
