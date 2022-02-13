@@ -19,7 +19,7 @@ import { JobId } from '../job-id.decorator';
 import { JobsService } from '../jobs.service';
 import { FilesystemService } from '../../../filesystem';
 import { Usr, User } from '../../../session';
-import { FileMoveDto, FileMoveActions } from '../dto/file-move.dto';
+import { UserFileMoveDto, FtpFileCopyDto } from '../dto/file-move.dto';
 
 @Controller('jobs/files')
 @Modules('jobs')
@@ -52,15 +52,22 @@ export class JobFilesController {
     }
 
     @UseInterceptors(JobNotifyInterceptor)
-    @Patch(':jobId/move')
+    @Patch('move/user/:jobId')
     async moveUserFileToJob(
         @JobId(ParseIntPipe) jobId: number,
-        @Body() commands: FileMoveDto,
+        @Body() commands: UserFileMoveDto,
         @Usr() user: User,
     ) {
-        if (commands.action === FileMoveActions.USER_TO_JOB) {
-            return this.jobsService.moveFilesToJob(jobId, [user.username], commands.fileNames);
-        }
+        return this.jobsService.moveFilesToJob(jobId, [user.username], commands.fileNames);
+    }
+
+    @UseInterceptors(JobNotifyInterceptor)
+    @Patch('copy/ftp/:jobId')
+    async copyFtpFilesToJob(
+        @JobId(ParseIntPipe) jobId: number,
+        @Body() commands: FtpFileCopyDto,
+    ) {
+        return this.jobsService.copyFilesToJob(jobId, commands.files);
     }
 
     @UseInterceptors(JobNotifyInterceptor)

@@ -59,7 +59,7 @@ export class JobsService {
         path,
       },
     });
-    if (!job) {
+    if (!job?.files) {
       throw new InternalServerErrorException(`Failed to update ${jobId}`);
     }
     return job;
@@ -84,14 +84,37 @@ export class JobsService {
     });
   }
 
+  private async jobFiles(jobId: number): Promise<Files> {
+    const { files } = await this.addFolderPathToJob(jobId);
+    assert(files?.path instanceof Array, 'Path variable not set');
+    return files;
+  }
+
   async moveFilesToJob(jobId: number, sourcePath: string[], names: string[]): Promise<Job | null> {
 
-    const { files } = await this.addFolderPathToJob(jobId);
-    const path = files?.path;
-    assert(path instanceof Array, 'Path variable not set');
+    const { path } = await this.jobFiles(jobId);
 
     await Promise.all(
       names.map(name => this.filesystemService.moveUserFile([...sourcePath, name], [...path, name]))
+    );
+
+    const fileNames = await this.filesystemService.readJobDir(path);
+    return this.jobsDao.updateJob({
+      jobId,
+      files: {
+        path,
+        fileNames,
+      },
+    });
+
+  }
+
+  async copyFilesToJob(jobId: number, names: string[][]) {
+
+    const { path } = await this.jobFiles(jobId);
+
+    await Promise.all(
+      names.map(source => this.filesystemService.copyFtpFile(source, [...path, last(source) || ''])) // , last(source) || ''
     );
 
     const fileNames = await this.filesystemService.readJobDir(path);

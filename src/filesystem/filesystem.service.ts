@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { ConfigService } from '@nestjs/config';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { createWriteStream } from 'fs';
-import { mkdir, mkdtemp, rm, rename, readdir } from 'fs/promises';
+import { constants, createWriteStream } from 'fs';
+import { mkdir, mkdtemp, rm, rename, readdir, copyFile } from 'fs/promises';
 import path from 'path';
 import { FolderPathService } from './folder-path.service';
 
@@ -11,7 +11,9 @@ const HOMES_ROOT = 'UserFiles';
 
 @Injectable()
 export class FilesystemService {
+
   protected readonly rootPath = this.configService.get<string>('JOBS_INPUT')!;
+  protected readonly ftpPath = this.configService.get<string>('FTP_FOLDER')!;
 
   constructor(
     private configService: ConfigService,
@@ -77,6 +79,18 @@ export class FilesystemService {
       await rename(
         this.resolveFullPath(HOMES_ROOT, ...source),
         this.resolveFullPath(this.rootPath, ...dest)
+      );
+    } catch (error) {
+      throw new NotFoundException(error);
+    }
+  }
+
+  async copyFtpFile(source: string[], dest: string[]) {
+    try {
+      await copyFile(
+        this.resolveFullPath(this.ftpPath, ...source),
+        this.resolveFullPath(this.rootPath, ...dest),
+        constants.COPYFILE_FICLONE
       );
     } catch (error) {
       throw new NotFoundException(error);

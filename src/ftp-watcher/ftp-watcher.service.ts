@@ -9,7 +9,6 @@ export class FtpWatcherService {
   private readonly logger = new Logger('FtpWatcher');
 
   protected readonly ftpPath = this.configService.get<string>('FTP_FOLDER')!;
-  private offset = this.ftpPath.length + 1;
 
   private watcher: FSWatcher | undefined;
 
@@ -55,12 +54,13 @@ export class FtpWatcherService {
   }
 
   private callbackFn(operation: FsOperations) {
+    const offset = this.ftpPath.length + 1;
     return async (path: string) => {
       await this.msgService.add(
         new JobMessage({
           action: 'ftpUpload',
           operation,
-          path: path?.slice(this.offset).split('/'),
+          path: path?.slice(offset).split('/'),
         }),
       );
     };

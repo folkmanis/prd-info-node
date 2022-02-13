@@ -1,14 +1,12 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsString } from 'class-validator';
 
-export enum FileMoveActions {
-    USER_TO_JOB
-}
-
-export class FileMoveDto {
-
-    @IsEnum(FileMoveActions)
-    action: FileMoveActions;
+export class UserFileMoveDto {
 
     @IsString({ each: true })
     fileNames: string[];
+}
+
+export class FtpFileCopyDto {
+    @IsArray({ each: true })
+    files: string[][];
 }
