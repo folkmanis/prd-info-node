@@ -9,6 +9,11 @@ import { FolderPathService } from './folder-path.service';
 
 const HOMES_ROOT = 'UserFiles';
 
+interface DirReadResponse {
+  folders: string[];
+  files: string[];
+}
+
 @Injectable()
 export class FilesystemService {
 
@@ -101,6 +106,17 @@ export class FilesystemService {
     return readdir(
       this.resolveFullPath(this.rootPath, ...path)
     );
+  }
+
+  async readFtpDir(path: string[]): Promise<DirReadResponse> {
+    const entries = await readdir(
+      this.resolveFullPath(this.ftpPath, ...path),
+      { withFileTypes: true }
+    );
+    return {
+      files: entries.filter(entry => entry.isFile()).map(entry => entry.name),
+      folders: entries.filter(entry => entry.isDirectory()).map(entry => entry.name)
+    };
   }
 
   private resolveFullPath(...relativePath: string[]): string {

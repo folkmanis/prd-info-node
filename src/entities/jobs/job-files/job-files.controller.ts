@@ -1,25 +1,17 @@
-import { Request } from 'express';
 import {
-    Req,
-    Controller,
-    UseInterceptors,
+    Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Put, Query, Req, UseInterceptors,
     UsePipes,
-    ValidationPipe,
-    Patch,
-    ParseIntPipe,
-    Put,
-    Body,
-    Delete,
-    Param
+    ValidationPipe
 } from '@nestjs/common';
-import { Modules } from '../../../login';
-import { JobNotifyInterceptor } from '../job-notify.interceptor';
-import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
-import { JobId } from '../job-id.decorator';
-import { JobsService } from '../jobs.service';
+import { Request } from 'express';
 import { FilesystemService } from '../../../filesystem';
-import { Usr, User } from '../../../session';
-import { UserFileMoveDto, FtpFileCopyDto } from '../dto/file-move.dto';
+import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
+import { Modules } from '../../../login';
+import { User, Usr } from '../../../session';
+import { FtpFileCopyDto, UserFileMoveDto } from '../dto/file-move.dto';
+import { JobId } from '../job-id.decorator';
+import { JobNotifyInterceptor } from '../job-notify.interceptor';
+import { JobsService } from '../jobs.service';
 
 @Controller('jobs/files')
 @Modules('jobs')
@@ -68,6 +60,14 @@ export class JobFilesController {
         @Body() commands: FtpFileCopyDto,
     ) {
         return this.jobsService.copyFilesToJob(jobId, commands.files);
+    }
+
+    @Get('read/ftp')
+    async readFtpFolder(
+        @Query('folder') folder: string,
+    ) {
+        const path = folder ? [folder] : [];
+        return this.fileService.readFtpDir(path);
     }
 
     @UseInterceptors(JobNotifyInterceptor)

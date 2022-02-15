@@ -19,6 +19,18 @@ class Financial {
   paytraqId: number;
 }
 
+class FtpUserData {
+
+  @IsString()
+  folder: string;
+
+  @IsString()
+  username: string;
+
+  @IsString()
+  password: string;
+}
+
 export class Customer {
   @Type(() => ObjectId)
   @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
@@ -49,4 +61,13 @@ export class Customer {
   @ValidateNested()
   @IsOptional()
   financial?: Financial;
+
+  @IsBoolean()
+  ftpUser: boolean;
+
+  @Type(() => FtpUserData)
+  @ValidateNested()
+  @IsOptional()
+  ftpUserData?: FtpUserData;
+
 }
