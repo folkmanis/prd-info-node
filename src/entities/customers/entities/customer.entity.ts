@@ -25,10 +25,12 @@ class FtpUserData {
   folder: string;
 
   @IsString()
-  username: string;
+  @IsOptional()
+  username?: string;
 
   @IsString()
-  password: string;
+  @IsOptional()
+  password?: string;
 }
 
 export class Customer {
