@@ -58,6 +58,38 @@ export class MessagesService {
           deletedBy: 0,
         },
       },
+      {
+        $lookup: {
+          from: 'customers',
+          'let': {
+            folder: { $arrayElemAt: ['$data.path', 0] },
+            operation: '$data.operation',
+            disabled: '$disabled',
+          },
+          pipeline: [
+            {
+              $match: {
+                ftpUser: true,
+                disabled: { $ne: true },
+                $expr: {
+                  $and: [
+                    { $eq: ['$$folder', '$ftpUserData.folder'] },
+                    { $eq: ['$$operation', 'add'] },
+                  ]
+                }
+              }
+            },
+            {
+              $project: {
+                CustomerName: 1,
+                code: 1,
+                folder: '$$folder',
+              }
+            }
+          ],
+          as: 'ftpUsers'
+        }
+      },
     ];
     if (modules.length > 0) {
       pipeline.push({
@@ -68,6 +100,16 @@ export class MessagesService {
     }
 
     return this.collection.aggregate(pipeline).toArray() as Promise<Message[]>;
+  }
+
+  ftpFolderUploads(ftpFolder: string): Observable<Message[]> {
+    const filter = {
+      'data.operation': 'add',
+      'data.path.0': ftpFolder
+    };
+    return from(
+      this.collection.find(filter).toArray()
+    );
   }
 
   async add(msg: Message): Promise<ObjectId> {
@@ -87,7 +129,7 @@ export class MessagesService {
   async markAs(
     prop: 'seenBy' | 'deletedBy',
     user: string,
-    filter: { _id?: ObjectId } = {},
+    filter: { _id?: ObjectId; } = {},
   ): Promise<number> {
     const resp = await this.collection.updateMany(filter, {
       $addToSet: {

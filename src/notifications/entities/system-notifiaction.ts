@@ -5,6 +5,7 @@ export enum Systemoperations {
   MESSAGE_DELETED,
   MESSAGE_ADDED,
   MESSAGE_ALL_READ,
+  MESSAGES_UPDATED,
 }
 
 export class SystemNotification extends NotificationBase<'system'> {
