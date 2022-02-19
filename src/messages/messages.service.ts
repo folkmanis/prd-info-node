@@ -26,7 +26,7 @@ export class MessagesService {
     modules: SystemModules[],
     username: string,
   ): Promise<Message[]> {
-    const pipeline: any[] = [
+    let pipeline: Record<string, any>[] = [
       {
         $match: {
           timestamp: {
@@ -87,16 +87,19 @@ export class MessagesService {
               }
             }
           ],
-          as: 'ftpUsers'
+          as: 'data.ftpUsers'
         }
       },
     ];
     if (modules.length > 0) {
-      pipeline.push({
-        $match: {
-          module: { $in: modules },
+      pipeline = [
+        {
+          $match: {
+            module: { $in: modules },
+          },
         },
-      });
+        ...pipeline,
+      ];
     }
 
     return this.collection.aggregate(pipeline).toArray() as Promise<Message[]>;
