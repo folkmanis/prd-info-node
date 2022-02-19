@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, ObjectId, Document } from 'mongodb';
 import { from, Observable } from 'rxjs';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -21,11 +21,74 @@ export class MessagesService {
     this.createIndexes();
   }
 
-  async getMessages(
+  async getMessages(...args: [
+    Date,
+    SystemModules[],
+    string
+  ]): Promise<Message[]> {
+
+    return this.collection.aggregate(this.pipeline(...args)).toArray() as Promise<Message[]>;
+  }
+
+  async getOneMessage(_id: ObjectId, ...args: [
+    Date,
+    SystemModules[],
+    string]): Promise<Message | undefined> {
+    const pipeline = [
+      {
+        $match: {
+          _id
+        }
+      },
+      ...this.pipeline(...args)
+    ];
+
+    const aggr = await this.collection.aggregate(pipeline).toArray() as Message[];
+    return aggr[0];
+  }
+
+  ftpFolderUploads(ftpFolder: string): Observable<Message[]> {
+    const filter = {
+      'data.operation': 'add',
+      'data.path.0': ftpFolder
+    };
+    return from(
+      this.collection.find(filter).toArray()
+    );
+  }
+
+  async add(msg: Message): Promise<ObjectId> {
+    const { insertedId } = await this.collection.insertOne(msg);
+    const n = new SystemNotification({
+      id: insertedId,
+      operation: Systemoperations.MESSAGE_ADDED,
+    });
+    this.notifications.notify(n);
+    return insertedId;
+  }
+
+  postMessage(msg: Message): Observable<ObjectId> {
+    return from(this.add(msg));
+  }
+
+  async markAs(
+    prop: 'seenBy' | 'deletedBy',
+    user: string,
+    filter: { _id?: ObjectId; } = {},
+  ): Promise<number> {
+    const resp = await this.collection.updateMany(filter, {
+      $addToSet: {
+        [prop]: user,
+      },
+    });
+    return resp.modifiedCount;
+  }
+
+  private pipeline(
     to: Date,
     modules: SystemModules[],
-    username: string,
-  ): Promise<Message[]> {
+    username: string
+  ): Record<string, any>[] {
     let pipeline: Record<string, any>[] = [
       {
         $match: {
@@ -101,45 +164,7 @@ export class MessagesService {
         ...pipeline,
       ];
     }
-
-    return this.collection.aggregate(pipeline).toArray() as Promise<Message[]>;
-  }
-
-  ftpFolderUploads(ftpFolder: string): Observable<Message[]> {
-    const filter = {
-      'data.operation': 'add',
-      'data.path.0': ftpFolder
-    };
-    return from(
-      this.collection.find(filter).toArray()
-    );
-  }
-
-  async add(msg: Message): Promise<ObjectId> {
-    const { insertedId } = await this.collection.insertOne(msg);
-    const n = new SystemNotification({
-      id: insertedId,
-      operation: Systemoperations.MESSAGE_ADDED,
-    });
-    this.notifications.notify(n);
-    return insertedId;
-  }
-
-  postMessage(msg: Message): Observable<ObjectId> {
-    return from(this.add(msg));
-  }
-
-  async markAs(
-    prop: 'seenBy' | 'deletedBy',
-    user: string,
-    filter: { _id?: ObjectId; } = {},
-  ): Promise<number> {
-    const resp = await this.collection.updateMany(filter, {
-      $addToSet: {
-        [prop]: user,
-      },
-    });
-    return resp.modifiedCount;
+    return pipeline;
   }
 
   private createIndexes() {
