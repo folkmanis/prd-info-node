@@ -1,23 +1,18 @@
-import { UseInterceptors, Controller, Delete, Get, NotFoundException, Param, Patch } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Patch, UseInterceptors } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { Message } from '.';
 import { User } from '../entities/users';
 import { ObjectIdPipe } from '../lib/object-id.pipe';
-import {
-  NotificationsService,
-  SystemNotification,
-  Systemoperations,
-} from '../notifications';
-import { InstanceId } from '../preferences/instance-id.decorator';
-import { Usr } from '../session';
-import { MessagesService } from './messages.service';
 import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
+import { Usr } from '../session';
+import { MessageNotifyInterceptor } from './message-notify.interceptor';
+import { MessagesService } from './messages.service';
 
 @Controller('messages')
+@UseInterceptors(MessageNotifyInterceptor)
 export class MessagesController {
+
   constructor(
     private messagesService: MessagesService,
-    private notificationsService: NotificationsService,
   ) { }
 
   @Get()
@@ -30,8 +25,7 @@ export class MessagesController {
   async markOneRead(
     @Param('id', ObjectIdPipe) _id: ObjectId,
     @Usr() user: User,
-    @InstanceId() instanceId: string,
-  ): Promise<Message> {
+  ) {
     const modifiedCount = await this.messagesService.markAs(
       'seenBy',
       user.username,
@@ -43,31 +37,19 @@ export class MessagesController {
     }
 
     const modules = user.preferences.modules;
-    const message = await this.messagesService.getOneMessage(_id, new Date(), modules, user.username);
+    return this.messagesService.getOneMessage(_id, new Date(), modules, user.username);
 
-    if (!message) {
-      throw new NotFoundException(`Message ${_id} not found`);
-    }
-
-    this.notify(instanceId);
-
-    return message;
   }
 
   @Patch('read')
   @UseInterceptors(new ResponseWrapperInterceptor('modifiedCount'))
   async allMessagesRead(
     @Usr() user: User,
-    @InstanceId() instanceId: string
   ) {
-    const modifiedCount = await this.messagesService.markAs(
+    return this.messagesService.markAs(
       'seenBy',
       user.username,
     );
-
-    modifiedCount > 0 && this.notify(instanceId);
-
-    return modifiedCount;
   }
 
   @Delete(':id')
@@ -75,26 +57,13 @@ export class MessagesController {
   async deleteMessage(
     @Param('id', ObjectIdPipe) _id: ObjectId,
     @Usr() user: User,
-    @InstanceId() instanceId: string,
   ) {
-    const deletedCount = await this.messagesService.markAs(
+    return this.messagesService.markAs(
       'deletedBy',
       user.username,
       { _id },
     );
-
-    deletedCount > 0 && this.notify(instanceId);
-
-    return deletedCount;
   }
 
-  private notify(instance: string) {
-    const n = new SystemNotification({
-      operation: Systemoperations.MESSAGE_ALL_READ,
-    });
-    n.instanceId = instance;
-    this.notificationsService.notify(n);
-
-  }
 
 }
