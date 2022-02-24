@@ -24,6 +24,7 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
         [1, 'warn'],
         [3, 'http'],
       ],
+      hostname: 'http://localhost'
     },
   },
   {

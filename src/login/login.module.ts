@@ -8,10 +8,16 @@ import { APP_GUARD } from '@nestjs/core';
 import { LoginGuard } from './guards/login.guard';
 import { ModulesGuard } from './guards/modules.guard';
 import { SessionTokenModule } from '../session/session-token';
+import { GoogleModule } from '../google/google.module';
 
 @Module({
   controllers: [LoginController],
-  imports: [UsersModule, PassportModule, SessionTokenModule],
+  imports: [
+    UsersModule,
+     PassportModule,
+      SessionTokenModule,
+      GoogleModule,
+    ],
   providers: [
     LoginService,
     LocalStrategy,

@@ -18,10 +18,15 @@ import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor'
 import { SessionTokenService } from '../session/session-token';
 import { Session as Sess } from 'express-session';
 import { InstanceId } from '../preferences/instance-id.decorator';
+import { OauthService } from '../google/oauth/oauth.service';
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly tokenService: SessionTokenService) {}
+
+  constructor(
+    private readonly tokenService: SessionTokenService,
+    private readonly oAuth2Service: OauthService,
+  ) { }
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
@@ -51,6 +56,14 @@ export class LoginController {
     @InstanceId() instanceId: string,
   ) {
     return this.tokenService.token(session, instanceId, user);
+  }
+
+  @Get('oauth2-credentials')
+  getOauthCredentials(
+    @Req() req: Request,
+  ) {
+    const credentials = this.oAuth2Service.getCredentials();
+    return { credentials, path: req.path, hostname: req.hostname, protocol: req.protocol };
   }
 
   @Get('session-id')
