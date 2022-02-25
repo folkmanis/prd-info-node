@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsNotEmpty,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -40,12 +41,16 @@ export class User {
   @IsArray()
   userPreferences: ModuleUserPreferences[];
 
+  @IsString()
+  @IsOptional()
+  eMail: string;
+
   last_login?: Date;
   sessions?: UserSession[];
   messages?: Message[];
 }
 
-export class UserUpdate extends PartialType(User) {}
+export class UserUpdate extends PartialType(User) { }
 
 export interface UserSession {
   _id: string;
