@@ -12,7 +12,7 @@ export class UsersDaoService {
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) {}
+  ) { }
 
   async findAllUsers(): Promise<Partial<User>[]> {
     const projection = {
@@ -115,6 +115,7 @@ export class UsersDaoService {
       preferences: 1,
       userDisabled: 1,
       messages: 1,
+      eMail: 1,
     };
 
     const { value } = await this.collection.findOneAndUpdate(
@@ -155,7 +156,7 @@ export class UsersDaoService {
   async updateModuleUserPreferences(
     username: string,
     module: SystemModules,
-    val: { [key: string]: any },
+    val: { [key: string]: any; },
   ): Promise<number> {
     const user = await this.collection.findOne({ username });
     if (!user) {

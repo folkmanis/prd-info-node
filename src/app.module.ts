@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigFactory } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import Joi from 'joi';
 import { DatabaseModule } from './database/database.module';
 import { EntitiesModule } from './entities/entities.module';
 import { FilesystemModule } from './filesystem/filesystem.module';
 import { FtpWatcherModule } from './ftp-watcher/ftp-watcher.module';
+import { GoogleModule } from './google/google.module';
 import { LoggingModule } from './logging/logging.module';
 import { LoginModule } from './login/login.module';
 import { MessagesModule } from './messages/messages.module';
@@ -12,11 +13,6 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaytraqModule } from './paytraq/paytraq.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { SessionModule } from './session/session.module';
-import { GoogleModule } from './google/google.module';
-import { readFile } from 'fs/promises';
-import { plainToClass } from 'class-transformer';
-import { validate, validateOrReject } from 'class-validator';
-import { OAuth2Credentials } from './google/oauth/interfaces/oauth2-credentials.class';
 
 const dotEnvConfig = Joi.object({
   PORT: Joi.number().default(3000),
@@ -30,25 +26,10 @@ const dotEnvConfig = Joi.object({
   FTP_FOLDER: Joi.string().required(),
 });
 
-const googleConfig: ConfigFactory = async () => {
-  try {
-    const location = process.env.GOOGLE_API_CREDENTIALS_FILE || '';
-    const { installed } = JSON.parse(await readFile(location, { encoding: 'utf8' }));
-    const oAuth2 = plainToClass(OAuth2Credentials, installed);
-    await validateOrReject(oAuth2, { whitelist: true });
-    return { oAuth2 };
-
-  } catch (error) {
-    console.error(error);
-    return { oAuth2: undefined };
-  }
-};
-
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [googleConfig],
       validationSchema: dotEnvConfig,
       cache: true,
     }),
