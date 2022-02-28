@@ -1,18 +1,9 @@
-import { Injectable, FactoryProvider, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
-import { GoogleAuthService } from './google-auth.service';
+import { Injectable, NestMiddleware, NotImplementedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { google } from 'googleapis';
-import { JWT } from 'google-auth-library';
-import { GoogleConfig } from './google-config.interface';
+import { NextFunction, Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
-
-declare module 'express' {
-    export interface Request {
-        oAuth2?: OAuth2Client;
-    }
-
-}
+import { google } from 'googleapis';
+import { GoogleConfig } from './google-config.interface';
 
 
 @Injectable()
@@ -26,18 +17,16 @@ export class GoogleAuthMiddleware implements NestMiddleware {
 
     use(req: Request, res: Response, next: NextFunction) {
 
-        console.log(req.session);
         const eMail = req.session?.user?.eMail;
 
-
-        if (!eMail) {
-            next();
+        if (!eMail || !this.config) {
+            next(new NotImplementedException('google services not available'));
             return;
         }
 
         const { credentialsLocation, scope, account } = this.config;
 
-        const oAuth2: OAuth2Client = new google.auth.JWT({
+        req.oAuth2 = new google.auth.JWT({
             scopes: [scope],
             subject: eMail,
             keyFile: credentialsLocation,
@@ -45,8 +34,6 @@ export class GoogleAuthMiddleware implements NestMiddleware {
             keyId: account.private_key_id,
             key: account.private_key,
         });
-
-        req.oAuth2 = oAuth2;
 
         next();
     }
