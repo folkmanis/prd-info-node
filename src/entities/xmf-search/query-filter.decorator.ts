@@ -13,7 +13,7 @@ export const QueryFilter = createParamDecorator(
     const value = req.query.query as string;
     try {
       const filter = value ? JSON.parse(value) : {};
-      const customers = req.session.user.preferences.customers;
+      const customers = req.session.user?.preferences.customers;
       return plainToClass(XmfJobsFilter, {
         ...filter,
         customers,
