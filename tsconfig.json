@@ -80,9 +80,5 @@
     "**/*.spec.ts",
     "@types/**/*.ts"
   ]
-  // "files": [
-  //   "@types/express/index.d.ts", 
-  //   "@types/objtree/.d.ts", 
-  //   "./src/lib/asyncWrapper.ts"
-  // ],
+  // "files": []
 }

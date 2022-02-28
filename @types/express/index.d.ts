@@ -1,33 +1,22 @@
-import session from 'express-session';
+import { OAuth2Client } from 'google-auth-library';
 
-declare namespace Express {
+declare global {
 
-    type Modules = 'kastes' | 'system' | 'jobs' | 'paytraq' | 'calculations' | 'admin' | 'xmf-search' | 'xmf-upload' | 'jobs-admin';
+    namespace Express {
 
-    export interface Request {
-        version?: Version;
-        instanceId?: string;
-        session: session.SessionData;
+        type Modules = 'kastes' | 'system' | 'jobs' | 'paytraq' | 'calculations' | 'admin' | 'xmf-search' | 'xmf-upload' | 'jobs-admin';
+
+        interface Request {
+            version?: Version;
+            instanceId?: string;
+            oAuth2?: OAuth2Client;
+        }
+
     }
 
 
-    export interface Response<ResBody = any,
-        Locals extends Record<string, any> = Record<string, any>,
-        StatusCode extends number = number> {
-        result?: { [key: string]: any; };
-        notification?: {
-            timestamp: Date;
-            instanceId: string | undefined,
-            module: Modules;
-            payload: any;
-        };
+    interface Version {
+        apiBuild: number;
+        appBuild: number;
     }
-
-
-}
-
-
-interface Version {
-    apiBuild: number;
-    appBuild: number;
 }
