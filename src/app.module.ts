@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import Joi from 'joi';
 import { DatabaseModule } from './database/database.module';
@@ -13,6 +13,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PaytraqModule } from './paytraq/paytraq.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { SessionModule } from './session/session.module';
+import { SessionMiddleware } from './session/session.middleware';
 
 const dotEnvConfig = Joi.object({
   PORT: Joi.number().default(3000),
@@ -48,4 +49,11 @@ const dotEnvConfig = Joi.object({
   ],
   controllers: [],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SessionMiddleware)
+      .forRoutes('*');
+  }
+
+}

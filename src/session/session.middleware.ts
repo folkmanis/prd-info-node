@@ -4,8 +4,16 @@ import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import { MongoClient } from 'mongodb';
 
+
+
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
+
+  constructor(
+    private config: ConfigService,
+    @Inject('MONGO_CLIENT') private connection: MongoClient,
+  ) { }
+
   use = session({
     secret: 'HGG50EtOT7',
     store: MongoStore.create({
@@ -23,8 +31,5 @@ export class SessionMiddleware implements NestMiddleware {
     rolling: true,
   });
 
-  constructor(
-    private config: ConfigService,
-    @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) {}
+
 }
