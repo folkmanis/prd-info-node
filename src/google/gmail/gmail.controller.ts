@@ -1,4 +1,4 @@
-import { Param, UseInterceptors, Controller, UsePipes, ValidationPipe, Get } from '@nestjs/common';
+import { Param, UseInterceptors, Controller, UsePipes, ValidationPipe, Get, ClassSerializerInterceptor, Query, ParseIntPipe, ParseArrayPipe, DefaultValuePipe } from '@nestjs/common';
 import { User } from '../../entities/users';
 import { Usr } from '../../session';
 import { InstanceId } from '../../preferences/instance-id.decorator';
@@ -7,6 +7,11 @@ import { google } from 'googleapis';
 import { Gmail } from './gmail.decorator';
 import { gmail_v1 } from "@googleapis/gmail";
 import { PluckInterceptor } from '../../lib/pluck.interceptor';
+import { Message, MessageData } from './entities';
+import { PlainToClassInterceptor } from '../../lib/plain-to-class.interceptor';
+import { plainToClass } from 'class-transformer';
+import { ThreadData } from './entities/thread';
+import { ThreadsQuery, ThreadQuery } from './dto';
 
 const MESSAGE_HEADERS = [
     'From', 'To', 'Subject', 'Date'
@@ -14,7 +19,7 @@ const MESSAGE_HEADERS = [
 
 @Controller('google/gmail')
 @Modules('jobs')
-@UseInterceptors(new PluckInterceptor('data'))
+@UseInterceptors(new PluckInterceptor('data'), ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class GmailController {
 
@@ -35,36 +40,45 @@ export class GmailController {
     }
 
     @Get('message/:id')
-    getMessage(
+    @UseInterceptors(new PlainToClassInterceptor(MessageData))
+    async getMessage(
         @Gmail() gmail: gmail_v1.Gmail,
         @Param('id') id: string,
     ) {
+
+
         return gmail.users.messages.get({
             userId: 'me',
             id,
-            // format: 'metadata',
             metadataHeaders: MESSAGE_HEADERS,
         });
     }
 
     @Get('thread/:id')
+    @UseInterceptors(new PlainToClassInterceptor(ThreadData))
     getMessageThread(
         @Gmail() gmail: gmail_v1.Gmail,
-        @Param('id') id: string
+        @Param('id') id: string,
+        @Query() query: ThreadQuery,
     ) {
         return gmail.users.threads.get({
             userId: 'me',
             id,
-            format: 'minimal',
+            ...query,
         });
     }
 
 
     @Get('threads')
     async getThreads(
-        @Gmail() gmail: gmail_v1.Gmail
+        @Gmail() gmail: gmail_v1.Gmail,
+        @Query() query: ThreadsQuery,
     ) {
-        return gmail.users.threads.list({ maxResults: 10, userId: 'me', includeSpamTrash: false, labelIds: ['IMPORTANT'] });
+        console.log(query);
+        return gmail.users.threads.list({
+            userId: 'me',
+            ...query,
+        });
     }
 
     @Get('labels')
