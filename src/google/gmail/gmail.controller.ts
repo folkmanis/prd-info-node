@@ -1,17 +1,16 @@
-import { Param, UseInterceptors, Controller, UsePipes, ValidationPipe, Get, ClassSerializerInterceptor, Query, ParseIntPipe, ParseArrayPipe, DefaultValuePipe } from '@nestjs/common';
-import { User } from '../../entities/users';
-import { Usr } from '../../session';
-import { InstanceId } from '../../preferences/instance-id.decorator';
-import { Modules } from '../../login';
-import { google } from 'googleapis';
-import { Gmail } from './gmail.decorator';
 import { gmail_v1 } from "@googleapis/gmail";
-import { PluckInterceptor } from '../../lib/pluck.interceptor';
-import { Message, MessageData } from './entities';
+import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Param, Put, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import { User } from '../../entities/users';
+import { FilesystemService } from '../../filesystem';
 import { PlainToClassInterceptor } from '../../lib/plain-to-class.interceptor';
-import { plainToClass } from 'class-transformer';
+import { PluckInterceptor } from '../../lib/pluck.interceptor';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { Modules } from '../../login';
+import { Usr } from '../../session';
+import { AttachmentSaveDto, ThreadQuery, ThreadsQuery } from './dto';
+import { MessageData } from './entities';
 import { ThreadData } from './entities/thread';
-import { ThreadsQuery, ThreadQuery } from './dto';
+import { Gmail } from './gmail.decorator';
 
 const MESSAGE_HEADERS = [
     'From', 'To', 'Subject', 'Date'
@@ -19,28 +18,38 @@ const MESSAGE_HEADERS = [
 
 @Controller('google/gmail')
 @Modules('jobs')
-@UseInterceptors(new PluckInterceptor('data'), ClassSerializerInterceptor)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class GmailController {
 
     constructor(
+        private readonly fileSystem: FilesystemService,
     ) { }
 
-    @Get('message/:messageId/attachment/:id')
-    getAttachment(
+    @Put('message/attachment')
+    @UseInterceptors(new ResponseWrapperInterceptor('names'))
+    async getAttachment(
         @Gmail() gmail: gmail_v1.Gmail,
-        @Param('messageId') messageId: string,
-        @Param('id') id: string,
+        @Body() body: AttachmentSaveDto,
+        @Usr() user: User,
     ) {
-        return gmail.users.messages.attachments.get({
+        const { data } = await gmail.users.messages.attachments.get({
             userId: 'me',
-            id,
-            messageId,
+            id: body.attachment.attachmentId,
+            messageId: body.messageId,
         });
+
+        if (!data.data) {
+            throw new NotFoundException(body, 'Attachment not found');
+        }
+        const buff = Buffer.from(data.data, 'base64url');
+        await this.fileSystem.writeBuffer(buff, [user.username, body.attachment.filename]);
+
+        return [body.attachment.filename];
+
     }
 
     @Get('message/:id')
-    @UseInterceptors(new PlainToClassInterceptor(MessageData))
+    @UseInterceptors(new PluckInterceptor('data'), ClassSerializerInterceptor, new PlainToClassInterceptor(MessageData))
     async getMessage(
         @Gmail() gmail: gmail_v1.Gmail,
         @Param('id') id: string,
@@ -55,7 +64,7 @@ export class GmailController {
     }
 
     @Get('thread/:id')
-    @UseInterceptors(new PlainToClassInterceptor(ThreadData))
+    @UseInterceptors(new PluckInterceptor('data'), ClassSerializerInterceptor, new PlainToClassInterceptor(ThreadData))
     getMessageThread(
         @Gmail() gmail: gmail_v1.Gmail,
         @Param('id') id: string,
@@ -70,11 +79,11 @@ export class GmailController {
 
 
     @Get('threads')
+    @UseInterceptors(new PluckInterceptor('data'))
     async getThreads(
         @Gmail() gmail: gmail_v1.Gmail,
         @Query() query: ThreadsQuery,
     ) {
-        console.log(query);
         return gmail.users.threads.list({
             userId: 'me',
             ...query,
@@ -82,6 +91,7 @@ export class GmailController {
     }
 
     @Get('labels')
+    @UseInterceptors(new PluckInterceptor('data'))
     async getLabels(
         @Gmail() gmail: gmail_v1.Gmail
     ) {

@@ -3,3 +3,4 @@ export * from './message';
 export * from './message-part';
 export * from './message-part-body';
 export * from './message-data';
+export * from './attachment';

@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import { PreferencesModule } from '../preferences';
 import { GmailController } from './gmail/gmail.controller';
 import { GoogleAuthMiddleware } from './google-auth.middleware';
+import { FilesystemModule } from '../filesystem';
 
 const googleConfig: ConfigFactory = async () => {
   const credentialsLocation = process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
@@ -28,6 +29,7 @@ const googleConfig: ConfigFactory = async () => {
   imports: [
     ConfigModule.forFeature(googleConfig),
     PreferencesModule,
+    FilesystemModule,
   ],
   controllers: [
     GmailController

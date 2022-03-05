@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Busboy from 'busboy';
 import { Request } from 'express';
 import { constants, createWriteStream } from 'fs';
-import { mkdir, mkdtemp, rm, rename, readdir, copyFile } from 'fs/promises';
+import { copyFile, mkdir, readdir, rename, rm, writeFile } from 'fs/promises';
 import path from 'path';
 import { FolderPathService } from './folder-path.service';
 
@@ -100,6 +100,13 @@ export class FilesystemService {
     } catch (error) {
       throw new NotFoundException(error);
     }
+  }
+
+  async writeBuffer(buff: Buffer, destination: string[]) {
+    writeFile(
+      this.resolveFullPath(HOMES_ROOT, ...destination),
+      buff,
+    );
   }
 
   async readJobDir(path: string[]): Promise<string[]> {
