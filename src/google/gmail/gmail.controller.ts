@@ -98,5 +98,14 @@ export class GmailController {
         return gmail.users.labels.list({ userId: 'me' });
     }
 
+    @Get('label/:id')
+    @UseInterceptors(new PluckInterceptor('data'))
+    async getLabel(
+        @Gmail() gmail: gmail_v1.Gmail,
+        @Param('id') id: string,
+    ) {
+        return gmail.users.labels.get({ userId: 'me', id });
+    }
+
 
 }

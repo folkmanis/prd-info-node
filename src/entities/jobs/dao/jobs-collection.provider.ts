@@ -98,6 +98,7 @@ async function upgradeDb(collection: Collection): Promise<void> {
   await collection.updateMany(
     {
       $or: [{ _v: { $lt: 2 } }, { _v: { $exists: false } }],
+      category: { $exists: true },
     },
     [
       {

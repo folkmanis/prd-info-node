@@ -72,4 +72,8 @@ export class Customer {
   @IsOptional()
   ftpUserData?: FtpUserData;
 
+  @IsOptional()
+  @IsString()
+  email: string;
+
 }

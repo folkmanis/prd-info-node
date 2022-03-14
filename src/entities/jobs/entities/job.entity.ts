@@ -1,23 +1,16 @@
 import { Transform, Type } from 'class-transformer';
-import {
-  IsDate,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  Max,
-  Min,
-  ValidateNested,
-} from 'class-validator';
+import { Equals, IsDate, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import {
   KastesProduction,
   PrintProduction,
   ProductionCategory,
-  ReproProduction,
+  ReproProduction
 } from './job-categories';
 import { JobProduct } from './job-product.entity';
 import { JobProductionStage } from './job-production-stage.entity';
+
+export const CURRENT_VERSION = 3;
 
 export class JobStatus {
   @IsNumber()
@@ -42,9 +35,8 @@ export class Job {
   @IsObject()
   _id: ObjectId;
 
-  @Min(3)
-  @Max(3)
-  _v: number;
+  @Equals(CURRENT_VERSION)
+  _v: number = CURRENT_VERSION;
 
   @IsNumber()
   jobId: number;
@@ -103,7 +95,8 @@ export class Job {
     },
     keepDiscriminatorProperty: true,
   })
-  @IsOptional()
+  // @IsOptional()
+  @ValidateNested()
   production: ReproProduction | KastesProduction | PrintProduction;
 }
 

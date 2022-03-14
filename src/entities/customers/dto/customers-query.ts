@@ -9,18 +9,25 @@ export class CustomersQuery extends StartLimitFilter<Customer> {
   @IsOptional()
   name: string;
 
+  @IsString()
+  @IsOptional()
+  email?: string;
+
   @Transform(({ value }) => (value === 'true' ? true : false))
   @IsBoolean()
   disabled = false;
 
   toFilter() {
     const { start, limit } = this;
-    const filter: Filter<Customer> = {};
+    const filter: Filter<any> = {};
     if (!this.disabled) {
       filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
     }
     if (this.name) {
       filter.CustomerName = new RegExp(this.name, 'i');
+    }
+    if (this.email) {
+      filter.email = this.email;
     }
 
     return {
