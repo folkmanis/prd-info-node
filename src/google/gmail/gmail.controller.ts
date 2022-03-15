@@ -1,4 +1,4 @@
-import { gmail_v1 } from "@googleapis/gmail";
+import { gmail_v1 } from "googleapis";
 import { Body, ClassSerializerInterceptor, Controller, Get, NotFoundException, Param, Put, Query, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { User } from '../../entities/users';
 import { FilesystemService } from '../../filesystem';
