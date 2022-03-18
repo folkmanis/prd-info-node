@@ -27,7 +27,7 @@ export class CustomersQuery extends StartLimitFilter<Customer> {
       filter.CustomerName = new RegExp(this.name, 'i');
     }
     if (this.email) {
-      filter.email = this.email;
+      filter['contacts.email'] = this.email;
     }
 
     return {

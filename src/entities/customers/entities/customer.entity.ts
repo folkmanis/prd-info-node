@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsNumber,
   IsObject,
+  IsEmail,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
@@ -31,6 +32,14 @@ class FtpUserData {
   @IsString()
   @IsOptional()
   password?: string;
+}
+
+class CustomerContact {
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+
 }
 
 export class Customer {
@@ -72,8 +81,8 @@ export class Customer {
   @IsOptional()
   ftpUserData?: FtpUserData;
 
-  @IsOptional()
-  @IsString()
-  email: string;
+  @Type(() => CustomerContact)
+  @ValidateNested({ each: true })
+  contacts?: CustomerContact[];
 
 }
