@@ -17,7 +17,7 @@ export class GoogleAuthMiddleware implements NestMiddleware {
 
     use(req: Request, res: Response, next: NextFunction) {
 
-        const eMail = req.session?.user?.eMail;
+        const eMail = req.session?.user?.preferences.eMail;
 
         if (!eMail || !this.config) {
             next(new NotImplementedException('google services not available'));

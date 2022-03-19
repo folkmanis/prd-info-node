@@ -9,7 +9,7 @@ export class UsersService {
   constructor(
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
-  ) {}
+  ) { }
 
   async getOne(username: string): Promise<User> {
     const user = await this.usersDao.getOne(username);
@@ -21,6 +21,10 @@ export class UsersService {
       ...user,
       sessions,
     };
+  }
+
+  async getSessionUser(username: string) {
+    return this.usersDao.getOneSessionUser(username);
   }
 
   async login(username: string, password: string): Promise<User | null> {

@@ -12,6 +12,11 @@ import { Message } from '../../../messages';
 import { SystemModules } from '../../../preferences';
 
 export class UserPreferences {
+
+  @IsString()
+  @IsOptional()
+  eMail: string;
+
   @IsArray()
   customers: string[] = [];
 
@@ -40,10 +45,6 @@ export class User {
 
   @IsArray()
   userPreferences: ModuleUserPreferences[];
-
-  @IsString()
-  @IsOptional()
-  eMail: string;
 
   last_login?: Date;
   sessions?: UserSession[];

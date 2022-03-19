@@ -126,7 +126,16 @@ export class UsersDaoService {
         returnDocument: 'after',
       },
     );
-    return (value as User) || null;
+    return value;
+  }
+
+  async getOneSessionUser(username: string) {
+    const projection = {
+      _id: 0,
+      password: 0,
+      userPreferences: 0,
+    };
+    return this.collection.findOne({ username }, { projection });
   }
 
   async getModuleUserPreferences(

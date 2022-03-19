@@ -2,9 +2,6 @@ import { SetMetadata, createParamDecorator, ExecutionContext } from '@nestjs/com
 import { User } from '../../entities/users/entities/user.interface';
 import { Request } from 'express';
 import { google } from 'googleapis';
-import { OAuth2Client } from 'google-auth-library';
-
-
 
 
 export const Gmail = createParamDecorator<keyof User>(
