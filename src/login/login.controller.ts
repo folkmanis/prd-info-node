@@ -1,27 +1,31 @@
 import {
-  UseInterceptors,
   Controller,
   Delete,
   Get,
   Post,
   Req,
   Session,
-  UseGuards,
+  UseGuards, UseInterceptors
 } from '@nestjs/common';
 import { Request } from 'express';
 import * as session from 'express-session';
-import { User } from '../entities/users';
+import { Session as Sess } from 'express-session';
+import { User, UsersService } from '../entities/users';
+import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
+import { InstanceId } from '../preferences/instance-id.decorator';
+import { Usr } from '../session';
+import { SessionTokenService } from '../session/session-token';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
-import { Usr } from '../session';
-import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
-import { SessionTokenService } from '../session/session-token';
-import { Session as Sess } from 'express-session';
-import { InstanceId } from '../preferences/instance-id.decorator';
+import { UpdateSessionUserInterceptor } from '../session';
+
 
 @Controller('login')
 export class LoginController {
-  constructor(private readonly tokenService: SessionTokenService) {}
+
+  constructor(
+    private readonly tokenService: SessionTokenService,
+  ) { }
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
@@ -44,7 +48,7 @@ export class LoginController {
   }
 
   @Get('session-token')
-  @UseInterceptors(new ResponseWrapperInterceptor('data'))
+  @UseInterceptors(UpdateSessionUserInterceptor, new ResponseWrapperInterceptor('data'))
   generateToken(
     @Usr() user: User,
     @Session() session: Sess,
@@ -62,7 +66,11 @@ export class LoginController {
 
   @Get()
   @PublicRoute()
-  user(@Usr() user: User | undefined) {
+  @UseInterceptors(UpdateSessionUserInterceptor)
+  async user(
+    @Usr() user: User | undefined,
+  ) {
     return user || {};
   }
+
 }
