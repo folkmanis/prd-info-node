@@ -10,7 +10,7 @@ import { JOBS_COLLECTION } from './jobs-collection.provider';
 export class JobsDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) { }
+  ) {}
 
   async getAll(
     query: FilterType<Job>,

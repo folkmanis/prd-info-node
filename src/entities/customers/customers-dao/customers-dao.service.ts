@@ -1,6 +1,6 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
-import { from, map, mergeMap, Observable, of, tap } from 'rxjs';
+import { from, map, Observable, tap } from 'rxjs';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { CreateCustomerDto } from '../dto/create-customer.dto';
 import { ListCustomer } from '../dto/list-customer.dto';
@@ -13,7 +13,7 @@ export class CustomersDaoService {
   constructor(
     @Inject(CUSTOMERS_COLLECTION)
     private readonly collection: Collection<Customer>,
-  ) { }
+  ) {}
 
   async getCustomers({
     start,
@@ -43,10 +43,10 @@ export class CustomersDaoService {
 
   getCustomerByIdRx(id: ObjectId): Observable<Customer> {
     return from(this.getCustomerById(id)).pipe(
-      tap(customer => {
+      tap((customer) => {
         if (customer === null) throw new NotFoundException(id);
       }),
-      map(customer => customer as Customer),
+      map((customer) => customer as Customer),
     );
   }
 

@@ -1,4 +1,4 @@
 export class Header {
-    name: string;
-    value: string;
+  name: string;
+  value: string;
 }

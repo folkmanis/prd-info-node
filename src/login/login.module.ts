@@ -12,12 +12,7 @@ import { GoogleModule } from '../google/google.module';
 
 @Module({
   controllers: [LoginController],
-  imports: [
-    UsersModule,
-     PassportModule,
-      SessionTokenModule,
-      GoogleModule,
-    ],
+  imports: [UsersModule, PassportModule, SessionTokenModule, GoogleModule],
   providers: [
     LoginService,
     LocalStrategy,

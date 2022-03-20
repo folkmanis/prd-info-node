@@ -41,4 +41,4 @@ import { JobFilesController } from './job-files/job-files.controller';
   ],
   exports: [JobsService],
 })
-export class JobsModule { }
+export class JobsModule {}

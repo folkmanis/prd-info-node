@@ -9,7 +9,7 @@ import {
   Query,
   UsePipes,
   ValidationPipe,
-  UseInterceptors
+  UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
@@ -27,7 +27,7 @@ import { CustomerNotifyInterceptor } from './customer-notify.interceptor';
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class CustomersController {
-  constructor(private readonly customersDao: CustomersDaoService) { }
+  constructor(private readonly customersDao: CustomersDaoService) {}
 
   @Put()
   async newCustomer(@Body() customer: CreateCustomerDto) {

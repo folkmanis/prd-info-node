@@ -9,4 +9,4 @@ import { SessionService } from './session.service';
   providers: [sessionProvider, SessionDaoService, SessionService],
   exports: [SessionService],
 })
-export class SessionModule { }
+export class SessionModule {}

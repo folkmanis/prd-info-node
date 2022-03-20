@@ -1,26 +1,23 @@
-import { Expose, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { MessagePart } from './message-part';
 
 export class Message {
+  id: string;
 
-    id: string;
+  threadId: string;
 
-    threadId: string;
+  labelIds: string[];
 
-    labelIds: string[];
+  snippet: string;
 
-    snippet: string;
+  historyId: string;
 
-    historyId: string;
+  internalDate: string;
 
-    internalDate: string;
+  @Type(() => MessagePart)
+  payload: MessagePart;
 
-    @Type(() => MessagePart)
-    payload: MessagePart;
+  sizeEstimate: number;
 
-    sizeEstimate: number;
-
-    raw?: string;
-
-
+  raw?: string;
 }

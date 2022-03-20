@@ -28,13 +28,11 @@ import { JobsService } from './jobs.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
-
   constructor(
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
-  ) { }
-
+  ) {}
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId(ParseIntPipe) jobId: number) {

@@ -3,21 +3,18 @@ import { Header } from './header';
 import { MessagePartBody } from './message-part-body';
 
 export class MessagePart {
+  partId: string;
 
-    partId: string;
+  mimeType: string;
 
-    mimeType: string;
+  filename?: string;
 
-    filename?: string;
+  @Type(() => Header)
+  headers: Header[];
 
-    @Type(() => Header)
-    headers: Header[];
+  @Type(() => MessagePartBody)
+  body?: MessagePartBody;
 
-    @Type(() => MessagePartBody)
-    body?: MessagePartBody;
-
-    @Type(() => MessagePart)
-    parts?: MessagePart[];
-
-
+  @Type(() => MessagePart)
+  parts?: MessagePart[];
 }

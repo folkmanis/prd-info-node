@@ -1,4 +1,9 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { Observable, tap } from 'rxjs';
 import {
@@ -9,23 +14,18 @@ import {
 
 @Injectable()
 export class MessageNotifyInterceptor implements NestInterceptor {
-
-  constructor(
-    private notificationsService: NotificationsService,
-  ) { }
+  constructor(private notificationsService: NotificationsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-
-    const { instanceId, method } = context.switchToHttp().getRequest() as Request;
+    const { instanceId, method } = context
+      .switchToHttp()
+      .getRequest() as Request;
 
     if (!instanceId || method === 'GET') {
       return next.handle();
     }
 
-    return next.handle().pipe(
-      tap(() => this.notify(instanceId))
-    );
-    
+    return next.handle().pipe(tap(() => this.notify(instanceId)));
   }
 
   private notify(instance: string) {
@@ -35,6 +35,4 @@ export class MessageNotifyInterceptor implements NestInterceptor {
     n.instanceId = instance;
     this.notificationsService.notify(n);
   }
-
-
 }

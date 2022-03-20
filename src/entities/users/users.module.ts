@@ -12,9 +12,7 @@ import { SessionUserMiddleware } from './session-user.middleware';
   controllers: [UsersController],
 })
 export class UsersModule implements NestModule {
-
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SessionUserMiddleware)
-      .forRoutes('*');
+    consumer.apply(SessionUserMiddleware).forRoutes('*');
   }
 }

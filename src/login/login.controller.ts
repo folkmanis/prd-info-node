@@ -19,13 +19,9 @@ import { SessionTokenService } from '../session/session-token';
 import { Session as Sess } from 'express-session';
 import { InstanceId } from '../preferences/instance-id.decorator';
 
-
 @Controller('login')
 export class LoginController {
-
-  constructor(
-    private readonly tokenService: SessionTokenService,
-  ) { }
+  constructor(private readonly tokenService: SessionTokenService) {}
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()

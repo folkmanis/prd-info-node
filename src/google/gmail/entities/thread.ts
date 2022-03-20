@@ -2,18 +2,15 @@ import { Type } from 'class-transformer';
 import { Message } from './message';
 
 export class Thread {
+  id: string;
 
-    id: string;
+  historyId: string;
 
-    historyId: string;
-
-    @Type(() => Message)
-    messages: Message[];
+  @Type(() => Message)
+  messages: Message[];
 }
 
 export class ThreadData {
-
-    @Type(() => Thread)
-    data: Thread;
+  @Type(() => Thread)
+  data: Thread;
 }
-

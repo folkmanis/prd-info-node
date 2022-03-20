@@ -12,7 +12,6 @@ import { Message } from '../../../messages';
 import { SystemModules } from '../../../preferences';
 
 export class UserPreferences {
-
   @IsString()
   @IsOptional()
   eMail: string;
@@ -51,7 +50,7 @@ export class User {
   messages?: Message[];
 }
 
-export class UserUpdate extends PartialType(User) { }
+export class UserUpdate extends PartialType(User) {}
 
 export interface UserSession {
   _id: string;

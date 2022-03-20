@@ -13,17 +13,17 @@ const googleConfig: ConfigFactory = async () => {
   if (!credentialsLocation || !scope) {
     return null;
   }
-  const account = JSON.parse(await readFile(resolve(credentialsLocation), { encoding: 'utf8' }));
+  const account = JSON.parse(
+    await readFile(resolve(credentialsLocation), { encoding: 'utf8' }),
+  );
   return {
     google: {
       credentialsLocation,
       scope,
       account,
-    }
+    },
   };
 };
-
-
 
 @Module({
   imports: [
@@ -31,17 +31,12 @@ const googleConfig: ConfigFactory = async () => {
     PreferencesModule,
     FilesystemModule,
   ],
-  controllers: [
-    GmailController
-  ],
-  providers: [
-  ],
-  exports: [
-  ]
+  controllers: [GmailController],
+  providers: [],
+  exports: [],
 })
 export class GoogleModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(GoogleAuthMiddleware)
-      .forRoutes(GmailController);
+    consumer.apply(GoogleAuthMiddleware).forRoutes(GmailController);
   }
 }

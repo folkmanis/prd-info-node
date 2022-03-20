@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Collection, ObjectId, Document } from 'mongodb';
+import { Collection, ObjectId } from 'mongodb';
 import { from, Observable } from 'rxjs';
 import { DatabaseService } from '../database/database.service';
 import {
@@ -21,40 +21,39 @@ export class MessagesService {
     this.createIndexes();
   }
 
-  async getMessages(...args: [
-    Date,
-    SystemModules[],
-    string
-  ]): Promise<Message[]> {
-
-    return this.collection.aggregate(this.pipeline(...args)).toArray() as Promise<Message[]>;
+  async getMessages(
+    ...args: [Date, SystemModules[], string]
+  ): Promise<Message[]> {
+    return this.collection
+      .aggregate(this.pipeline(...args))
+      .toArray() as Promise<Message[]>;
   }
 
-  async getOneMessage(_id: ObjectId, ...args: [
-    Date,
-    SystemModules[],
-    string]): Promise<Message | undefined> {
+  async getOneMessage(
+    _id: ObjectId,
+    ...args: [Date, SystemModules[], string]
+  ): Promise<Message | undefined> {
     const pipeline = [
       {
         $match: {
-          _id
-        }
+          _id,
+        },
       },
-      ...this.pipeline(...args)
+      ...this.pipeline(...args),
     ];
 
-    const aggr = await this.collection.aggregate(pipeline).toArray() as Message[];
+    const aggr = (await this.collection
+      .aggregate(pipeline)
+      .toArray()) as Message[];
     return aggr[0];
   }
 
   ftpFolderUploads(ftpFolder: string): Observable<Message[]> {
     const filter = {
       'data.operation': 'add',
-      'data.path.0': ftpFolder
+      'data.path.0': ftpFolder,
     };
-    return from(
-      this.collection.find(filter).toArray()
-    );
+    return from(this.collection.find(filter).toArray());
   }
 
   async add(msg: Message): Promise<ObjectId> {
@@ -74,7 +73,7 @@ export class MessagesService {
   async markAs(
     prop: 'seenBy' | 'deletedBy',
     user: string,
-    filter: { _id?: ObjectId; } = {},
+    filter: { _id?: ObjectId } = {},
   ): Promise<number> {
     const resp = await this.collection.updateMany(filter, {
       $addToSet: {
@@ -87,7 +86,7 @@ export class MessagesService {
   private pipeline(
     to: Date,
     modules: SystemModules[],
-    username: string
+    username: string,
   ): Record<string, any>[] {
     let pipeline: Record<string, any>[] = [
       {
@@ -124,7 +123,7 @@ export class MessagesService {
       {
         $lookup: {
           from: 'customers',
-          'let': {
+          let: {
             folder: { $arrayElemAt: ['$data.path', 0] },
             operation: '$data.operation',
             disabled: '$disabled',
@@ -138,20 +137,20 @@ export class MessagesService {
                   $and: [
                     { $eq: ['$$folder', '$ftpUserData.folder'] },
                     { $eq: ['$$operation', 'add'] },
-                  ]
-                }
-              }
+                  ],
+                },
+              },
             },
             {
               $project: {
                 CustomerName: 1,
                 code: 1,
                 folder: '$$folder',
-              }
-            }
+              },
+            },
           ],
-          as: 'data.ftpUsers'
-        }
+          as: 'data.ftpUsers',
+        },
       },
     ];
     if (modules.length > 0) {

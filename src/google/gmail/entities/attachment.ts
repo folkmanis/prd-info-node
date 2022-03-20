@@ -1,15 +1,13 @@
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class Attachment {
+  @IsString()
+  filename: string;
 
-    @IsString()
-    filename: string;
+  @IsString()
+  attachmentId: string;
 
-    @IsString()
-    attachmentId: string;
-
-    @IsNumber()
-    @IsOptional()
-    size?: number;
-
+  @IsNumber()
+  @IsOptional()
+  size?: number;
 }

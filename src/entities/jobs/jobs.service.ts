@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Request } from 'express';
 import { FilesystemService, FolderPathService } from '../../filesystem';
 import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
@@ -20,7 +24,7 @@ export class JobsService {
     private readonly folderPathService: FolderPathService,
     private readonly filesystemService: FilesystemService,
     private readonly counters: JobsCounterService,
-  ) { }
+  ) {}
 
   async getAll(
     filter: FilterType<Job>,
@@ -66,7 +70,6 @@ export class JobsService {
   }
 
   async writeJobFile(jobId: number, req: Request): Promise<Job | null> {
-
     const { files } = await this.addFolderPathToJob(jobId);
 
     const path = files?.path;
@@ -90,12 +93,20 @@ export class JobsService {
     return files;
   }
 
-  async moveFilesToJob(jobId: number, sourcePath: string[], names: string[]): Promise<Job | null> {
-
+  async moveFilesToJob(
+    jobId: number,
+    sourcePath: string[],
+    names: string[],
+  ): Promise<Job | null> {
     const { path } = await this.jobFiles(jobId);
 
     await Promise.all(
-      names.map(name => this.filesystemService.moveUserFile([...sourcePath, name], [...path, name]))
+      names.map((name) =>
+        this.filesystemService.moveUserFile(
+          [...sourcePath, name],
+          [...path, name],
+        ),
+      ),
     );
 
     const fileNames = await this.filesystemService.readJobDir(path);
@@ -106,15 +117,18 @@ export class JobsService {
         fileNames,
       },
     });
-
   }
 
   async copyFilesToJob(jobId: number, names: string[][]) {
-
     const { path } = await this.jobFiles(jobId);
 
     await Promise.all(
-      names.map(source => this.filesystemService.copyFtpFile(source, [...path, last(source) || ''])) // , last(source) || ''
+      names.map((source) =>
+        this.filesystemService.copyFtpFile(source, [
+          ...path,
+          last(source) || '',
+        ]),
+      ), // , last(source) || ''
     );
 
     const fileNames = await this.filesystemService.readJobDir(path);
@@ -125,7 +139,6 @@ export class JobsService {
         fileNames,
       },
     });
-
   }
 
   async nexJobId(): Promise<number> {

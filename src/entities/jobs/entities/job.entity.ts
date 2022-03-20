@@ -1,11 +1,19 @@
 import { Transform, Type } from 'class-transformer';
-import { Equals, IsDate, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import {
+  Equals,
+  IsDate,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
 import { ObjectId } from 'mongodb';
 import {
   KastesProduction,
   PrintProduction,
   ProductionCategory,
-  ReproProduction
+  ReproProduction,
 } from './job-categories';
 import { JobProduct } from './job-product.entity';
 import { JobProductionStage } from './job-production-stage.entity';

@@ -21,7 +21,6 @@ class Financial {
 }
 
 class FtpUserData {
-
   @IsString()
   folder: string;
 
@@ -35,11 +34,9 @@ class FtpUserData {
 }
 
 class CustomerContact {
-
   @IsEmail()
   @IsOptional()
   email?: string;
-
 }
 
 export class Customer {
@@ -84,5 +81,4 @@ export class Customer {
   @Type(() => CustomerContact)
   @ValidateNested({ each: true })
   contacts?: CustomerContact[];
-
 }

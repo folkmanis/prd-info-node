@@ -23,7 +23,7 @@ export interface SystemPreferenceModule {
 }
 
 export interface KastesSystemPreference {
-  colors: { [key: string]: string; };
+  colors: { [key: string]: string };
 }
 
 export interface SystemSystemPreference {

@@ -7,7 +7,8 @@ import {
 
 @Injectable()
 export class ValidateObjectKeyPipe<T extends Record<string, any>>
-  implements PipeTransform {
+  implements PipeTransform
+{
   private keys: (keyof T)[];
 
   constructor(@Optional() ...keys: (keyof T)[]) {

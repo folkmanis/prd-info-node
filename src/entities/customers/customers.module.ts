@@ -7,10 +7,7 @@ import { NotificationsModule } from '../../notifications';
 import { MessagesModule } from '../../messages';
 
 @Module({
-  imports: [
-    NotificationsModule,
-    MessagesModule,
-  ],
+  imports: [NotificationsModule, MessagesModule],
   controllers: [CustomersController],
   providers: [
     CustomersService,
@@ -19,4 +16,4 @@ import { MessagesModule } from '../../messages';
   ],
   exports: [CustomersService],
 })
-export class CustomersModule { }
+export class CustomersModule {}

@@ -23,16 +23,13 @@ export interface ResponseWrapperInterceptorOptions {
 
 @Injectable()
 export class ResponseWrapperInterceptor implements NestInterceptor {
-
   constructor(
     @Optional() private key: ResponseKeys = 'data',
     @Optional() private parameters: ResponseWrapperInterceptorOptions = {},
-  ) { }
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle().pipe(
-      map(wrapRespone(this.key, this.parameters))
-    );
+    return next.handle().pipe(map(wrapRespone(this.key, this.parameters)));
   }
 }
 

@@ -1,4 +1,12 @@
-import { Controller, Delete, Get, NotFoundException, Param, Patch, UseInterceptors } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Patch,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { User } from '../entities/users';
 import { ObjectIdPipe } from '../lib/object-id.pipe';
@@ -10,10 +18,7 @@ import { MessagesService } from './messages.service';
 @Controller('messages')
 @UseInterceptors(MessageNotifyInterceptor)
 export class MessagesController {
-
-  constructor(
-    private messagesService: MessagesService,
-  ) { }
+  constructor(private messagesService: MessagesService) {}
 
   @Get()
   async getMessages(@Usr() user: User) {
@@ -37,19 +42,18 @@ export class MessagesController {
     }
 
     const modules = user.preferences.modules;
-    return this.messagesService.getOneMessage(_id, new Date(), modules, user.username);
-
+    return this.messagesService.getOneMessage(
+      _id,
+      new Date(),
+      modules,
+      user.username,
+    );
   }
 
   @Patch('read')
   @UseInterceptors(new ResponseWrapperInterceptor('modifiedCount'))
-  async allMessagesRead(
-    @Usr() user: User,
-  ) {
-    return this.messagesService.markAs(
-      'seenBy',
-      user.username,
-    );
+  async allMessagesRead(@Usr() user: User) {
+    return this.messagesService.markAs('seenBy', user.username);
   }
 
   @Delete(':id')
@@ -58,12 +62,6 @@ export class MessagesController {
     @Param('id', ObjectIdPipe) _id: ObjectId,
     @Usr() user: User,
   ) {
-    return this.messagesService.markAs(
-      'deletedBy',
-      user.username,
-      { _id },
-    );
+    return this.messagesService.markAs('deletedBy', user.username, { _id });
   }
-
-
 }

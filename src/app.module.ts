@@ -50,10 +50,7 @@ const dotEnvConfig = Joi.object({
   controllers: [],
 })
 export class AppModule implements NestModule {
-
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(SessionMiddleware)
-      .forRoutes('*');
+    consumer.apply(SessionMiddleware).forRoutes('*');
   }
-
 }
