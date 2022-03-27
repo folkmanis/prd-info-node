@@ -6,13 +6,17 @@ import { ModuleUserPreferences, User } from '../entities/user.interface';
 import { SessionsDaoService } from './sessions-dao.service';
 import { USERS } from './users.provider';
 
+
+export type LoginCredentials = Partial<Record<'username' | 'password' | 'googleId', string>>;
+
+
 @Injectable()
 export class UsersDaoService {
   constructor(
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) {}
+  ) { }
 
   async findAllUsers(): Promise<Partial<User>[]> {
     const projection = {
@@ -42,11 +46,9 @@ export class UsersDaoService {
       .toArray();
   }
 
-  async getOne(username: string): Promise<User | null> {
+  async getOne(filter: Filter<User>): Promise<User | null> {
     return this.collection.findOne(
-      {
-        username,
-      },
+      filter,
       {
         projection: {
           _id: 0,
@@ -100,22 +102,25 @@ export class UsersDaoService {
     return deletedCount;
   }
 
-  async login(username: string, password: string): Promise<User | null> {
+
+  async login({ username, password, googleId }: LoginCredentials): Promise<User | null> {
     const filter: Filter<User> = {
-      username,
-      password,
       userDisabled: { $not: { $eq: true } },
     };
+
+    if (username && password) {
+      filter.username = username;
+      filter.password = password;
+    }
+
+    if (googleId) {
+      filter['google.id'] = googleId;
+    }
+
     const projection = {
       _id: 0,
-      username: 1,
-      name: 1,
-      admin: 1,
-      last_login: 1,
-      preferences: 1,
-      userDisabled: 1,
-      messages: 1,
-      eMail: 1,
+      password: 0,
+      userPreferences: 0,
     };
 
     const { value } = await this.collection.findOneAndUpdate(
@@ -165,7 +170,7 @@ export class UsersDaoService {
   async updateModuleUserPreferences(
     username: string,
     module: SystemModules,
-    val: { [key: string]: any },
+    val: { [key: string]: any; },
   ): Promise<number> {
     const user = await this.collection.findOne({ username });
     if (!user) {

@@ -23,7 +23,7 @@ export class UpdateSessionUserInterceptor implements NestInterceptor {
     }
 
     return from(this.usersService.getSessionUser(user.username)).pipe(
-      tap(user => req.session.user = user || undefined),
+      tap(usr => req.session.user = usr),
       mergeMapTo(next.handle())
     );
 

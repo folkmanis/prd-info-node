@@ -5,11 +5,10 @@ import {
   Post,
   Req,
   Session,
-  UseGuards, UseInterceptors
+  UseGuards, UseInterceptors, Redirect, UseFilters
 } from '@nestjs/common';
 import { Request } from 'express';
-import * as session from 'express-session';
-import { Session as Sess } from 'express-session';
+import { Session as Sess, SessionData } from 'express-session';
 import { User, UsersService } from '../entities/users';
 import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
 import { InstanceId } from '../preferences/instance-id.decorator';
@@ -18,6 +17,9 @@ import { SessionTokenService } from '../session/session-token';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
 import { UpdateSessionUserInterceptor } from '../session';
+import { GoogleOauth2Guard } from './guards/google-oauth2.guard';
+import { AllowNullResponse } from '../lib/null-response.interceptor';
+import { InvalidGoogleUserFilter } from './filters/invalid-google-user.filter';
 
 
 @Controller('login')
@@ -26,6 +28,37 @@ export class LoginController {
   constructor(
     private readonly tokenService: SessionTokenService,
   ) { }
+
+  @PublicRoute()
+  @UseGuards(GoogleOauth2Guard)
+  @UseFilters(InvalidGoogleUserFilter)
+  @Get('google')
+  @Redirect()
+  async googleLogin(
+    @Req() req: Request,
+  ) {
+    return {
+      url: req.session.oauth2?.url
+    };
+  }
+
+  @PublicRoute()
+  @UseGuards(GoogleOauth2Guard)
+  @UseFilters(InvalidGoogleUserFilter)
+  @Redirect('/')
+  @Get('google/redirect')
+  @AllowNullResponse()
+  async googleRedirect(
+    @Req() req: Request
+  ) {
+    if (req.session?.user) {
+      req.session.lastSeen = {
+        ip: req.ip,
+        date: new Date(),
+      };
+    }
+  }
+
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
@@ -42,7 +75,7 @@ export class LoginController {
   @Delete()
   @PublicRoute()
   @UseInterceptors(new ResponseWrapperInterceptor('response'))
-  async logout(@Session() sess: session.Session) {
+  async logout(@Session() sess: Sess) {
     await new Promise((resolve) => sess.destroy(resolve));
     return 'logged out';
   }
@@ -65,12 +98,15 @@ export class LoginController {
   }
 
   @Get()
-  @PublicRoute()
   @UseInterceptors(UpdateSessionUserInterceptor)
   async user(
     @Usr() user: User | undefined,
+    @Session() session: SessionData,
   ) {
-    return user || {};
+    return {
+      ...user,
+      isGmail: !!session.oauth2?.tokens
+    };
   }
 
 }

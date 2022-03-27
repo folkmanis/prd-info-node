@@ -1,4 +1,5 @@
 import { OAuth2Client } from 'google-auth-library';
+import { gmail_v1 } from 'googleapis';
 
 declare global {
 
@@ -10,6 +11,7 @@ declare global {
             version?: Version;
             instanceId?: string;
             oAuth2?: OAuth2Client;
+            gmail?: gmail_v1.Gmail;
         }
 
     }

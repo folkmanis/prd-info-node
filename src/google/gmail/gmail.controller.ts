@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   UsePipes,
   ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { User } from '../../entities/users';
 import { FilesystemService } from '../../filesystem';
@@ -23,14 +24,18 @@ import { AttachmentSaveDto, ThreadQuery, ThreadsQuery } from './dto';
 import { MessageData } from './entities';
 import { ThreadData } from './entities/thread';
 import { Gmail } from './gmail.decorator';
+import { GoogleClientGuard } from '../oauth2/google-client.guard';
+import { GmailGuard } from './gmail.guard';
+
 
 const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 
 @Controller('google/gmail')
 @Modules('jobs')
+@UseGuards(GoogleClientGuard, GmailGuard)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class GmailController {
-  constructor(private readonly fileSystem: FilesystemService) {}
+  constructor(private readonly fileSystem: FilesystemService) { }
 
   @Put('message/attachment')
   @UseInterceptors(new ResponseWrapperInterceptor('names'))

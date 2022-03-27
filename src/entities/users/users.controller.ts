@@ -35,7 +35,7 @@ export class UsersController {
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
     private usersService: UsersService,
-  ) {}
+  ) { }
 
   @Get('validate/:property')
   async getProperty(
@@ -47,7 +47,7 @@ export class UsersController {
 
   @Get(':id')
   async getOne(@Param('id') username: string) {
-    return this.usersService.getOne(username);
+    return this.usersService.getOneByUsername(username);
   }
 
   @Get()
@@ -77,7 +77,7 @@ export class UsersController {
     if (!result) {
       throw new NotFoundException('Invalid username');
     }
-    return this.usersService.getOne(username);
+    return this.usersService.getOneByUsername(username);
   }
 
   @Delete(':id/session')

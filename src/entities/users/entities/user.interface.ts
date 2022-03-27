@@ -10,6 +10,7 @@ import {
 } from 'class-validator';
 import { Message } from '../../../messages';
 import { SystemModules } from '../../../preferences';
+import { google, oauth2_v2 } from 'googleapis';
 
 export class UserPreferences {
   @IsString()
@@ -48,9 +49,11 @@ export class User {
   last_login?: Date;
   sessions?: UserSession[];
   messages?: Message[];
+  google?: oauth2_v2.Schema$Userinfo | null;
+
 }
 
-export class UserUpdate extends PartialType(User) {}
+export class UserUpdate extends PartialType(User) { }
 
 export interface UserSession {
   _id: string;

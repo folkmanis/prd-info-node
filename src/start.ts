@@ -25,8 +25,6 @@ async function bootstrap() {
   app.use(parseInstanceId());
   app.use(versionMiddleware());
 
-  app.useGlobalInterceptors(new NullResponseInterceptor());
-
   app.useWebSocketAdapter(new WsAdapter(app));
 
   const port = app.get(ConfigService).get('PORT');

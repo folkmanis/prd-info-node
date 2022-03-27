@@ -9,8 +9,8 @@ import { Request } from 'express';
 import { Observable } from 'rxjs';
 
 @Injectable()
-export class LoginGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+export class SessionGuard implements CanActivate {
+  constructor(private reflector: Reflector) { }
 
   canActivate(
     context: ExecutionContext,

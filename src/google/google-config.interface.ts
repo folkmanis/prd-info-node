@@ -1,16 +1,14 @@
 export interface GoogleConfig {
-  credentialsLocation: string;
-  scope: string;
-  account: {
-    type: string;
-    project_id: string;
-    private_key_id: string;
-    private_key: string;
-    client_email: string;
+  oAuthLocation: string;
+  oAuthRedirect: string;
+  scopes: string[];
+
+  web: {
     client_id: string;
+    project_id: string;
     auth_uri: string;
     token_uri: string;
     auth_provider_x509_cert_url: string;
-    client_x509_cert_url: string;
+    client_secret: string;
   };
 }

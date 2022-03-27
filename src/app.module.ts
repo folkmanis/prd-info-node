@@ -14,6 +14,8 @@ import { PaytraqModule } from './paytraq/paytraq.module';
 import { PreferencesModule } from './preferences/preferences.module';
 import { SessionModule } from './session/session.module';
 import { SessionMiddleware } from './session/session.middleware';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { NullResponseInterceptor } from './lib/null-response.interceptor';
 
 const dotEnvConfig = Joi.object({
   PORT: Joi.number().default(3000),
@@ -48,6 +50,12 @@ const dotEnvConfig = Joi.object({
     GoogleModule,
   ],
   controllers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: NullResponseInterceptor,
+    }
+  ]
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

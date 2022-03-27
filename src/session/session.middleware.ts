@@ -9,7 +9,7 @@ export class SessionMiddleware implements NestMiddleware {
   constructor(
     private config: ConfigService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) {}
+  ) { }
 
   use = session({
     secret: 'HGG50EtOT7',
@@ -20,7 +20,7 @@ export class SessionMiddleware implements NestMiddleware {
     cookie: {
       maxAge: this.config.get('SESSION_EXPIRES') * 1000,
       httpOnly: true,
-      sameSite: true,
+      sameSite: 'lax',
     },
     saveUninitialized: false,
     unset: 'destroy',
