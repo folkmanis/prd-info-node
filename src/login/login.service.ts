@@ -9,7 +9,7 @@ export class LoginService {
     private usersService: UsersService
   ) { }
 
-  async validateUser(username: string, password: string): Promise<User | null> {
+  async validateUser(username: string, password: string): Promise<User> {
     return this.usersService.login({
       username,
       password: crypto.createHash('sha256').update(password).digest('hex'),
@@ -20,7 +20,7 @@ export class LoginService {
     return this.usersService.getOneByEmail(email);
   }
 
-  async validateGoogleId(googleId: string): Promise<User | null> {
+  async validateGoogleId(googleId: string): Promise<User> {
     return this.usersService.login({ googleId });
   }
 }

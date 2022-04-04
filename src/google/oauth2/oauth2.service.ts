@@ -33,15 +33,15 @@ export class Oauth2Service {
     ) { }
 
 
-    async getAuthUrl(sessionId: string): Promise<string> {
+    async getAuthUrl(sessionId: string, scopes: string[]): Promise<string> {
 
         const state = await this.jwtService.signAsync({ s: sessionId });
 
         return this.oauth2Client.generateAuthUrl({
             access_type: 'offline',
-            scope: this.config.scopes,
-            prompt: 'consent',
+            scope: [...this.config.scopes, ...scopes],
             state,
+            include_granted_scopes: true,
         });
     }
 
@@ -50,7 +50,7 @@ export class Oauth2Service {
         const tokenData: { s: string; } = await this.jwtService.verifyAsync(state);
 
         if (tokenData.s !== sessionId) {
-            throw new BadRequestException('Invalid state reurned');
+            throw new BadRequestException('Invalid state returned');
         }
 
         const { tokens } = await this.oauth2Client.getToken(code);

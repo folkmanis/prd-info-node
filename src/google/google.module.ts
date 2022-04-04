@@ -1,11 +1,11 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { Module } from '@nestjs/common';
 import { ConfigFactory, ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
+import { FilesystemModule } from '../filesystem';
 import { PreferencesModule } from '../preferences';
 import { GmailController } from './gmail/gmail.controller';
-import { FilesystemModule } from '../filesystem';
 import { Oauth2Service } from './oauth2/oauth2.service';
 
 const googleConfig: ConfigFactory = async () => {
@@ -23,7 +23,6 @@ const googleConfig: ConfigFactory = async () => {
       scopes: [
         'email',
         'profile',
-        'https://www.googleapis.com/auth/gmail.readonly',
       ],
       web: oAuth2.web,
     },
@@ -36,7 +35,7 @@ const googleConfig: ConfigFactory = async () => {
     PreferencesModule,
     FilesystemModule,
     JwtModule.register({
-      secret: 'PvZHmtH9Spp8VVKbRL8m',
+      secretOrKeyProvider: () => process.env.JWT_SECRET!,
       signOptions: {
         expiresIn: '5m'
       }

@@ -12,6 +12,7 @@ import {
   UsePipes,
   ValidationPipe,
   UseGuards,
+  UseFilters,
 } from '@nestjs/common';
 import { User } from '../../entities/users';
 import { FilesystemService } from '../../filesystem';
@@ -26,6 +27,7 @@ import { ThreadData } from './entities/thread';
 import { Gmail } from './gmail.decorator';
 import { GoogleClientGuard } from '../oauth2/google-client.guard';
 import { GmailGuard } from './gmail.guard';
+import { InvalidGrantFilter } from '../invalid-grant.filter';
 
 
 const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
@@ -34,6 +36,7 @@ const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 @Modules('jobs')
 @UseGuards(GoogleClientGuard, GmailGuard)
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UseFilters(InvalidGrantFilter)
 export class GmailController {
   constructor(private readonly fileSystem: FilesystemService) { }
 

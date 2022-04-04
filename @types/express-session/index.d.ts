@@ -9,10 +9,7 @@ declare module 'express-session' {
             ip: string,
             date: Date,
         };
-        oauth2: {
-            url?: string,
-            tokens?: Credentials;
-        };
+        redirectPath?: string;
     }
 
 }

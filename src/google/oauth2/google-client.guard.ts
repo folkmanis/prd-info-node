@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { Observable } from 'rxjs';
 import { Oauth2Service } from './oauth2.service';
 import { Request } from 'express';
+import { Credentials } from 'google-auth-library';
 
 
 @Injectable()
@@ -17,7 +18,8 @@ export class GoogleClientGuard implements CanActivate {
 
     const req: Request = context.switchToHttp().getRequest();
 
-    const tokens = req.session.oauth2?.tokens;
+    const tokens = req.session.user?.tokens;
+    assertCredentials(tokens);
 
     try {
       req.oAuth2 = this.oauth2Service.createAuthClient(tokens);
@@ -27,5 +29,11 @@ export class GoogleClientGuard implements CanActivate {
 
 
     return true;
+  }
+}
+
+function assertCredentials(tokens?: Credentials): asserts tokens is Credentials {
+  if (!tokens) {
+    throw new UnauthorizedException('Google credentials not provided');
   }
 }

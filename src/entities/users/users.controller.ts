@@ -11,7 +11,6 @@ import {
   UseInterceptors,
   ParseArrayPipe,
   Query,
-  NotFoundException,
 } from '@nestjs/common';
 import { Modules } from '../../login';
 import { SessionsDaoService } from './dao/sessions-dao.service';
@@ -23,6 +22,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { UsersService } from './users.service';
+import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor';
 
 @Controller('users')
 @Modules('admin')
@@ -30,6 +30,7 @@ import { UsersService } from './users.service';
   new ValidationPipe({ transform: true, whitelist: true }),
   PasswordPipe,
 )
+@UseInterceptors(UserUpdateNotifyInterceptor)
 export class UsersController {
   constructor(
     private usersDao: UsersDaoService,
@@ -73,11 +74,8 @@ export class UsersController {
 
   @Patch(':id')
   async updateUser(@Param('id') username: string, @Body() user: UpdateUserDto) {
-    const result = await this.usersDao.updateOne({ ...user, username });
-    if (!result) {
-      throw new NotFoundException('Invalid username');
-    }
-    return this.usersService.getOneByUsername(username);
+    const result = await this.usersService.updateUser(username, user);
+    return this.usersService.getOneByUsername(result.username);
   }
 
   @Delete(':id/session')

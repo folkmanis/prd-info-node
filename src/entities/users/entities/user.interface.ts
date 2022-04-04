@@ -11,11 +11,9 @@ import {
 import { Message } from '../../../messages';
 import { SystemModules } from '../../../preferences';
 import { google, oauth2_v2 } from 'googleapis';
+import { Credentials } from 'google-auth-library';
 
 export class UserPreferences {
-  @IsString()
-  @IsOptional()
-  eMail: string;
 
   @IsArray()
   customers: string[] = [];
@@ -37,7 +35,7 @@ export class User {
   password: string;
 
   @IsBoolean()
-  userDisabled = false;
+  userDisabled: boolean;
 
   @Type(() => UserPreferences)
   @ValidateNested()
@@ -46,14 +44,20 @@ export class User {
   @IsArray()
   userPreferences: ModuleUserPreferences[];
 
+  @IsString()
+  @IsOptional()
+  eMail: string;
+
+  @IsOptional()
+  google?: oauth2_v2.Schema$Userinfo;
+
+  tokens?: Credentials;
   last_login?: Date;
   sessions?: UserSession[];
   messages?: Message[];
-  google?: oauth2_v2.Schema$Userinfo | null;
+
 
 }
-
-export class UserUpdate extends PartialType(User) { }
 
 export interface UserSession {
   _id: string;

@@ -9,16 +9,22 @@ import { SessionGuard } from './guards/session.guard';
 import { LocalStrategy } from './local.strategy';
 import { LoginController } from './login.controller';
 import { LoginService } from './login.service';
+import { GoogleController } from './google/google.controller';
+import { NotificationsModule } from '../notifications';
 
 
 
 @Module({
-  controllers: [LoginController],
+  controllers: [
+    GoogleController,
+    LoginController,
+  ],
   imports: [
     UsersModule,
     PassportModule,
     SessionTokenModule,
     GoogleModule,
+    NotificationsModule,
   ],
   providers: [
     LoginService,

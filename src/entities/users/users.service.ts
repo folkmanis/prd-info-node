@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { User, ModuleUserPreferences } from './entities/user.interface';
-import { UsersDaoService, LoginCredentials } from './dao/users-dao.service';
 import { SystemModules } from '../../preferences';
 import { SessionsDaoService } from './dao/sessions-dao.service';
-import { oauth2_v2 } from 'googleapis';
+import { LoginCredentials, UsersDaoService } from './dao/users-dao.service';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ModuleUserPreferences, User } from './entities/user.interface';
 
 @Injectable()
 export class UsersService {
+
   constructor(
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
@@ -28,12 +29,9 @@ export class UsersService {
     return user;
   }
 
-  async setGoogleUser(username: string, googleUser: oauth2_v2.Schema$Userinfo | null): Promise<User> {
-    const user = await this.usersDao.updateOne({
-      username,
-      google: googleUser,
-    });
-    assertUser(user);
+  async updateUser(username: string, update: UpdateUserDto): Promise<User> {
+    const user = await this.usersDao.updateOne({ ...update, username });
+    assertUser(user, 'Invalid username');
     return user;
   }
 
@@ -43,8 +41,10 @@ export class UsersService {
     return user;
   }
 
-  async login(credentials: LoginCredentials): Promise<User | null> {
-    return this.usersDao.login(credentials);
+  async login(credentials: LoginCredentials): Promise<User> {
+    const user = await this.usersDao.login(credentials);
+    assertUser(user);
+    return user;
   }
 
   async getModulePreferences(

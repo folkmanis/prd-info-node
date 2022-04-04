@@ -6,6 +6,7 @@ export enum Systemoperations {
   MESSAGE_ADDED,
   MESSAGE_ALL_READ,
   MESSAGES_UPDATED,
+  USER_UPDATED,
 }
 
 export class SystemNotification extends NotificationBase<'system'> {
@@ -13,7 +14,7 @@ export class SystemNotification extends NotificationBase<'system'> {
 
   constructor(
     public payload: {
-      id?: ObjectId;
+      id?: ObjectId | string;
       operation: Systemoperations;
     },
   ) {

@@ -1,30 +1,44 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
+import { Credentials } from 'google-auth-library';
 import { google } from 'googleapis';
 
 @Injectable()
 export class GmailGuard implements CanActivate {
+
   canActivate(
     context: ExecutionContext,
   ): boolean {
 
     const req: Request = context.switchToHttp().getRequest();
 
-    if (
-      req.oAuth2 &&
-      typeof req.session.oauth2?.tokens.scope === 'string' &&
-      req.session.oauth2?.tokens.scope.indexOf('gmail') !== -1
-    ) {
+    const tokens = req.session.user?.tokens;
+
+    assertScope(tokens);
+
+    try {
       req.gmail = google.gmail({
         version: 'v1',
         auth: req.oAuth2,
       });
-      return true;
+
+    } catch (error) {
+
+      throw new ForbiddenException('Not authorized for gmail');
+
     }
 
+    return true;
 
-    return false;
+  }
+}
 
+function assertScope(tokens: Credentials | undefined): asserts tokens is Credentials {
+  if (
+    !tokens ||
+    typeof tokens.scope !== 'string' ||
+    tokens.scope.indexOf('mail') === -1
+  ) {
+    throw new ForbiddenException('Not authorized for gmail');
   }
 }
