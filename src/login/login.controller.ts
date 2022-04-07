@@ -1,21 +1,19 @@
 import {
   Body, Controller,
   Delete,
-  Get, Patch, Post,
+  Get, NotFoundException, Patch, Post,
   Req,
-  Session,
-  UseGuards, UseInterceptors, UsePipes, ValidationPipe
+  Session, StreamableFile, UseGuards, UseInterceptors, UsePipes, ValidationPipe
 } from '@nestjs/common';
 import { Request } from 'express';
-import { Session as Sess, SessionData } from 'express-session';
-import { PasswordPipe, UpdateUserDto, User, UsersService } from '../entities/users';
+import { Session as Sess } from 'express-session';
+import { PasswordPipe, UpdateUserDto, User, UsersService, UserUpdateNotifyInterceptor, Usr } from '../entities/users';
 import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
 import { InstanceId } from '../preferences/instance-id.decorator';
-import { UpdateSessionUserInterceptor } from './update-session-user.interceptor';
 import { SessionTokenService } from '../session/session-token';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { PublicRoute } from './public-route.decorator';
-import { Usr, UserUpdateNotifyInterceptor } from '../entities/users';
+import { UpdateSessionUserInterceptor } from './update-session-user.interceptor';
 
 
 @Controller('login')
@@ -63,16 +61,26 @@ export class LoginController {
     };
   }
 
+  @Get('avatar')
+  async getAvatarPicture(
+    @Usr() user: User,
+  ) {
+
+    const { avatar } = await this.usersService.getOneByUsername(user.username);
+    if (!avatar) {
+      throw new NotFoundException('No avatar picture for user');
+    }
+
+    return new StreamableFile(avatar.image.buffer, { type: avatar.type });
+
+  }
+
   @Get()
   @UseInterceptors(UpdateSessionUserInterceptor)
   async user(
     @Usr() user: User | undefined,
-    @Session() session: SessionData,
   ) {
-    return {
-      ...user,
-      isGmail: !!session.user.tokens,
-    };
+    return user;
   }
 
   @UsePipes(

@@ -9,6 +9,7 @@ import { LoginService } from '../../login/login.service';
 import { UpdateUserDto, User, UsersService } from '../../entities/users';
 import { UserUpdateNotifyInterceptor } from '../../entities/users';
 
+
 @Controller('login/google')
 export class GoogleController {
 
@@ -24,15 +25,14 @@ export class GoogleController {
     @UseFilters(InvalidGoogleUserFilter)
     @Redirect()
     async googleLogin(
-        @Req() req: Request,
-        @Session() session: SessionData,
+        @Session() session: Sess & SessionData,
         @Query('redirect') redirect: string = '/',
         @Query('scope') scope?: string,
     ) {
 
         const scopes = scope?.split(' ') || [];
 
-        const url = await this.oauth2Service.getAuthUrl(req.session.id, scopes);
+        const url = await this.oauth2Service.getAuthUrl(session.id, scopes);
 
         session.redirectPath = redirect;
 
@@ -62,6 +62,9 @@ export class GoogleController {
         assertString(state);
         assertString(code, 'No response code from google received');
 
+        const redirectPath = session.redirectPath;
+        delete session.redirectPath;
+
         const tokens = await this.oauth2Service.getCredentials(code, state, session.id);
         const profile = await this.oauth2Service.getUserProfile(tokens);
         assertString(profile.id, 'User has no id');
@@ -77,17 +80,22 @@ export class GoogleController {
 
         }
 
+
         const userUpdate: UpdateUserDto = {
             google: profile,
         };
         if (tokens.refresh_token) {
             userUpdate.tokens = tokens;
         }
+        if (profile.picture) {
+            userUpdate.avatar = await this.oauth2Service.getUserPicture(profile.picture);
+        }
+        const user = await this.usersService.updateUser(session.user.username, userUpdate);
 
-        await this.usersService.updateUser(session.user.username, userUpdate);
-        session.user = await this.usersService.getSessionUser(session.user.username);
-
-        const redirectPath = session.redirectPath;
+        if (!tokens.refresh_token) {
+            tokens.refresh_token = user.tokens?.refresh_token;
+        }
+        session.tokens = tokens;
 
         session.lastSeen = {
             ip,

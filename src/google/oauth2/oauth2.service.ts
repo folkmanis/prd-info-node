@@ -1,9 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import https from 'https';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Credentials } from 'google-auth-library';
 import { Auth, google, oauth2_v2 } from 'googleapis';
 import { GoogleConfig } from '../google-config.interface';
+import { IncomingMessage } from 'http';
+import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter';
+import { Binary } from 'mongodb';
 
 const auth = google.auth;
 
@@ -47,15 +51,19 @@ export class Oauth2Service {
 
     async getCredentials(code: string, state: string, sessionId: string): Promise<Credentials> {
 
-        const tokenData: { s: string; } = await this.jwtService.verifyAsync(state);
+        try {
 
-        if (tokenData.s !== sessionId) {
-            throw new BadRequestException('Invalid state returned');
+            const tokenData: { s: string; } = await this.jwtService.verifyAsync(state);
+            if (tokenData.s !== sessionId) {
+                throw new Error('Invalid state returned');
+            }
+            const { tokens } = await this.oauth2Client.getToken(code);
+            return tokens;
+
+        } catch (error) {
+            throw new InvalidGoogleUserException(error);
         }
 
-        const { tokens } = await this.oauth2Client.getToken(code);
-
-        return tokens;
     }
 
     async getUserProfile(tokens: Credentials): Promise<oauth2_v2.Schema$Userinfo> {
@@ -80,6 +88,26 @@ export class Oauth2Service {
         client.setCredentials(tokens);
 
         return client;
+
+    }
+
+    async getUserPicture(url: string): Promise<{ image: Binary, type?: string; }> {
+
+        const req = await new Promise<IncomingMessage>(
+            (resolve, reject) => https.get(url, resolve).on('error', reject)
+        );
+
+        const type = req.headers['content-type'];
+
+        const chunks: any[] = [];
+
+        const image = await new Promise<Buffer>((resolve, reject) => {
+            req.on('data', chunk => chunks.push(chunk));
+            req.on('error', reject);
+            req.on('end', () => resolve(Buffer.concat(chunks)));
+        });
+
+        return { image: new Binary(image), type };
 
     }
 

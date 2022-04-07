@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { Injectable } from '@nestjs/common';
 import { User, UsersService } from '../entities/users';
-import { oauth2_v2 } from 'googleapis';
+
 
 @Injectable()
 export class LoginService {

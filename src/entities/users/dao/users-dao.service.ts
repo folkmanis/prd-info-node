@@ -121,6 +121,8 @@ export class UsersDaoService {
       _id: 0,
       password: 0,
       userPreferences: 0,
+      avatar: 0,
+      tokens: 0,
     };
 
     const { value } = await this.collection.findOneAndUpdate(
@@ -139,6 +141,8 @@ export class UsersDaoService {
       _id: 0,
       password: 0,
       userPreferences: 0,
+      avatar: 0,
+      tokens: 0,
     };
     return this.collection.findOne({ username }, { projection });
   }

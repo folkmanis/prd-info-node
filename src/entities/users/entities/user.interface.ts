@@ -12,6 +12,7 @@ import { Message } from '../../../messages';
 import { SystemModules } from '../../../preferences';
 import { google, oauth2_v2 } from 'googleapis';
 import { Credentials } from 'google-auth-library';
+import { Binary } from 'mongodb';
 
 export class UserPreferences {
 
@@ -56,6 +57,10 @@ export class User {
   sessions?: UserSession[];
   messages?: Message[];
 
+  avatar?: {
+    image: Binary;
+    type?: string;
+  };
 
 }
 

@@ -12,9 +12,7 @@ export class GmailGuard implements CanActivate {
 
     const req: Request = context.switchToHttp().getRequest();
 
-    const tokens = req.session.user?.tokens;
-
-    assertScope(tokens);
+    assertScope(req.session.tokens);
 
     try {
       req.gmail = google.gmail({

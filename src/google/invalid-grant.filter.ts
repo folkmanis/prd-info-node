@@ -4,9 +4,9 @@ import { GaxiosError } from 'googleapis-common';
 
 
 @Catch(GaxiosError)
-export class InvalidGrantFilter<GaxiosError> implements ExceptionFilter {
+export class InvalidGrantFilter implements ExceptionFilter {
 
-  catch(exception: any, host: ArgumentsHost) {
+  catch(exception: GaxiosError, host: ArgumentsHost) {
 
     const resp: Response = host.switchToHttp().getResponse();
 
@@ -14,7 +14,7 @@ export class InvalidGrantFilter<GaxiosError> implements ExceptionFilter {
       resp.status(403).json('Invalid grant');
     }
 
-    resp.status(exception.code || 404).json(exception.message || 'Gmail error');
+    resp.status(+(exception.code || 404)).json(exception.message || 'Gmail error');
 
 
   }

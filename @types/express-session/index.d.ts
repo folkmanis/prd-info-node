@@ -10,6 +10,7 @@ declare module 'express-session' {
             date: Date,
         };
         redirectPath?: string;
+        tokens?: Credentials;
     }
 
 }
