@@ -7,6 +7,8 @@ import { FilesystemModule } from '../filesystem';
 import { PreferencesModule } from '../preferences';
 import { GmailController } from './gmail/gmail.controller';
 import { Oauth2Service } from './oauth2/oauth2.service';
+import { HttpModule } from '@nestjs/axios';
+
 
 const googleConfig: ConfigFactory = async () => {
 
@@ -34,6 +36,7 @@ const googleConfig: ConfigFactory = async () => {
     ConfigModule.forFeature(googleConfig),
     PreferencesModule,
     FilesystemModule,
+    HttpModule,
     JwtModule.register({
       secretOrKeyProvider: () => process.env.JWT_SECRET!,
       signOptions: {

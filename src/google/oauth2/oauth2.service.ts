@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import https from 'https';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Credentials } from 'google-auth-library';
 import { Auth, google, oauth2_v2 } from 'googleapis';
-import { GoogleConfig } from '../google-config.interface';
-import { IncomingMessage } from 'http';
-import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter';
 import { Binary } from 'mongodb';
+import { firstValueFrom, map } from 'rxjs';
+import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter';
+import { GoogleConfig } from '../google-config.interface';
 
 const auth = google.auth;
 
@@ -34,6 +34,7 @@ export class Oauth2Service {
     constructor(
         private configService: ConfigService,
         private jwtService: JwtService,
+        private httpService: HttpService,
     ) { }
 
 
@@ -93,21 +94,14 @@ export class Oauth2Service {
 
     async getUserPicture(url: string): Promise<{ image: Binary, type?: string; }> {
 
-        const req = await new Promise<IncomingMessage>(
-            (resolve, reject) => https.get(url, resolve).on('error', reject)
+        const image$ = this.httpService.get<Buffer>(url, { responseEncoding: 'binary' }).pipe(
+            map(resp => ({
+                image: new Binary(resp.data),
+                type: resp.headers['content-type']
+            })),
         );
 
-        const type = req.headers['content-type'];
-
-        const chunks: any[] = [];
-
-        const image = await new Promise<Buffer>((resolve, reject) => {
-            req.on('data', chunk => chunks.push(chunk));
-            req.on('error', reject);
-            req.on('end', () => resolve(Buffer.concat(chunks)));
-        });
-
-        return { image: new Binary(image), type };
+        return firstValueFrom(image$);
 
     }
 

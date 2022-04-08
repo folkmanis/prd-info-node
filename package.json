@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/folkmanis/prd-info-node#readme",
   "dependencies": {
+    "@nestjs/axios": "^0.0.7",
     "@nestjs/common": "^8.2.5",
     "@nestjs/config": "^1.1.6",
     "@nestjs/core": "^8.2.5",
@@ -44,6 +45,7 @@
     "@types/lodash": "^4.14.178",
     "@types/passport-google-oauth20": "^2.0.11",
     "@types/ws": "^8.2.2",
+    "axios": "^0.26.1",
     "busboy": "^1.4.0",
     "chokidar": "^3.5.3",
     "class-transformer": "^0.4.0",
