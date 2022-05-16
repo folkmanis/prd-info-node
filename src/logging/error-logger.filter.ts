@@ -1,5 +1,7 @@
 import { ArgumentsHost, Catch, HttpException, Logger } from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
+import { Request } from 'express';
+import { pick } from 'lodash';
 
 @Catch()
 export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
@@ -7,7 +9,12 @@ export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
 
   catch(exception: T, host: ArgumentsHost) {
     if (exception instanceof HttpException) {
-      this.logger.error(exception.message, exception.stack);
+      const req = host.switchToHttp().getRequest() as Request;
+      this.logger.error(
+        exception.message,
+        exception.stack,
+        pick(req, ['ip', 'session', 'path', 'user',])
+      );
     }
     super.catch(exception, host);
   }

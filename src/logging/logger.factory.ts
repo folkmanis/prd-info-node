@@ -12,7 +12,7 @@ export const loggerFactory: Provider = {
   useFactory: async (daoService: LoggerDaoService, logLevels: AppLogLevels) =>
     new LoggingService([
       new ConsoleTransport('App', { timestamp: true }),
-      new MongoTransport(daoService, logLevels),
+      new MongoTransport(daoService, logLevels, { level: 'info' }),
     ]),
   inject: [LoggerDaoService, 'LOG_LEVELS'],
 };
