@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  ParseIntPipe,
   Patch,
   Put,
   Query,
@@ -30,7 +29,7 @@ export class JobFilesController {
   constructor(
     private readonly jobsService: JobsService,
     private readonly fileService: FilesystemService,
-  ) {}
+  ) { }
 
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
   @Put('user/upload')
@@ -49,7 +48,7 @@ export class JobFilesController {
   @UseInterceptors(JobNotifyInterceptor)
   @Patch('move/user/:jobId')
   async moveUserFileToJob(
-    @JobId(ParseIntPipe) jobId: number,
+    @JobId() jobId: number,
     @Body() commands: UserFileMoveDto,
     @Usr() user: User,
   ) {
@@ -63,7 +62,7 @@ export class JobFilesController {
   @UseInterceptors(JobNotifyInterceptor)
   @Patch('copy/ftp/:jobId')
   async copyFtpFilesToJob(
-    @JobId(ParseIntPipe) jobId: number,
+    @JobId() jobId: number,
     @Body() commands: FtpFileCopyDto,
   ) {
     return this.jobsService.copyFilesToJob(jobId, commands.files);
@@ -77,7 +76,10 @@ export class JobFilesController {
 
   @UseInterceptors(JobNotifyInterceptor)
   @Put(':jobId/upload')
-  async uploadFile(@JobId(ParseIntPipe) jobId: number, @Req() req: Request) {
+  async uploadFile(
+    @JobId() jobId: number,
+    @Req() req: Request
+  ) {
     return this.jobsService.writeJobFile(jobId, req);
   }
 }

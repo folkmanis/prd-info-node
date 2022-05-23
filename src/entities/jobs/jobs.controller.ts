@@ -32,17 +32,17 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
-  ) {}
+  ) { }
 
   @Patch(':jobId/createFolder')
-  async createFolder(@JobId(ParseIntPipe) jobId: number) {
+  async createFolder(@JobId() jobId: number) {
     return this.jobsService.addFolderPathToJob(jobId);
   }
 
   @Patch(':jobId')
   @UseInterceptors(TouchProductInterceptor)
   async updateOne(
-    @JobId(ParseIntPipe) jobId: number,
+    @JobId() jobId: number,
     @Body() jobUpdate: UpdateJobDto,
   ) {
     return this.jobsDao.updateJob({ ...jobUpdate, jobId });
@@ -77,7 +77,7 @@ export class JobsController {
   }
 
   @Get(':jobId')
-  async getJob(@JobId(ParseIntPipe) jobId: number) {
+  async getJob(@JobId() jobId: number) {
     return this.jobsService.getOne(jobId);
   }
 
