@@ -57,10 +57,11 @@ export class GmailController {
       throw new NotFoundException(body, 'Attachment not found');
     }
     const buff = Buffer.from(data.data, 'base64url');
-    await this.fileSystem.writeBuffer(buff, [
+    await this.fileSystem.writeBufferToUser(
+      buff,
       user.username,
-      body.attachment.filename,
-    ]);
+      body.attachment.filename
+    );
 
     return [body.attachment.filename];
   }

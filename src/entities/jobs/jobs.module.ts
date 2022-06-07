@@ -15,6 +15,7 @@ import { JobsProductsDaoService } from './dao/jobs-products-dao.service';
 import { JobsPreferencesController } from './jobs-preferences.controller';
 import { UsersModule } from '../users';
 import { JobFilesController } from './job-files/job-files.controller';
+import { JobFilesService } from './job-files/job-files.service';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { JobFilesController } from './job-files/job-files.controller';
   ],
   providers: [
     JobsService,
+    JobFilesService,
     jobsCollectionProvider,
     JobsDao,
     JobsInvoicesDao,
@@ -41,4 +43,4 @@ import { JobFilesController } from './job-files/job-files.controller';
   ],
   exports: [JobsService],
 })
-export class JobsModule {}
+export class JobsModule { }

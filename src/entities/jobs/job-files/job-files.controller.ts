@@ -20,29 +20,28 @@ import { User, Usr } from '../../../session';
 import { FtpFileCopyDto, UserFileMoveDto } from '../dto/file-move.dto';
 import { JobId } from '../job-id.decorator';
 import { JobNotifyInterceptor } from '../job-notify.interceptor';
-import { JobsService } from '../jobs.service';
+import { JobFilesService } from './job-files.service';
 
 @Controller('jobs/files')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class JobFilesController {
+
   constructor(
-    private readonly jobsService: JobsService,
     private readonly fileService: FilesystemService,
+    private readonly jobFilesService: JobFilesService,
   ) { }
 
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
   @Put('user/upload')
   async userUpload(@Req() req: Request, @Usr() user: User) {
-    const path = [user.username];
-    return this.fileService.uploadUserFiles(path, req);
+    return this.fileService.uploadUserFiles(user.username, req);
   }
 
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   @Delete('user/:filename')
   async userFileDelete(@Usr() user: User, @Param('filename') filename: string) {
-    const path = [user.username];
-    return this.fileService.removeUserFile(path, filename);
+    return this.fileService.removeUserFile(user.username, filename);
   }
 
   @UseInterceptors(JobNotifyInterceptor)
@@ -52,9 +51,9 @@ export class JobFilesController {
     @Body() commands: UserFileMoveDto,
     @Usr() user: User,
   ) {
-    return this.jobsService.moveFilesToJob(
+    return this.jobFilesService.moveUserFilesToJob(
       jobId,
-      [user.username],
+      user.username,
       commands.fileNames,
     );
   }
@@ -65,7 +64,7 @@ export class JobFilesController {
     @JobId() jobId: number,
     @Body() commands: FtpFileCopyDto,
   ) {
-    return this.jobsService.copyFilesToJob(jobId, commands.files);
+    return this.jobFilesService.copyFtpFilesToJob(jobId, commands.files);
   }
 
   @Get('read/ftp')
@@ -80,6 +79,6 @@ export class JobFilesController {
     @JobId() jobId: number,
     @Req() req: Request
   ) {
-    return this.jobsService.writeJobFile(jobId, req);
+    return this.jobFilesService.writeJobFiles(jobId, req);
   }
 }

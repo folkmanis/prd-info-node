@@ -1,17 +1,16 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Busboy from 'busboy';
 import { Request } from 'express';
-import { constants, createWriteStream } from 'fs';
-import { copyFile, mkdir, readdir, rename, rm, writeFile } from 'fs/promises';
 import path from 'path';
-import { FolderPathService } from './folder-path.service';
+import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions';
+import { FileLocation, JobPathComponents } from './entities/file-location';
+import { FileLocationTypes } from './entities/file-location-types';
+import { JobFile } from './entities/job-file';
+
 
 const HOMES_ROOT = 'UserFiles';
+
+type FileLocationResolver = Record<FileLocationTypes, (params?: any) => string[]>;
 
 interface DirReadResponse {
   folders: string[];
@@ -20,103 +19,71 @@ interface DirReadResponse {
 
 @Injectable()
 export class FilesystemService {
-  protected readonly rootPath = this.configService.get<string>('JOBS_INPUT')!;
-  protected readonly ftpPath = this.configService.get<string>('FTP_FOLDER')!;
+
+  private readonly fileLocationsResolvers: FileLocationResolver = {
+    [FileLocationTypes.FTP]: (ftpPath: string[] = []) => this.configService.get<string>('FTP_FOLDER')!.split(path.sep).concat(...ftpPath),
+    [FileLocationTypes.USER]: (username: string) => this.configService.get<string>('JOBS_INPUT')!.split(path.sep).concat(HOMES_ROOT, username),
+    [FileLocationTypes.NEWJOB]: jobPathFromComponents(this.configService.get<string>('JOBS_INPUT')!),
+    [FileLocationTypes.JOB]: (jobPath: string[]) => jobPath,
+  };
 
   constructor(
     private configService: ConfigService,
-    private folderPathService: FolderPathService,
-  ) {}
+  ) { }
 
-  async createFolder(folder: string[]) {
-    const fullPath = this.resolveFullPath(...folder);
-    await mkdir(fullPath, { recursive: true });
+  location<T extends FileLocationTypes>(type: T, params: Parameters<typeof this.fileLocationsResolvers[T]>[0]): FileLocation {
+    const pathFn = this.fileLocationsResolvers[type];
+    return new FileLocation(
+      pathFn(params)
+    );
   }
 
-  async uploadUserFiles(path: string[], req: Request) {
-    return this.writeFormFile([HOMES_ROOT, ...path], req);
+  async uploadUserFiles(username: string, req: Request): Promise<string[]> {
+    const loc = this.location(FileLocationTypes.USER, username);
+    return loc.writeFormFiles(req);
   }
 
-  async removeUserFile(path: string[], filename: string): Promise<number> {
-    try {
-      await rm(this.resolveFullPath(HOMES_ROOT, ...path, filename), {
-        recursive: true,
-      });
-      return 1;
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+  async removeUserFile(username: string, filename: string): Promise<number> {
+    const loc = this.location(FileLocationTypes.USER, username);
+    const file = new JobFile(loc, filename);
+    return file.remove();
   }
 
-  async writeFormFile(path: string[], req: Request): Promise<string[]> {
-    await this.createFolder(path);
-
-    const busboy = Busboy({ headers: req.headers });
-
-    const fileNames: string[] = [];
-
-    return new Promise((resolve) => {
-      busboy.on('file', (_, file, fileInfo) => {
-        const name = this.folderPathService.sanitizeFileName(fileInfo.filename);
-        fileNames.push(name);
-        const fullPath = this.resolveFullPath(...path, name);
-
-        file.pipe(createWriteStream(fullPath));
-      });
-
-      busboy.on('finish', () => {
-        resolve(fileNames);
-      });
-      req.pipe(busboy);
-    });
-  }
-
-  async moveUserFile(source: string[], dest: string[]) {
-    try {
-      await rename(
-        this.resolveFullPath(HOMES_ROOT, ...source),
-        this.resolveFullPath(this.rootPath, ...dest),
-      );
-    } catch (error) {
-      throw new NotFoundException(error);
-    }
-  }
-
-  async copyFtpFile(source: string[], dest: string[]) {
-    try {
-      await copyFile(
-        this.resolveFullPath(this.ftpPath, ...source),
-        this.resolveFullPath(this.rootPath, ...dest),
-        constants.COPYFILE_FICLONE,
-      );
-    } catch (error) {
-      throw new NotFoundException(error);
-    }
-  }
-
-  async writeBuffer(buff: Buffer, destination: string[]) {
-    writeFile(this.resolveFullPath(HOMES_ROOT, ...destination), buff);
-  }
-
-  async readJobDir(path: string[]): Promise<string[]> {
-    return readdir(this.resolveFullPath(this.rootPath, ...path));
+  async writeBufferToUser(buff: Buffer, username: string, fileName: string) {
+    const loc = this.location(FileLocationTypes.USER, username);
+    const file = new JobFile(loc, fileName);
+    return file.write(buff);
   }
 
   async readFtpDir(path: string[]): Promise<DirReadResponse> {
-    const entries = await readdir(this.resolveFullPath(this.ftpPath, ...path), {
-      withFileTypes: true,
-    });
+    const loc = this.location(FileLocationTypes.FTP, path);
+    const dirs = await loc.readDir();
     return {
-      files: entries
+      files: dirs
         .filter((entry) => entry.isFile())
         .map((entry) => entry.name),
-      folders: entries
+      folders: dirs
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name),
     };
   }
 
-  private resolveFullPath(...relativePath: string[]): string {
-    return path.resolve(this.rootPath, ...relativePath);
-  }
+
+}
+
+
+function jobPathFromComponents(jobsInput: string): (params: JobPathComponents) => string[] {
+
+  const base = jobsInput.split(path.sep);
+
+  return ({ receivedDate, custCode, jobId, name }) => [
+    ...base,
+    new Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(
+      receivedDate,
+    ),
+    toMonthNumberName(receivedDate),
+    `${custCode}-Input`,
+    `${jobId.toString()}-${sanitizeFileName(name)}`,
+  ];
+
 }

@@ -22,6 +22,7 @@ import { UpdateJobDto } from './dto/update-job.dto';
 import { JobId } from './job-id.decorator';
 import { JobNotifyInterceptor } from './job-notify.interceptor';
 import { JobsService } from './jobs.service';
+import { JobFilesService } from './job-files/job-files.service';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -32,11 +33,13 @@ export class JobsController {
     private readonly jobsService: JobsService,
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
+    private readonly jobFilesService: JobFilesService,
   ) { }
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId() jobId: number) {
-    return this.jobsService.addFolderPathToJob(jobId);
+    await this.jobFilesService.addFolderPathToJob(jobId);
+    return this.jobsService.getOne(jobId);
   }
 
   @Patch(':jobId')
