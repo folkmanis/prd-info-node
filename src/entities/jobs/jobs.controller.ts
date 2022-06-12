@@ -23,6 +23,7 @@ import { JobId } from './job-id.decorator';
 import { JobNotifyInterceptor } from './job-notify.interceptor';
 import { JobsService } from './jobs.service';
 import { JobFilesService } from './job-files/job-files.service';
+import { UpdateJobFilesLocationInterceptor } from './update-job-files-location.interceptor';
 
 @Controller('jobs')
 @Modules('jobs')

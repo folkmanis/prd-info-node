@@ -25,6 +25,7 @@ export class FilesystemService {
     [FileLocationTypes.USER]: (username: string) => this.configService.get<string>('JOBS_INPUT')!.split(path.sep).concat(HOMES_ROOT, username),
     [FileLocationTypes.NEWJOB]: jobPathFromComponents(this.configService.get<string>('JOBS_INPUT')!),
     [FileLocationTypes.JOB]: (jobPath: string[]) => jobPath,
+    [FileLocationTypes.DROPFOLDER]: (dropPath: string[]) => this.configService.get<string>('DROP_FOLDER')!.split(path.sep).concat(...dropPath),
   };
 
   constructor(

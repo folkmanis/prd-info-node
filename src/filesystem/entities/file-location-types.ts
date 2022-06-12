@@ -3,4 +3,5 @@ export enum FileLocationTypes {
     FTP,
     USER,
     NEWJOB,
+    DROPFOLDER,
 }

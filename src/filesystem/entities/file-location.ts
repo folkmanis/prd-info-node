@@ -1,8 +1,8 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { createWriteStream } from 'fs';
 import { Request } from 'express';
 import { Dirent } from 'fs';
-import { mkdir, readdir } from 'fs/promises';
+import { rename, mkdir, readdir, cp } from 'fs/promises';
 import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions';
 import Busboy from 'busboy';
@@ -43,6 +43,30 @@ export class FileLocation {
         return readdir(
             this.resolve(), { withFileTypes: true }
         );
+    }
+
+    async copy(dest: FileLocation): Promise<void> {
+
+        const src = this.resolve();
+        const dst = dest.resolve();
+
+        try {
+            return cp(src, dst, { recursive: true, preserveTimestamps: true });
+        } catch (error) {
+            throw new BadRequestException(`Failed to copy directory ${src} to ${dst}. Error: ${error}`);
+        }
+
+    }
+
+    async rename(dest: FileLocation) {
+        const src = this.resolve();
+        const dst = dest.resolve();
+
+        try {
+            return rename(src, dst);
+        } catch (error) {
+            throw new BadRequestException(`Failed to move directory ${src} to ${dst}. Error: ${error}`);
+        }
     }
 
     async writeFormFiles(req: Request): Promise<string[]> {

@@ -1,14 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
 import { JobFile, FileLocationTypes, FileLocation, FilesystemService } from '../../../filesystem';
 import { JobsService } from '../jobs.service';
 import { CustomersService } from '../../customers/customers.service';
 import { Request } from 'express';
-import { Job, Files } from '../entities/job.entity';
+import { Job } from '../entities/job.entity';
 import { last } from 'lodash';
 
 
 @Injectable()
 export class JobFilesService {
+
+    private readonly logger = new Logger(JobFilesService.name);
 
     constructor(
         private readonly filesystemService: FilesystemService,
@@ -24,14 +26,7 @@ export class JobFilesService {
             return loc.createFolder();
         }
 
-        const { code } = await this.customersService.getCustomerByName(
-            job.customer,
-        );
-
-        const loc = this.filesystemService.location(
-            FileLocationTypes.NEWJOB,
-            { ...job, custCode: code }
-        );
+        const loc = await this.jobLocationResolver(job);
 
         await loc.createFolder();
 
@@ -103,6 +98,53 @@ export class JobFilesService {
             },
         });
     }
+
+    async updateJobFolderPath(jobId: number): Promise<FileLocation> {
+
+        const job = await this.jobsService.getOne(jobId);
+
+        if (!job.files) return this.addFolderPathToJob(jobId);
+
+        const oldLoc = this.filesystemService.location(FileLocationTypes.JOB, job.files.path);
+        const newLoc = await this.jobLocationResolver(job);
+
+        if (oldLoc.resolve() === newLoc.resolve()) {
+            throw new BadRequestException(`Nothing to change!`);
+        }
+
+        try {
+            await oldLoc.rename(newLoc);
+        } catch (error) {
+            throw new BadRequestException(`Job ${jobId} folder rename unsussecful. "${oldLoc.resolve()}" -> "${newLoc.resolve()}"`);
+        }
+
+        this.logger.log(`Job ${jobId} folder renamed. "${oldLoc.resolve()}" -> "${newLoc.resolve()}"`);
+
+        await this.jobsService.updateJob({
+            jobId,
+            files: {
+                ...job.files,
+                path: newLoc.path,
+            }
+        });
+
+        return newLoc;
+
+    }
+
+    private async jobLocationResolver(job: Job): Promise<FileLocation> {
+
+        const { code: custCode } = await this.customersService.getCustomerByName(
+            job.customer
+        );
+
+        return this.filesystemService.location(
+            FileLocationTypes.NEWJOB,
+            { ...job, custCode }
+        );
+
+    }
+
 
 
 }

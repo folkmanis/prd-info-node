@@ -67,6 +67,15 @@ export class JobFilesController {
     return this.jobFilesService.copyFtpFilesToJob(jobId, commands.files);
   }
 
+  @Patch(':jobId/update-files-location')
+  @UseInterceptors(new ResponseWrapperInterceptor('path'))
+  async updateJobFolderLocation(
+    @JobId() jobId: number,
+  ): Promise<string[]> {
+    const { path } = await this.jobFilesService.updateJobFolderPath(jobId);
+    return path;
+  }
+
   @Get('read/ftp')
   async readFtpFolder(@Query('folder') folder: string) {
     const path = folder ? [folder] : [];
