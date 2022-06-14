@@ -7,8 +7,7 @@ import {
 
 @Injectable()
 export class ValidateObjectKeyPipe<T extends Record<string, any>>
-  implements PipeTransform
-{
+  implements PipeTransform {
   private keys: (keyof T)[];
 
   constructor(@Optional() ...keys: (keyof T)[]) {
@@ -21,7 +20,7 @@ export class ValidateObjectKeyPipe<T extends Record<string, any>>
   transform(value: keyof T) {
     if (typeof value !== 'string' || !this.keys.includes(value)) {
       throw new BadRequestException(
-        `${value} must be a string property of ${this.keys}`,
+        `${String(value)} must be a string property of ${this.keys}`,
       );
     }
 
