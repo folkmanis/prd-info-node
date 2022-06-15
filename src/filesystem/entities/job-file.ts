@@ -1,5 +1,4 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { createWriteStream } from 'fs';
 import { copyFile, rename, rm, writeFile } from 'fs/promises';
 import { sanitizeFileName } from '../../lib/filename-functions';
 import { FileLocation } from './file-location';
@@ -56,6 +55,7 @@ export class JobFile {
     }
 
     async write(data: Parameters<typeof writeFile>[1]) {
+        await this.location.createFolder();
         try {
             return writeFile(this.resolve(), data);
         } catch (error) {

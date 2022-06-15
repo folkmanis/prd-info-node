@@ -1,11 +1,10 @@
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { createWriteStream } from 'fs';
+import { BadRequestException } from '@nestjs/common';
+import Busboy from 'busboy';
 import { Request } from 'express';
-import { Dirent } from 'fs';
-import { rename, mkdir, readdir, cp } from 'fs/promises';
+import { createWriteStream, Dirent } from 'fs';
+import { cp, mkdir, readdir, rename } from 'fs/promises';
 import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions';
-import Busboy from 'busboy';
 
 
 export interface JobPathComponents {
@@ -33,10 +32,13 @@ export class FileLocation {
 
     resolve(filename?: string): string {
         const p = this.path.join(path.sep);
+
         if (!filename) {
             return p;
+        } else {
+            return p.concat(path.sep, sanitizeFileName(filename));
         }
-        return p.concat(path.sep, sanitizeFileName(filename));
+
     }
 
     async readDir(): Promise<Dirent[]> {
@@ -50,6 +52,8 @@ export class FileLocation {
         const src = this.resolve();
         const dst = dest.resolve();
 
+        await dest.createFolder();
+
         try {
             return cp(src, dst, { recursive: true, preserveTimestamps: true });
         } catch (error) {
@@ -61,6 +65,8 @@ export class FileLocation {
     async rename(dest: FileLocation) {
         const src = this.resolve();
         const dst = dest.resolve();
+
+        await dest.createFolder();
 
         try {
             return rename(src, dst);
