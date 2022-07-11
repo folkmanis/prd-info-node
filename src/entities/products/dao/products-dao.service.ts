@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { classToPlain, plainToClass } from 'class-transformer';
 import { isUndefined, pickBy } from 'lodash';
-import { Collection } from 'mongodb';
+import { Collection, ObjectId } from 'mongodb';
 import { CreateProductDto } from '../dto/create-product.dto';
 import { ProductFilter, ProductQuery } from '../dto/product-query.dto';
 import { UpdateProductDto } from '../dto/update-product.dto';
@@ -15,7 +15,7 @@ export class ProductsDaoService {
   constructor(
     @Inject(PRODUCTS_COLLECTION)
     private readonly collection: Collection<Product>,
-  ) {}
+  ) { }
 
   async insertOne(product: CreateProductDto): Promise<Product | null> {
     const { value } = await this.collection.findOneAndReplace(
@@ -27,19 +27,19 @@ export class ProductsDaoService {
   }
 
   async updateOne(
-    name: string,
+    _id: ObjectId,
     product: UpdateProductDto,
   ): Promise<Product | null> {
     const { value } = await this.collection.findOneAndUpdate(
-      { name },
+      { _id },
       { $set: product },
       { returnDocument: 'after' },
     );
     return value;
   }
 
-  async deleteOne(name: string): Promise<number | undefined> {
-    const { deletedCount } = await this.collection.deleteOne({ name });
+  async deleteOne(_id: ObjectId): Promise<number | undefined> {
+    const { deletedCount } = await this.collection.deleteOne({ _id });
     return deletedCount;
   }
 
@@ -65,8 +65,8 @@ export class ProductsDaoService {
       .toArray();
   }
 
-  async getOne(name: string): Promise<Product | null> {
-    return this.collection.findOne({ name });
+  async getOne(_id: ObjectId): Promise<Product | null> {
+    return this.collection.findOne({ _id });
   }
 
   async getCustomerProducts(customerName: string): Promise<CustomerProduct[]> {
