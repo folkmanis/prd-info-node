@@ -1,34 +1,24 @@
 import {
-  Controller,
-  Get,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Put,
-  ValidationPipe,
-  UsePipes,
-  Query,
-  UseInterceptors,
+  Body, Controller, Delete, Get, Param, Patch, Put, Query,
+  UseInterceptors, UsePipes, ValidationPipe
 } from '@nestjs/common';
+import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { ProductsService } from './products.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { ProductQuery } from './dto/product-query.dto';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
 import { Modules } from '../../login';
 import { ProductsDaoService } from './dao/products-dao.service';
+import { CreateProductDto } from './dto/create-product.dto';
+import { ProductQuery } from './dto/product-query.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { ObjectId } from 'mongodb';
 
 @Controller('products')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+
 export class ProductsController {
   constructor(
-    private readonly productsService: ProductsService,
     private readonly productsDao: ProductsDaoService,
   ) { }
 
