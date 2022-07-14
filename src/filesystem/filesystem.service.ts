@@ -6,26 +6,23 @@ import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions';
 import { FileLocation, JobPathComponents } from './entities/file-location';
 import { FileLocationTypes } from './entities/file-location-types';
 import { JobFile } from './entities/job-file';
+import { FileElement } from './entities/file-element';
 
 
 const HOMES_ROOT = 'UserFiles';
 
-type FileLocationResolver = Record<FileLocationTypes, (params?: any) => string[]>;
+type FileLocationResolver = Record<FileLocationTypes, (params?: any) => { root: string; path: string[]; }>;
 
-interface DirReadResponse {
-  folders: string[];
-  files: string[];
-}
 
 @Injectable()
 export class FilesystemService {
 
   private readonly fileLocationsResolvers: FileLocationResolver = {
-    [FileLocationTypes.FTP]: (ftpPath: string[] = []) => this.configService.get<string>('FTP_FOLDER')!.split(path.sep).concat(...ftpPath),
-    [FileLocationTypes.USER]: (username: string) => this.configService.get<string>('JOBS_INPUT')!.split(path.sep).concat(HOMES_ROOT, username),
+    [FileLocationTypes.FTP]: (ftpPath: string[] = []) => ({ root: this.configService.get<string>('FTP_FOLDER')!, path: ftpPath }),
+    [FileLocationTypes.USER]: (username: string) => ({ root: this.configService.get<string>('JOBS_INPUT')!, path: [HOMES_ROOT, username] }),
     [FileLocationTypes.NEWJOB]: jobPathFromComponents(this.configService.get<string>('JOBS_INPUT')!),
-    [FileLocationTypes.JOB]: (jobPath: string[]) => jobPath,
-    [FileLocationTypes.DROPFOLDER]: (dropPath: string[]) => this.configService.get<string>('DROP_FOLDER')!.split(path.sep).concat(...dropPath),
+    [FileLocationTypes.JOB]: (jobPath: string[]) => ({ root: this.configService.get<string>('JOBS_INPUT')!, path: jobPath }),
+    [FileLocationTypes.DROPFOLDER]: (dropPath: string[]) => ({ root: this.configService.get<string>('DROP_FOLDER')!, path: dropPath }),
   };
 
   constructor(
@@ -56,35 +53,27 @@ export class FilesystemService {
     return file.write(buff);
   }
 
-  async readFtpDir(path: string[]): Promise<DirReadResponse> {
+  async readFtpDir(path: string[]): Promise<FileElement[]> {
     const loc = this.location(FileLocationTypes.FTP, path);
-    const dirs = await loc.readDir();
-    return {
-      files: dirs
-        .filter((entry) => entry.isFile())
-        .map((entry) => entry.name),
-      folders: dirs
-        .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name),
-    };
+    return loc.readDir();
   }
 
 
 }
 
 
-function jobPathFromComponents(jobsInput: string): (params: JobPathComponents) => string[] {
+function jobPathFromComponents(jobsRoot: string): (params: JobPathComponents) => { root: string; path: string[]; } {
 
-  const base = jobsInput.split(path.sep);
-
-  return ({ receivedDate, custCode, jobId, name }) => [
-    ...base,
-    new Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(
-      receivedDate,
-    ),
-    toMonthNumberName(receivedDate),
-    `${custCode}-Input`,
-    `${jobId.toString()}-${sanitizeFileName(name)}`,
-  ];
+  return ({ receivedDate, custCode, jobId, name }) => ({
+    root: jobsRoot,
+    path: [
+      new Intl.DateTimeFormat('en-US', { year: 'numeric' }).format(
+        receivedDate,
+      ),
+      toMonthNumberName(receivedDate),
+      `${custCode}-Input`,
+      `${jobId.toString()}-${sanitizeFileName(name)}`,
+    ]
+  });
 
 }

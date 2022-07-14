@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { copyFile, rename, rm, writeFile } from 'fs/promises';
 import { sanitizeFileName } from '../../lib/filename-functions';
 import { FileLocation } from './file-location';
+import { FileElement } from './file-element';
 
 
 export class JobFile {
@@ -9,6 +10,14 @@ export class JobFile {
     location: FileLocation;
 
     name: string;
+
+    get fileElement(): FileElement {
+        return {
+            isFolder: false,
+            name: this.name,
+            parent: this.location.path,
+        };
+    }
 
     constructor(
         location: FileLocation,
