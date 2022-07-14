@@ -3,8 +3,10 @@ import Busboy from 'busboy';
 import { Request } from 'express';
 import { createWriteStream, Dirent } from 'fs';
 import { cp, mkdir, readdir, rename } from 'fs/promises';
+import { last } from 'lodash';
 import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions';
+import { FileElement, fromDirent } from './file-element';
 
 
 export interface JobPathComponents {
@@ -16,9 +18,24 @@ export interface JobPathComponents {
 
 export class FileLocation {
 
+    path: string[];
+
+    private rootPath: string[] = [];
+
+    get fileElement(): FileElement {
+        return {
+            isFolder: true,
+            name: last(this.path) || '..',
+            parent: this.path.slice(0, -1),
+        };
+    }
+
     constructor(
-        public path: string[]
-    ) { }
+        params: { root: string; path: string[]; }
+    ) {
+        this.rootPath = params.root.split(path.sep);
+        this.path = params.path;
+    }
 
     async createFolder(): Promise<FileLocation> {
         const p = this.resolve();
@@ -31,7 +48,7 @@ export class FileLocation {
     }
 
     resolve(filename?: string): string {
-        const p = this.path.join(path.sep);
+        const p = [...this.rootPath, ...this.path].join(path.sep);
 
         if (!filename) {
             return p;
@@ -41,10 +58,11 @@ export class FileLocation {
 
     }
 
-    async readDir(): Promise<Dirent[]> {
-        return readdir(
+    async readDir(): Promise<FileElement[]> {
+        const dirents = await readdir(
             this.resolve(), { withFileTypes: true }
         );
+        return dirents.map(fromDirent(this.path));
     }
 
     async copy(dest: FileLocation): Promise<void> {

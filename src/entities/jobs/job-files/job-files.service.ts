@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, Logger, BadRequestException } from '@nestjs/common';
-import { JobFile, FileLocationTypes, FileLocation, FilesystemService } from '../../../filesystem';
+import { JobFile, FileLocationTypes, FileLocation, FilesystemService, FileElement } from '../../../filesystem';
 import { JobsService } from '../jobs.service';
 import { CustomersService } from '../../customers/customers.service';
 import { Request } from 'express';
@@ -17,6 +17,11 @@ export class JobFilesService {
         private readonly jobsService: JobsService,
         private readonly customersService: CustomersService,
     ) { }
+
+    async readJobDir(jobId: number): Promise<FileElement[]> {
+        const loc = await this.addFolderPathToJob(jobId);
+        return loc.readDir();
+    }
 
     async addFolderPathToJob(jobId: number): Promise<FileLocation> {
 

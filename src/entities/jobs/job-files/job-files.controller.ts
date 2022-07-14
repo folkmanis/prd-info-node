@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   Param,
+  ParseArrayPipe,
   Patch,
   Put,
   Query,
@@ -13,7 +15,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { FilesystemService } from '../../../filesystem';
+import { FilesystemService, FileElement } from '../../../filesystem';
 import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
 import { Modules } from '../../../login';
 import { User, Usr } from '../../../session';
@@ -77,9 +79,18 @@ export class JobFilesController {
   }
 
   @Get('read/ftp')
-  async readFtpFolder(@Query('folder') folder: string) {
-    const path = folder ? [folder] : [];
+  async readFtpFolder(
+    @Query('folder', new DefaultValuePipe([]), ParseArrayPipe) folder: string[]
+  ) {
+    const path = folder || [];
     return this.fileService.readFtpDir(path);
+  }
+
+  @Get(':jobId')
+  async getJobFiles(
+    @JobId() jobId: number,
+  ): Promise<FileElement[]> {
+    return this.jobFilesService.readJobDir(jobId);
   }
 
   @UseInterceptors(JobNotifyInterceptor)
