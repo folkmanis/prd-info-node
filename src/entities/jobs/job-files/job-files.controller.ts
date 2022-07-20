@@ -15,7 +15,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { FilesystemService, FileElement } from '../../../filesystem';
+import { FilesystemService, FileElement, ValidPathPipe } from '../../../filesystem';
 import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
 import { Modules } from '../../../login';
 import { User, Usr } from '../../../session';
@@ -80,9 +80,8 @@ export class JobFilesController {
 
   @Get('read/ftp')
   async readFtpFolder(
-    @Query('folder', new DefaultValuePipe([]), ParseArrayPipe) folder: string[]
+    @Query('path', new DefaultValuePipe(''), ValidPathPipe) path: string[]
   ) {
-    const path = folder || [];
     return this.fileService.readFtpDir(path);
   }
 
