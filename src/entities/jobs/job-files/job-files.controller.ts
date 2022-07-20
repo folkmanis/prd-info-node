@@ -90,10 +90,9 @@ export class JobFilesController {
 
   @Get('read/job')
   async getJobFiles(
-    @Query('jobId', ParseIntPipe) jobId: number,
     @Query('path', ValidPathPipe) path: string[]
   ): Promise<FileElement[]> {
-    return this.jobFilesService.readJobDir(jobId, path);
+    return this.fileService.readLocation(FileLocationTypes.JOB, path);
   }
 
   @UseInterceptors(JobNotifyInterceptor)
