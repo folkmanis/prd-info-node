@@ -53,8 +53,11 @@ export class FilesystemService {
     return file.write(buff);
   }
 
-  async readFtpDir(path: string[]): Promise<FileElement[]> {
-    const loc = this.location(FileLocationTypes.FTP, path);
+  async readLocation<T extends FileLocationTypes>(
+    type: T,
+    params: Parameters<typeof this.fileLocationsResolvers[T]>[0]
+  ): Promise<FileElement[]> {
+    const loc = this.location(type, params);
     return loc.readDir();
   }
 

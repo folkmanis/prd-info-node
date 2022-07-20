@@ -1,21 +1,17 @@
 import {
   Body,
-  Controller,
-  DefaultValuePipe,
-  Delete,
+  Controller, Delete,
   Get,
-  Param,
-  ParseArrayPipe,
-  Patch,
+  Param, ParseIntPipe, Patch,
   Put,
   Query,
   Req,
   UseInterceptors,
   UsePipes,
-  ValidationPipe,
+  ValidationPipe
 } from '@nestjs/common';
 import { Request } from 'express';
-import { FilesystemService, FileElement, ValidPathPipe } from '../../../filesystem';
+import { FileElement, FileLocationTypes, FilesystemService, ValidPathPipe } from '../../../filesystem';
 import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
 import { Modules } from '../../../login';
 import { User, Usr } from '../../../session';
@@ -80,16 +76,24 @@ export class JobFilesController {
 
   @Get('read/ftp')
   async readFtpFolder(
-    @Query('path', new DefaultValuePipe(''), ValidPathPipe) path: string[]
+    @Query('path', ValidPathPipe) path: string[]
   ) {
-    return this.fileService.readFtpDir(path);
+    return this.fileService.readLocation(FileLocationTypes.FTP, path);
   }
 
-  @Get(':jobId')
+  @Get('read/drop-folder')
+  async readDropFolders(
+    @Query('path', ValidPathPipe) path: string[]
+  ) {
+    return this.fileService.readLocation(FileLocationTypes.DROPFOLDER, path);
+  }
+
+  @Get('read/job')
   async getJobFiles(
-    @JobId() jobId: number,
+    @Query('jobId', ParseIntPipe) jobId: number,
+    @Query('path', ValidPathPipe) path: string[]
   ): Promise<FileElement[]> {
-    return this.jobFilesService.readJobDir(jobId);
+    return this.jobFilesService.readJobDir(jobId, path);
   }
 
   @UseInterceptors(JobNotifyInterceptor)

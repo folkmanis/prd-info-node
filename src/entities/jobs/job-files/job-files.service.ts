@@ -18,9 +18,14 @@ export class JobFilesService {
         private readonly customersService: CustomersService,
     ) { }
 
-    async readJobDir(jobId: number): Promise<FileElement[]> {
-        const loc = await this.addFolderPathToJob(jobId);
-        return loc.readDir();
+    async readJobDir(jobId: number, path: string[]): Promise<FileElement[]> {
+        let job = await this.jobsService.getOne(jobId);
+        if (job.files?.path) {
+            const loc = this.filesystemService.location(FileLocationTypes.JOB, job.files.path.concat(path));
+            return loc.readDir();
+        } else {
+            return [];
+        }
     }
 
     async addFolderPathToJob(jobId: number): Promise<FileLocation> {
