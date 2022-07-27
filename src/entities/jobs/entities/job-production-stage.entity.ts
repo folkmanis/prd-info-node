@@ -48,4 +48,8 @@ export class JobProductionStage {
   @IsNumber()
   @IsOptional()
   productionStatus?: number;
+
+  @IsString({ each: true })
+  @IsOptional()
+  dropFolder?: string[];
 }

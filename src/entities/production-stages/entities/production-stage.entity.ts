@@ -1,6 +1,8 @@
 import { ObjectId } from 'mongodb';
 import { IsString, IsOptional, IsObject } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { DropFolder } from './drop-folder.entity';
+
 
 export class ProductionStage {
   @Type(() => ObjectId)
@@ -16,9 +18,10 @@ export class ProductionStage {
   description?: string;
 
   @Type(() => ObjectId)
-  @Transform(({ value }) => [...value].map((id) => new ObjectId(id)), {
-    toClassOnly: true,
-  })
+  @Transform(
+    ({ value }) => [...value].map((id) => new ObjectId(id)),
+    { toClassOnly: true, }
+  )
   @IsObject({ each: true })
   equipmentIds: ObjectId[];
 
@@ -27,4 +30,10 @@ export class ProductionStage {
   @IsObject()
   @IsOptional()
   defaultEquipmentId?: ObjectId;
+
+  @Type(() => DropFolder)
+  @IsOptional()
+  @IsObject({ each: true })
+  dropFolders: DropFolder[] = [];
+
 }
