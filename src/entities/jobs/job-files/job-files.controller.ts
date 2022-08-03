@@ -74,6 +74,17 @@ export class JobFilesController {
     return path;
   }
 
+  @Patch('copy/:src/:dst')
+  @UseInterceptors(new ResponseWrapperInterceptor('copied'))
+  async copyJobFilesToDropFolder(
+    @Param('src', ParseIntPipe) srcType: FileLocationTypes,
+    @Param('dst', ParseIntPipe) dstType: FileLocationTypes,
+    @Body('source-path', ValidPathPipe) srcPath: string[],
+    @Body('destination-path', ValidPathPipe) dstPath: string[],
+  ): Promise<number> {
+    return this.fileService.copy(srcType, dstType, srcPath, dstPath);
+  }
+
   @Get('read/ftp')
   async readFtpFolder(
     @Query('path', ValidPathPipe) path: string[]

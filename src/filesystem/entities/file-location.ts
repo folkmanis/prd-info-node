@@ -47,14 +47,10 @@ export class FileLocation {
         }
     }
 
-    resolve(filename?: string): string {
+    resolve(filename: string = ''): string {
         const p = [...this.rootPath, ...this.path].join(path.sep);
 
-        if (!filename) {
-            return p;
-        } else {
-            return p.concat(path.sep, sanitizeFileName(filename));
-        }
+        return p.concat(path.sep, sanitizeFileName(filename));
 
     }
 
@@ -68,9 +64,7 @@ export class FileLocation {
     async copy(dest: FileLocation): Promise<void> {
 
         const src = this.resolve();
-        const dst = dest.resolve();
-
-        await dest.createFolder();
+        const dst = path.join(dest.resolve(), last(this.path) || '');
 
         try {
             return cp(src, dst, { recursive: true, preserveTimestamps: true });

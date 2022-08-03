@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import path from 'path';
 import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions';
 import { FileLocation, JobPathComponents } from './entities/file-location';
 import { FileLocationTypes } from './entities/file-location-types';
@@ -59,6 +58,17 @@ export class FilesystemService {
   ): Promise<FileElement[]> {
     const loc = this.location(type, params);
     return loc.readDir();
+  }
+
+  async copy(
+    srcType: FileLocationTypes,
+    dstType: FileLocationTypes,
+    srcPath: string[],
+    dstPath: string[],
+  ) {
+    await this.location(srcType, srcPath)
+      .copy(this.location(dstType, dstPath));
+    return 1;
   }
 
 
