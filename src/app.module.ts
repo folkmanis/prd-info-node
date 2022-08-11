@@ -1,6 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import Joi from 'joi';
 import { DatabaseModule } from './database/database.module';
 import { EntitiesModule } from './entities/entities.module';
 import { FilesystemModule } from './filesystem/filesystem.module';
@@ -16,18 +15,8 @@ import { SessionModule } from './session/session.module';
 import { SessionMiddleware } from './session/session.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NullResponseInterceptor } from './lib/null-response.interceptor';
+import { dotEnvConfig } from './dot-env.config';
 
-const dotEnvConfig = Joi.object({
-  PORT: Joi.number().default(3000),
-  SESSION_EXPIRES: Joi.number().default(86400),
-  DB_SRV: Joi.string().required(),
-  DB_BASE: Joi.string().required(),
-  LOGFILE: Joi.string().default('./error.log'),
-  BODY_SIZE_LIMIT: Joi.string().default('5mb'),
-  DEBUG: Joi.boolean().truthy('1', 'Y').falsy('0', 'N'),
-  JOBS_INPUT: Joi.string().required(),
-  FTP_FOLDER: Joi.string().required(),
-});
 
 @Module({
   imports: [

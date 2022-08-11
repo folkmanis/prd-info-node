@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { createWriteStream, Dirent } from 'fs';
+import { createWriteStream, CopyOptions } from 'fs';
 import { cp, mkdir, readdir, rename } from 'fs/promises';
 import { last } from 'lodash';
 import path from 'path';
@@ -61,13 +61,19 @@ export class FileLocation {
         return dirents.map(fromDirent(this.path));
     }
 
-    async copy(dest: FileLocation): Promise<void> {
-
+    async copy(dest: FileLocation, options: CopyOptions = {}): Promise<void> {
+        options = {
+            preserveTimestamps: true,
+            recursive: true,
+            ...options,
+        };
         const src = this.resolve();
         const dst = path.join(dest.resolve(), last(this.path) || '');
 
+        console.log(src, dst, options);
+
         try {
-            return cp(src, dst, { recursive: true, preserveTimestamps: true });
+            return cp(src, dst, options);
         } catch (error) {
             throw new BadRequestException(`Failed to copy directory ${src} to ${dst}. Error: ${error}`);
         }

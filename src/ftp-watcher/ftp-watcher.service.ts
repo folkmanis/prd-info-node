@@ -1,11 +1,11 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import chokidar, { FSWatcher } from 'chokidar';
 import { MessagesService, JobMessage, FsOperations } from '../messages';
-import { NotificationsService } from '../notifications';
 
 @Injectable()
-export class FtpWatcherService {
+export class FtpWatcherService implements OnApplicationBootstrap {
+
   private readonly logger = new Logger('FtpWatcher');
 
   protected readonly ftpPath = this.configService.get<string>('FTP_FOLDER')!;
@@ -14,9 +14,10 @@ export class FtpWatcherService {
 
   constructor(
     private msgService: MessagesService,
-    private notifService: NotificationsService,
     private configService: ConfigService,
-  ) {
+  ) { }
+
+  onApplicationBootstrap() {
     this.start();
   }
 
@@ -55,8 +56,8 @@ export class FtpWatcherService {
 
   private callbackFn(operation: FsOperations) {
     const offset = this.ftpPath.length + 1;
-    return async (path: string) => {
-      await this.msgService.add(
+    return (path: string) => {
+      this.msgService.add(
         new JobMessage({
           action: 'ftpUpload',
           operation,

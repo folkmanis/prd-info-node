@@ -15,15 +15,7 @@ import { LoggerDaoService } from './logger-dao/logger-dao.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @Modules('admin')
 export class LoggingController {
-  constructor(private logDao: LoggerDaoService) {}
-
-  @Get('count')
-  @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
-  async getCount(@Query() query: LogQuery) {
-    throw new Error('General error');
-
-    return this.logDao.countDocuments(query.toFilter());
-  }
+  constructor(private logDao: LoggerDaoService) { }
 
   @Get('dates-groups')
   async getDatesGroups(@Query() query: LogQuery) {

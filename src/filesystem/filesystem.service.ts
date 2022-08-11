@@ -6,6 +6,7 @@ import { FileLocation, JobPathComponents } from './entities/file-location';
 import { FileLocationTypes } from './entities/file-location-types';
 import { JobFile } from './entities/job-file';
 import { FileElement } from './entities/file-element';
+import { createWriteStream, CopyOptions } from 'fs';
 
 
 const HOMES_ROOT = 'UserFiles';
@@ -65,9 +66,10 @@ export class FilesystemService {
     dstType: FileLocationTypes,
     srcPath: string[],
     dstPath: string[],
+    options: CopyOptions = {},
   ) {
     await this.location(srcType, srcPath)
-      .copy(this.location(dstType, dstPath));
+      .copy(this.location(dstType, dstPath), options);
     return 1;
   }
 
