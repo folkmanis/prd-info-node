@@ -195,17 +195,19 @@ export class MaintenanceService {
 
         const result = await this.jobsCollection.updateMany(
             filter,
-            {
-                $set: {
-                    'files.path': {
-                        $slice: [
-                            '$files.path',
-                            base.length,
-                            { $size: '$files.path' }
-                        ]
+            [
+                {
+                    $set: {
+                        'files.path': {
+                            $slice: [
+                                '$files.path',
+                                base.length,
+                                { $size: '$files.path' }
+                            ]
+                        }
                     }
                 }
-            }
+            ]
         );
         this.logger.log(`Updated ${result.modifiedCount} records`);
     }
