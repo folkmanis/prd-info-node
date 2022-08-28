@@ -65,8 +65,12 @@ export class ProductsDaoService {
       .toArray();
   }
 
-  async getOne(_id: ObjectId): Promise<Product | null> {
-    return this.collection.findOne({ _id });
+  async getOne(idOrName: ObjectId | string): Promise<Product | null> {
+    if (idOrName instanceof ObjectId) {
+      return this.collection.findOne({ _id: idOrName });
+    } else {
+      return this.collection.findOne({ name: idOrName });
+    }
   }
 
   async getCustomerProducts(customerName: string): Promise<CustomerProduct[]> {
