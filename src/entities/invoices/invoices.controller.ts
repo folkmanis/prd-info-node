@@ -31,7 +31,17 @@ export class InvoicesController {
     private readonly invoicesDao: InvoicesDao,
     private readonly jobsService: JobsService,
     private readonly invoicesService: InvoicesService,
-  ) {}
+  ) { }
+
+  @Put('report')
+  async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
+    const pdf = new InvoiceReport(invoice).open();
+    res.contentType('application/pdf');
+    pdf.pipe(res);
+    pdf.end();
+
+    return {}; // not null response for interceptor
+  }
 
   @Put('')
   async newInvoice(
@@ -76,16 +86,6 @@ export class InvoicesController {
     const data = await this.invoicesService.invoiceForReport(invoiceId);
     const pdf = new InvoiceReport(data).open();
 
-    res.contentType('application/pdf');
-    pdf.pipe(res);
-    pdf.end();
-
-    return {}; // not null response for interceptor
-  }
-
-  @Put('report')
-  async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
-    const pdf = new InvoiceReport(invoice).open();
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();

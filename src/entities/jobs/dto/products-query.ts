@@ -1,11 +1,8 @@
-import { deserializeArray, Transform } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import {
-  IsDate,
-  IsNumber,
+  IsDate, IsIn, IsNumber,
   IsOptional,
-  IsString,
-  IsIn,
-  ValidateNested,
+  IsString, ValidateNested
 } from 'class-validator';
 import { endOfDay, startOfDay } from 'date-fns';
 import { Filter } from 'mongodb';
@@ -40,7 +37,7 @@ export class ProductsQuery extends StartLimitFilter<Job> {
   @IsDate()
   toDate?: Date;
 
-  @Transform(({ value }) => deserializeArray(Number, `[${value}]`), {
+  @Transform(({ value }) => JSON.parse(`[${value}]`), {
     toClassOnly: true,
   })
   @IsOptional()
@@ -63,7 +60,7 @@ export class ProductsQuery extends StartLimitFilter<Job> {
       'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
     };
     if (this.fromDate || this.toDate) {
-      filter['jobStatus.timestamp'] = pickNotNull({
+      filter['receivedDate'] = pickNotNull({
         $gte: this.fromDate,
         $lte: this.toDate,
       });

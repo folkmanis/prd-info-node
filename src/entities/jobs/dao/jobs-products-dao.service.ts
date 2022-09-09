@@ -15,7 +15,7 @@ interface ProductsTotalsOptions {
 export class JobsProductsDaoService {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) {}
+  ) { }
 
   async getProductsTotals(
     { start, limit, filter }: FilterType<Job>,
@@ -90,6 +90,8 @@ export class JobsProductsDaoService {
     }
     pipeline.push({ $limit: limit });
 
+
     return this.collection.aggregate(pipeline).toArray();
+
   }
 }
