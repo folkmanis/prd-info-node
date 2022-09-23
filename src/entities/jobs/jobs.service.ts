@@ -6,6 +6,7 @@ import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { Production } from './entities/job-categories';
 import { Job } from './entities/job.entity';
+import { assertCondition } from '../../lib/assertions';
 
 @Injectable()
 export class JobsService {
@@ -24,13 +25,13 @@ export class JobsService {
 
   async getOne(jobId: number): Promise<Job> {
     const job = await this.jobsDao.getOne(jobId);
-    assert(job, `Job ${jobId} not found`);
+    assertCondition(job, `Job ${jobId} not found`);
     return job;
   }
 
   async updateJob(jobUpdate: UpdateJobDto): Promise<Job> {
     const job = await this.jobsDao.updateJob(jobUpdate);
-    assert(job, `Job update failed`);
+    assertCondition(job, `Job update failed`);
     return job;
   }
 
@@ -69,8 +70,3 @@ export class JobsService {
   }
 }
 
-function assert(condition: any, msg?: string): asserts condition {
-  if (!condition) {
-    throw new InternalServerErrorException(msg);
-  }
-}

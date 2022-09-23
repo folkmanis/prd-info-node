@@ -5,7 +5,8 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { pluck } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
+import { get } from 'lodash';
 
 @Injectable()
 export class PluckInterceptor implements NestInterceptor {
@@ -16,6 +17,6 @@ export class PluckInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle().pipe(pluck(...this.path));
+    return next.handle().pipe(map(data => get(data, this.path)));
   }
 }

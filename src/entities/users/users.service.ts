@@ -4,6 +4,7 @@ import { SessionsDaoService } from './dao/sessions-dao.service';
 import { LoginCredentials, UsersDaoService } from './dao/users-dao.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ModuleUserPreferences, User } from './entities/user.interface';
+import { assertUser } from '../../lib/assertions';
 
 @Injectable()
 export class UsersService {
@@ -68,8 +69,3 @@ export class UsersService {
   }
 }
 
-function assertUser(user: User | undefined | null, message = 'Invalid username'): asserts user is User {
-  if (!user) {
-    throw new NotFoundException(message);
-  }
-}
