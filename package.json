@@ -64,7 +64,7 @@
     "rxjs": "^7.5.2",
     "sanitize-filename": "^1.6.3",
     "ws": "^8.4.2",
-    "xlsx": "^0.17.5"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
