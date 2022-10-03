@@ -6,12 +6,14 @@ import { FilterType } from '../../../lib/start-limit-filter/filter-type.interfac
 import { MATERIALS_COLLECTION } from './materials-collection.provider';
 import { Collection, ObjectId } from 'mongodb';
 import { Inject } from '@nestjs/common';
+import { flatten } from 'flat';
+
 
 export class MaterialsDaoService implements EntityDao<Material> {
   constructor(
     @Inject(MATERIALS_COLLECTION)
     private readonly collection: Collection<Material>,
-  ) {}
+  ) { }
 
   async findAll({
     start,
@@ -55,7 +57,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
   ): Promise<Material | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id: id },
-      { $set: material },
+      { $set: flatten(material) },
       { returnDocument: 'after' },
     );
     return value;

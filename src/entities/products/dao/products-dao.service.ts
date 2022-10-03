@@ -9,6 +9,8 @@ import { CustomerProduct } from '../entities/customer-product.interface';
 import { Product } from '../entities/product.entity';
 import { ProductProductionStage } from '../entities/production-stage';
 import { PRODUCTS_COLLECTION } from './products-collection.provider';
+import { flatten } from 'flat';
+
 
 @Injectable()
 export class ProductsDaoService {
@@ -32,7 +34,7 @@ export class ProductsDaoService {
   ): Promise<Product | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
-      { $set: product },
+      { $set: flatten(product) },
       { returnDocument: 'after' },
     );
     return value;

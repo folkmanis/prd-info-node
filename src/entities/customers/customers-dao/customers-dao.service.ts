@@ -7,13 +7,14 @@ import { ListCustomer } from '../dto/list-customer.dto';
 import { UpdateCustomerDto } from '../dto/update-customer.dto';
 import { Customer } from '../entities/customer.entity';
 import { CUSTOMERS_COLLECTION } from './customers-provider';
+import { flatten } from 'flat';
 
 @Injectable()
 export class CustomersDaoService {
   constructor(
     @Inject(CUSTOMERS_COLLECTION)
     private readonly collection: Collection<Customer>,
-  ) {}
+  ) { }
 
   async getCustomers({
     start,
@@ -80,7 +81,7 @@ export class CustomersDaoService {
   ): Promise<Customer | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
-      { $set: customer },
+      { $set: flatten(customer) },
       { returnDocument: 'after' },
     );
     return value;

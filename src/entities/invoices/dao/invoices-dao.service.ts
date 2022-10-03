@@ -9,6 +9,8 @@ import {
   InvoicesFilter,
   INVOICE_SCHEMA,
 } from '../entities/invoice.entity';
+import { flatten } from 'flat';
+
 
 @Injectable()
 export class InvoicesDao {
@@ -175,7 +177,7 @@ export class InvoicesDao {
   ): Promise<Invoice | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { invoiceId },
-      { $set: update },
+      { $set: flatten(update) },
       { returnDocument: 'after' },
     );
     return value;
@@ -193,7 +195,7 @@ export class InvoicesDao {
           $jsonSchema: INVOICE_SCHEMA,
         },
       });
-    } catch (error) {}
+    } catch (error) { }
   }
 
   private createIndexes(): void {

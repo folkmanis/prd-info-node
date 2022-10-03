@@ -2,19 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { defaultsDeep } from 'lodash';
 import { AnyBulkWriteOperation, Collection } from 'mongodb';
 import { DatabaseService } from '../../database/database.service';
-import { flattenObject } from '../../lib/flatten-object';
 import { SystemModules } from '../interfaces/system-modules.interface';
 import {
   SystemPreferenceModule,
   SystemPreference,
 } from '../interfaces/system-preferences.interface';
 import { DEFAULT_PREFERENCES } from './default-preferences';
+import { flatten } from 'flat';
+
 
 interface BulkUpdateOne {
   updateOne: {
-    filter: { [key: string]: any };
+    filter: { [key: string]: any; };
     update: {
-      $set: { [key: string]: any };
+      $set: { [key: string]: any; };
     };
     upsert?: boolean;
   };
@@ -52,7 +53,7 @@ export class PreferencesDao {
     const update: BulkUpdateOne[] = pref.map((pr) => ({
       updateOne: {
         filter: { module: pr.module },
-        update: { $set: flattenObject({ settings: pr.settings }, 1) },
+        update: { $set: flatten({ settings: pr.settings }, { maxDepth: 1 }) },
       },
     }));
 

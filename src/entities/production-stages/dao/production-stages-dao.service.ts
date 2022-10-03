@@ -6,13 +6,15 @@ import { CreateProductionStageDto } from '../dto/create-production-stage.dto';
 import { UpdateProductionStageDto } from '../dto/update-production-stage.dto';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
 import { PRODUCTION_STAGES_COLLECTION } from './production-stages.provider';
+import { flatten } from 'flat';
+
 
 @Injectable()
 export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   constructor(
     @Inject(PRODUCTION_STAGES_COLLECTION)
     private readonly collection: Collection<ProductionStage>,
-  ) {}
+  ) { }
 
   async findAll({
     limit,
@@ -56,7 +58,7 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   ): Promise<ProductionStage | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id: id },
-      { $set: update },
+      { $set: flatten(update) },
       { returnDocument: 'after' },
     );
     return value;
