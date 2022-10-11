@@ -13,6 +13,7 @@ import {
   ValidationPipe,
   UseGuards,
   UseFilters,
+  Patch,
 } from '@nestjs/common';
 import { User } from '../../entities/users';
 import { FilesystemService } from '../../filesystem';
@@ -21,7 +22,7 @@ import { PluckInterceptor } from '../../lib/pluck.interceptor';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
 import { Usr } from '../../session';
-import { AttachmentSaveDto, ThreadQuery, ThreadsQuery } from './dto';
+import { AttachmentSaveDto, ThreadQuery, ThreadsQuery, MessageModifyDto } from './dto';
 import { MessageData } from './entities';
 import { ThreadData } from './entities/thread';
 import { Gmail } from './gmail.decorator';
@@ -64,6 +65,19 @@ export class GmailController {
     );
 
     return [body.attachment.filename];
+  }
+
+  @Patch('message/:id')
+  modifyMessage(
+    @Gmail() gmail: gmail_v1.Gmail,
+    @Param('id') id: string,
+    @Body() changes: MessageModifyDto,
+  ) {
+  return  gmail.users.messages.modify({
+      userId: 'me',
+      id,
+      requestBody: changes,
+    });
   }
 
   @Get('message/:id')
