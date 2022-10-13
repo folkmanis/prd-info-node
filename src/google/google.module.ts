@@ -23,7 +23,7 @@ const googleConfig: ConfigFactory = async () => {
       oAuthLocation,
       oAuthRedirect,
       scopes: [
-        'email',
+        'https://mail.google.com/',
         'profile',
       ],
       web: oAuth2.web,

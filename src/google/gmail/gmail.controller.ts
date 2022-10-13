@@ -68,6 +68,11 @@ export class GmailController {
   }
 
   @Patch('message/:id')
+  @UseInterceptors(
+    new PluckInterceptor('data'),
+    ClassSerializerInterceptor,
+    new PlainToClassInterceptor(MessageData),
+  )
   modifyMessage(
     @Gmail() gmail: gmail_v1.Gmail,
     @Param('id') id: string,
