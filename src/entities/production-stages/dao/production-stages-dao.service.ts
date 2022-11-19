@@ -58,7 +58,7 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   ): Promise<ProductionStage | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id: id },
-      { $set: flatten(update) },
+      { $set: flatten(update, { safe: true }) },
       { returnDocument: 'after' },
     );
     return value;

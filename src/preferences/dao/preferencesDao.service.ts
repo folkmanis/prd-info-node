@@ -53,7 +53,7 @@ export class PreferencesDao {
     const update: BulkUpdateOne[] = pref.map((pr) => ({
       updateOne: {
         filter: { module: pr.module },
-        update: { $set: flatten({ settings: pr.settings }, { maxDepth: 1 }) },
+        update: { $set: flatten({ settings: pr.settings }, { maxDepth: 1, safe: true }) },
       },
     }));
 

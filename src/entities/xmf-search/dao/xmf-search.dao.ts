@@ -127,7 +127,7 @@ export class XmfSearchDao {
           JobID: job.JobID,
           JDFJobID: job.JDFJobID,
         },
-        update: { $set: flatten<ArchiveJob, MatchKeysAndValues<ArchiveJob>>(job) },
+        update: { $set: flatten<ArchiveJob, MatchKeysAndValues<ArchiveJob>>(job, { safe: true }) },
         upsert: true,
       },
     }));

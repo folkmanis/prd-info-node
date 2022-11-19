@@ -81,7 +81,7 @@ export class CustomersDaoService {
   ): Promise<Customer | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
-      { $set: flatten(customer) },
+      { $set: flatten(customer, { safe: true }) },
       { returnDocument: 'after' },
     );
     return value;

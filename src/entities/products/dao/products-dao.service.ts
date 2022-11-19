@@ -34,7 +34,7 @@ export class ProductsDaoService {
   ): Promise<Product | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id },
-      { $set: flatten(product) },
+      { $set: flatten(product, { safe: true }) },
       { returnDocument: 'after' },
     );
     return value;

@@ -177,7 +177,7 @@ export class InvoicesDao {
   ): Promise<Invoice | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { invoiceId },
-      { $set: flatten(update) },
+      { $set: flatten(update, { safe: true }) },
       { returnDocument: 'after' },
     );
     return value;

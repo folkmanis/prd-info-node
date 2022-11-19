@@ -57,7 +57,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
   ): Promise<Material | null> {
     const { value } = await this.collection.findOneAndUpdate(
       { _id: id },
-      { $set: flatten(material) },
+      { $set: flatten(material, { safe: true }) },
       { returnDocument: 'after' },
     );
     return value;
