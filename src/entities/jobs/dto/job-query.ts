@@ -5,7 +5,7 @@ import {
   IsIn,
   IsNumber,
   IsOptional,
-  IsString,
+  IsString, IsArray
 } from 'class-validator';
 import { pickNotNull } from '../../../lib/pick-not-null';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
@@ -37,23 +37,28 @@ export class JobQuery extends StartLimitFilter<Job> {
   @IsBoolean()
   unwindProducts?: boolean;
 
-  @Transform(({ value }) => deserializeArray(Number, `[${value}]`), {
+  @Transform(({ value }) => JSON.parse(`[${value}]`), {
     toClassOnly: true,
   })
   @IsOptional()
+  @IsArray()
   @IsNumber(undefined, { each: true })
   jobStatus?: number[];
 
-  @Transform(({ value }) => deserializeArray(Number, `[${value}]`), {
+  @Transform(({ value }) => JSON.parse(`[${value}]`), {
     toClassOnly: true,
   })
   @IsOptional()
+  @IsArray()
   @IsNumber(undefined, { each: true })
   jobsId: number[];
 
   @IsOptional()
   @IsIn(JOB_CATEGORIES)
   category?: JobCategories;
+
+  @IsOptional()
+  productsName?: string[];
 
   toFilter(): FilterType<Job> {
     const { start, limit } = this;
@@ -76,6 +81,8 @@ export class JobQuery extends StartLimitFilter<Job> {
         'jobStatus.generalStatus': this.jobStatus && { $in: this.jobStatus },
 
         'production.category': this.category,
+
+        'products.name': this.productsName,
       }),
     };
   }
