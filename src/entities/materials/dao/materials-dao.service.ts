@@ -27,6 +27,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
           description: 1,
           category: 1,
           inactive: 1,
+          units: 1,
         },
         sort: {
           category: 1,
