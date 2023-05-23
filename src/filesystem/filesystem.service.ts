@@ -29,7 +29,7 @@ export class FilesystemService {
     private configService: ConfigService,
   ) { }
 
-  location<T extends FileLocationTypes>(type: T, params: Parameters<typeof this.fileLocationsResolvers[T]>[0]): FileLocation {
+  location<T extends FileLocationTypes>(type: T, params: Parameters<FileLocationResolver[T]>[0]): FileLocation {
     const pathFn = this.fileLocationsResolvers[type];
     return new FileLocation(
       pathFn(params)
@@ -55,7 +55,7 @@ export class FilesystemService {
 
   async readLocation<T extends FileLocationTypes>(
     type: T,
-    params: Parameters<typeof this.fileLocationsResolvers[T]>[0]
+    params: Parameters<FileLocationResolver[T]>[0]
   ): Promise<FileElement[]> {
     const loc = this.location(type, params);
     return loc.readDir();
