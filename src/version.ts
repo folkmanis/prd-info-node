@@ -4,6 +4,6 @@ export interface Version {
 }
 
 export const VERSION: Version = {
-  apiBuild: 364,
-  appBuild: 364,
+  apiBuild: 365,
+  appBuild: 365,
 };
