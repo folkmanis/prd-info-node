@@ -66,6 +66,10 @@ export class UsersDaoService {
         writeConcern: { w: 'majority' },
         returnDocument: 'after',
         upsert: true,
+        projection: {
+          _id: 0,
+          password: 0,
+        },
       },
     );
     return value;
@@ -81,6 +85,10 @@ export class UsersDaoService {
       {
         writeConcern: { w: 'majority' },
         returnDocument: 'after',
+        projection: {
+          _id: 0,
+          password: 0,
+        },
       },
     );
     return value;
