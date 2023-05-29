@@ -43,7 +43,8 @@ export class User {
   preferences: UserPreferences;
 
   @IsArray()
-  userPreferences: ModuleUserPreferences[];
+  @IsOptional()
+  userPreferences?: ModuleUserPreferences[];
 
   @IsString()
   @IsOptional()
