@@ -66,12 +66,10 @@ export class InvoicesController {
   }
 
   @Delete(':id')
-  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
+  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount', { wrapZero: true }))
   async deleteInvoice(@Param('id') invoiceId: string) {
-    const modifiedCount = await this.jobsService.unsetInvoices(invoiceId);
-    if (modifiedCount > 0) {
-      return this.invoicesDao.deleteInvoice(invoiceId);
-    }
+    await this.jobsService.unsetInvoices(invoiceId);
+    return this.invoicesDao.deleteInvoice(invoiceId);
   }
 
   @Get('totals')
