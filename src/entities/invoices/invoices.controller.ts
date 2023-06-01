@@ -9,6 +9,7 @@ import {
   Put,
   Query,
   Res,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { InvoiceForReport } from './entities/invoice-for-report.interface';
 import { InvoicesFilter } from './entities/invoice.entity';
 import { InvoiceReport } from './invoices-report/invoices-report.class';
 import { InvoicesService } from './invoices.service';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 
 @Controller('invoices')
 @Modules('jobs', 'calculations')
@@ -64,6 +66,7 @@ export class InvoicesController {
   }
 
   @Delete(':id')
+  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteInvoice(@Param('id') invoiceId: string) {
     const modifiedCount = await this.jobsService.unsetInvoices(invoiceId);
     if (modifiedCount > 0) {
