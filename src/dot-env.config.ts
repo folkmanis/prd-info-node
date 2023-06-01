@@ -5,7 +5,6 @@ export const dotEnvConfig = Joi.object({
     PORT: Joi.number().default(3000),
     SESSION_EXPIRES: Joi.number().default(86400),
     DB_SRV: Joi.string().required(),
-    DB_BASE: Joi.string().required(),
     LOGFILE: Joi.string().default('./error.log'),
     BODY_SIZE_LIMIT: Joi.string().default('5mb'),
     DEBUG: Joi.boolean().truthy('1', 'Y').falsy('0', 'N'),

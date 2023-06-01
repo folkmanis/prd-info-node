@@ -6,11 +6,10 @@ import { MongoClient, Db } from 'mongodb';
 export class DatabaseService {
   constructor(
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-    private config: ConfigService,
   ) { }
 
   db(): Db {
-    return this.connection.db(this.config.get('DB_BASE'));
+    return this.connection.db();
   }
 
   close(force = false) {
