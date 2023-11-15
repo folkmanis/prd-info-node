@@ -8,13 +8,12 @@ import { FilterType } from '../../../lib/start-limit-filter/filter-type.interfac
 import { PRODUCTION_STAGES_COLLECTION } from './production-stages.provider';
 import { flatten } from 'flat';
 
-
 @Injectable()
 export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   constructor(
     @Inject(PRODUCTION_STAGES_COLLECTION)
     private readonly collection: Collection<ProductionStage>,
-  ) { }
+  ) {}
 
   async findAll({
     limit,

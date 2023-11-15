@@ -3,7 +3,7 @@ import { Contains, IsBoolean } from 'class-validator';
 
 export const JOB_CATEGORIES = ['repro', 'perforated paper', 'print'] as const;
 
-export type JobCategories = typeof JOB_CATEGORIES[number];
+export type JobCategories = (typeof JOB_CATEGORIES)[number];
 
 export abstract class ProductionCategory {
   category: JobCategories;

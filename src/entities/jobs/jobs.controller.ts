@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  ParseIntPipe,
   Patch,
   Put,
   Query,
@@ -23,7 +22,6 @@ import { JobId } from './job-id.decorator';
 import { JobNotifyInterceptor } from './job-notify.interceptor';
 import { JobsService } from './jobs.service';
 import { JobFilesService } from './job-files/job-files.service';
-import { UpdateJobFilesLocationInterceptor } from './update-job-files-location.interceptor';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -35,7 +33,7 @@ export class JobsController {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly jobFilesService: JobFilesService,
-  ) { }
+  ) {}
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId() jobId: number) {
@@ -45,10 +43,7 @@ export class JobsController {
 
   @Patch(':jobId')
   @UseInterceptors(TouchProductInterceptor)
-  async updateOne(
-    @JobId() jobId: number,
-    @Body() jobUpdate: UpdateJobDto,
-  ) {
+  async updateOne(@JobId() jobId: number, @Body() jobUpdate: UpdateJobDto) {
     return this.jobsDao.updateJob({ ...jobUpdate, jobId });
   }
 

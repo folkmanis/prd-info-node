@@ -17,6 +17,6 @@ export class PluckInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    return next.handle().pipe(map(data => get(data, this.path)));
+    return next.handle().pipe(map((data) => get(data, this.path)));
   }
 }

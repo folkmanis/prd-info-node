@@ -36,7 +36,7 @@ export class UsersController {
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
     private usersService: UsersService,
-  ) { }
+  ) {}
 
   @Get('validate/:property')
   async getProperty(

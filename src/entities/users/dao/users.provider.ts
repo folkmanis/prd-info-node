@@ -25,7 +25,7 @@ async function createIndexes(collection: Collection) {
       {
         key: { 'google.id': 1 },
         name: 'googleId',
-      }
+      },
     ]);
   } catch (error) {
     console.error(error);

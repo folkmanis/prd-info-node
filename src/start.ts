@@ -4,7 +4,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
-import { NullResponseInterceptor } from './lib/null-response.interceptor';
 import { APP_LOGGER } from './logging/logger.factory';
 import { versionMiddleware } from './preferences';
 import { parseInstanceId } from './preferences/instance-id-parser';
@@ -29,6 +28,5 @@ async function bootstrap() {
 
   const port = app.get(ConfigService).get('PORT');
   await app.listen(port);
-
 }
 bootstrap();

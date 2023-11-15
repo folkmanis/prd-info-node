@@ -12,13 +12,8 @@ import { LoginService } from './login.service';
 import { GoogleController } from './google/google.controller';
 import { NotificationsModule } from '../notifications';
 
-
-
 @Module({
-  controllers: [
-    GoogleController,
-    LoginController,
-  ],
+  controllers: [GoogleController, LoginController],
   imports: [
     UsersModule,
     PassportModule,
@@ -39,4 +34,4 @@ import { NotificationsModule } from '../notifications';
     },
   ],
 })
-export class LoginModule { }
+export class LoginModule {}

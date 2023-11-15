@@ -13,7 +13,7 @@ export class CustomersDaoService {
   constructor(
     @Inject(CUSTOMERS_COLLECTION)
     private readonly collection: Collection<Customer>,
-  ) { }
+  ) {}
 
   async getCustomers({
     start,

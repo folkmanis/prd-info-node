@@ -1,12 +1,10 @@
 import {
-  UseInterceptors,
   Controller,
   Get,
   Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
 import { Modules } from '../login';
 import { LogQuery } from './interfaces/log-query.class';
 import { LoggerDaoService } from './logger-dao/logger-dao.service';
@@ -15,7 +13,7 @@ import { LoggerDaoService } from './logger-dao/logger-dao.service';
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @Modules('admin')
 export class LoggingController {
-  constructor(private logDao: LoggerDaoService) { }
+  constructor(private logDao: LoggerDaoService) {}
 
   @Get('dates-groups')
   async getDatesGroups(@Query() query: LogQuery) {

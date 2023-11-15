@@ -9,8 +9,6 @@ import {
   InvoicesFilter,
   INVOICE_SCHEMA,
 } from '../entities/invoice.entity';
-import { flatten } from 'flat';
-
 
 @Injectable()
 export class InvoicesDao {
@@ -195,7 +193,7 @@ export class InvoicesDao {
           $jsonSchema: INVOICE_SCHEMA,
         },
       });
-    } catch (error) { }
+    } catch (error) {}
   }
 
   private createIndexes(): void {

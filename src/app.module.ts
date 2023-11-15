@@ -17,7 +17,6 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NullResponseInterceptor } from './lib/null-response.interceptor';
 import { dotEnvConfig } from './dot-env.config';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -43,8 +42,8 @@ import { dotEnvConfig } from './dot-env.config';
     {
       provide: APP_INTERCEPTOR,
       useClass: NullResponseInterceptor,
-    }
-  ]
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

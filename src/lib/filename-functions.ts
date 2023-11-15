@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
 
-
 export function sanitizeFileName(name: string): string {
   if (typeof name !== 'string') {
     throw new BadRequestException(`Invalid filename ${name}`);
@@ -35,4 +34,3 @@ export function capitalize(s: string): string {
   }
   return s[0].toUpperCase() + s.slice(1);
 }
-

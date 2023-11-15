@@ -1,8 +1,6 @@
-import { Transform } from 'class-transformer';
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class MessageModifyDto {
-
   @IsString({ each: true })
   @IsOptional()
   addLabelIds?: string[];
@@ -10,5 +8,4 @@ export class MessageModifyDto {
   @IsString({ each: true })
   @IsOptional()
   removeLabelIds?: string[];
-
 }

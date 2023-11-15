@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { SystemModules } from '../../preferences';
 import { SessionsDaoService } from './dao/sessions-dao.service';
 import { LoginCredentials, UsersDaoService } from './dao/users-dao.service';
@@ -8,11 +8,10 @@ import { assertUser } from '../../lib/assertions';
 
 @Injectable()
 export class UsersService {
-
   constructor(
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
-  ) { }
+  ) {}
 
   async getOneByUsername(username: string): Promise<User> {
     const user = await this.usersDao.getOne({ username });
@@ -68,4 +67,3 @@ export class UsersService {
     return this.getModulePreferences(username, module);
   }
 }
-

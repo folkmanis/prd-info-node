@@ -8,116 +8,104 @@ import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions';
 import { FileElement, fromDirent } from './file-element';
 
-
 export interface JobPathComponents {
-    receivedDate: Date;
-    custCode: string;
-    jobId: number;
-    name: string;
+  receivedDate: Date;
+  custCode: string;
+  jobId: number;
+  name: string;
 }
 
 export class FileLocation {
+  path: string[];
 
-    path: string[];
+  private rootPath: string[] = [];
 
-    private rootPath: string[] = [];
+  get fileElement(): FileElement {
+    return {
+      isFolder: true,
+      name: last(this.path) || '..',
+      parent: this.path.slice(0, -1),
+    };
+  }
 
-    get fileElement(): FileElement {
-        return {
-            isFolder: true,
-            name: last(this.path) || '..',
-            parent: this.path.slice(0, -1),
-        };
+  constructor(params: { root: string; path: string[] }) {
+    this.rootPath = params.root.split(path.sep);
+    this.path = params.path;
+  }
+
+  async createFolder(): Promise<FileLocation> {
+    const p = this.resolve();
+    try {
+      await mkdir(p, { recursive: true });
+      return this;
+    } catch (error) {
+      throw new BadRequestException(`Failed to create folder ${p}`);
     }
+  }
 
-    constructor(
-        params: { root: string; path: string[]; }
-    ) {
-        this.rootPath = params.root.split(path.sep);
-        this.path = params.path;
+  resolve(filename = ''): string {
+    const p = [...this.rootPath, ...this.path].join(path.sep);
+
+    return p.concat(path.sep, sanitizeFileName(filename));
+  }
+
+  async readDir(): Promise<FileElement[]> {
+    const dirents = await readdir(this.resolve(), { withFileTypes: true });
+    return dirents.map(fromDirent(this.path));
+  }
+
+  async copy(dest: FileLocation, options: CopyOptions = {}): Promise<void> {
+    options = {
+      preserveTimestamps: true,
+      recursive: true,
+      ...options,
+    };
+    const src = this.resolve();
+    const dst = path.join(dest.resolve(), last(this.path) || '');
+
+    console.log(src, dst, options);
+
+    try {
+      return cp(src, dst, options);
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to copy directory ${src} to ${dst}. Error: ${error}`,
+      );
     }
+  }
 
-    async createFolder(): Promise<FileLocation> {
-        const p = this.resolve();
-        try {
-            await mkdir(p, { recursive: true });
-            return this;
-        } catch (error) {
-            throw new BadRequestException(`Failed to create folder ${p}`);
-        }
+  async rename(dest: FileLocation) {
+    const src = this.resolve();
+    const dst = dest.resolve();
+
+    await dest.createFolder();
+
+    try {
+      return rename(src, dst);
+    } catch (error) {
+      throw new BadRequestException(
+        `Failed to move directory ${src} to ${dst}. Error: ${error}`,
+      );
     }
+  }
 
-    resolve(filename: string = ''): string {
-        const p = [...this.rootPath, ...this.path].join(path.sep);
+  async writeFormFiles(req: Request): Promise<string[]> {
+    await this.createFolder();
 
-        return p.concat(path.sep, sanitizeFileName(filename));
+    const busboy = Busboy({ headers: req.headers });
 
-    }
+    const jobFiles: string[] = [];
 
-    async readDir(): Promise<FileElement[]> {
-        const dirents = await readdir(
-            this.resolve(), { withFileTypes: true }
-        );
-        return dirents.map(fromDirent(this.path));
-    }
+    return new Promise((resolve) => {
+      busboy.on('file', (_, file, fileInfo) => {
+        jobFiles.push(fileInfo.filename);
 
-    async copy(dest: FileLocation, options: CopyOptions = {}): Promise<void> {
-        options = {
-            preserveTimestamps: true,
-            recursive: true,
-            ...options,
-        };
-        const src = this.resolve();
-        const dst = path.join(dest.resolve(), last(this.path) || '');
+        file.pipe(createWriteStream(this.resolve(fileInfo.filename)));
+      });
 
-        console.log(src, dst, options);
+      busboy.on('finish', () => resolve(jobFiles));
 
-        try {
-            return cp(src, dst, options);
-        } catch (error) {
-            throw new BadRequestException(`Failed to copy directory ${src} to ${dst}. Error: ${error}`);
-        }
-
-    }
-
-    async rename(dest: FileLocation) {
-        const src = this.resolve();
-        const dst = dest.resolve();
-
-        await dest.createFolder();
-
-        try {
-            return rename(src, dst);
-        } catch (error) {
-            throw new BadRequestException(`Failed to move directory ${src} to ${dst}. Error: ${error}`);
-        }
-    }
-
-    async writeFormFiles(req: Request): Promise<string[]> {
-
-        await this.createFolder();
-
-        const busboy = Busboy({ headers: req.headers });
-
-        const jobFiles: string[] = [];
-
-        return new Promise((resolve) => {
-
-            busboy.on('file', (_, file, fileInfo) => {
-                jobFiles.push(fileInfo.filename);
-
-                file.pipe(createWriteStream(this.resolve(fileInfo.filename)));
-            });
-
-            busboy.on('finish', () => resolve(jobFiles));
-
-            req.pipe(busboy);
-
-        });
-    }
-
-
-
-
+      req.pipe(busboy);
+    });
+  }
 }
-

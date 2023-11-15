@@ -1,17 +1,25 @@
 import {
   Body,
-  Controller, Delete,
+  Controller,
+  Delete,
   Get,
-  Param, ParseIntPipe, Patch,
+  Param,
+  ParseIntPipe,
+  Patch,
   Put,
   Query,
   Req,
   UseInterceptors,
   UsePipes,
-  ValidationPipe
+  ValidationPipe,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { FileElement, FileLocationTypes, FilesystemService, ValidPathPipe } from '../../../filesystem';
+import {
+  FileElement,
+  FileLocationTypes,
+  FilesystemService,
+  ValidPathPipe,
+} from '../../../filesystem';
 import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
 import { Modules } from '../../../login';
 import { User, Usr } from '../../../session';
@@ -24,11 +32,10 @@ import { JobFilesService } from './job-files.service';
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class JobFilesController {
-
   constructor(
     private readonly fileService: FilesystemService,
     private readonly jobFilesService: JobFilesService,
-  ) { }
+  ) {}
 
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
   @Put('user/upload')
@@ -67,9 +74,7 @@ export class JobFilesController {
 
   @Patch(':jobId/update-files-location')
   @UseInterceptors(new ResponseWrapperInterceptor('path'))
-  async updateJobFolderLocation(
-    @JobId() jobId: number,
-  ): Promise<string[]> {
+  async updateJobFolderLocation(@JobId() jobId: number): Promise<string[]> {
     const { path } = await this.jobFilesService.updateJobFolderPath(jobId);
     return path;
   }
@@ -82,36 +87,31 @@ export class JobFilesController {
     @Body('source-path', ValidPathPipe) srcPath: string[],
     @Body('destination-path', ValidPathPipe) dstPath: string[],
   ): Promise<number> {
-    return this.fileService.copy(srcType, dstType, srcPath, dstPath, { preserveTimestamps: false });
+    return this.fileService.copy(srcType, dstType, srcPath, dstPath, {
+      preserveTimestamps: false,
+    });
   }
 
   @Get('read/ftp')
-  async readFtpFolder(
-    @Query('path', ValidPathPipe) path: string[]
-  ) {
+  async readFtpFolder(@Query('path', ValidPathPipe) path: string[]) {
     return this.fileService.readLocation(FileLocationTypes.FTP, path);
   }
 
   @Get('read/drop-folder')
-  async readDropFolders(
-    @Query('path', ValidPathPipe) path: string[]
-  ) {
+  async readDropFolders(@Query('path', ValidPathPipe) path: string[]) {
     return this.fileService.readLocation(FileLocationTypes.DROPFOLDER, path);
   }
 
   @Get('read/job')
   async getJobFiles(
-    @Query('path', ValidPathPipe) path: string[]
+    @Query('path', ValidPathPipe) path: string[],
   ): Promise<FileElement[]> {
     return this.fileService.readLocation(FileLocationTypes.JOB, path);
   }
 
   @UseInterceptors(JobNotifyInterceptor)
   @Put(':jobId/upload')
-  async uploadFile(
-    @JobId() jobId: number,
-    @Req() req: Request
-  ) {
+  async uploadFile(@JobId() jobId: number, @Req() req: Request) {
     return this.jobFilesService.writeJobFiles(jobId, req);
   }
 }

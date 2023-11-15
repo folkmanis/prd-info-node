@@ -22,14 +22,18 @@ import { PluckInterceptor } from '../../lib/pluck.interceptor';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { Modules } from '../../login';
 import { Usr } from '../../session';
-import { AttachmentSaveDto, ThreadQuery, ThreadsQuery, MessageModifyDto } from './dto';
+import {
+  AttachmentSaveDto,
+  ThreadQuery,
+  ThreadsQuery,
+  MessageModifyDto,
+} from './dto';
 import { MessageData } from './entities';
 import { ThreadData } from './entities/thread';
 import { Gmail } from './gmail.decorator';
 import { GoogleClientGuard } from '../oauth2/google-client.guard';
 import { GmailGuard } from './gmail.guard';
 import { InvalidGrantFilter } from '../invalid-grant.filter';
-
 
 const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 
@@ -39,7 +43,7 @@ const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @UseFilters(InvalidGrantFilter)
 export class GmailController {
-  constructor(private readonly fileSystem: FilesystemService) { }
+  constructor(private readonly fileSystem: FilesystemService) {}
 
   @Put('message/attachment')
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
@@ -61,7 +65,7 @@ export class GmailController {
     await this.fileSystem.writeBufferToUser(
       buff,
       user.username,
-      body.attachment.filename
+      body.attachment.filename,
     );
 
     return [body.attachment.filename];
@@ -78,7 +82,7 @@ export class GmailController {
     @Param('id') id: string,
     @Body() changes: MessageModifyDto,
   ) {
-  return  gmail.users.messages.modify({
+    return gmail.users.messages.modify({
       userId: 'me',
       id,
       requestBody: changes,

@@ -10,4 +10,4 @@ const SYSTEM_MODULES_KEYS = [
   'jobs-admin',
 ] as const;
 export const SYSTEM_MODULES: string[] = [...SYSTEM_MODULES_KEYS];
-export type SystemModules = typeof SYSTEM_MODULES_KEYS[number];
+export type SystemModules = (typeof SYSTEM_MODULES_KEYS)[number];

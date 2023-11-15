@@ -12,7 +12,7 @@ export class PreferencesService {
   constructor(
     private usersService: UsersService,
     private preferencesDao: PreferencesDao,
-  ) { }
+  ) {}
 
   async getUserPreferences(username: string): Promise<UserPreferences> {
     const { preferences } = await this.usersService.getOneByUsername(username);

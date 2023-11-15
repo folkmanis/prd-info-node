@@ -10,12 +10,11 @@ import {
 import { DEFAULT_PREFERENCES } from './default-preferences';
 import { flatten } from 'flat';
 
-
 interface BulkUpdateOne {
   updateOne: {
-    filter: { [key: string]: any; };
+    filter: { [key: string]: any };
     update: {
-      $set: { [key: string]: any; };
+      $set: { [key: string]: any };
     };
     upsert?: boolean;
   };
@@ -53,7 +52,9 @@ export class PreferencesDao {
     const update: BulkUpdateOne[] = pref.map((pr) => ({
       updateOne: {
         filter: { module: pr.module },
-        update: { $set: flatten({ settings: pr.settings }, { maxDepth: 1, safe: true }) },
+        update: {
+          $set: flatten({ settings: pr.settings }, { maxDepth: 1, safe: true }),
+        },
       },
     }));
 

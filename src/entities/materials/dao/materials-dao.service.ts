@@ -8,12 +8,11 @@ import { Collection, ObjectId } from 'mongodb';
 import { Inject } from '@nestjs/common';
 import { flatten } from 'flat';
 
-
 export class MaterialsDaoService implements EntityDao<Material> {
   constructor(
     @Inject(MATERIALS_COLLECTION)
     private readonly collection: Collection<Material>,
-  ) { }
+  ) {}
 
   async findAll({
     start,

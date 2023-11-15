@@ -13,7 +13,7 @@ export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
       this.logger.error(
         exception.message,
         exception.stack,
-        pick(req, ['ip', 'session', 'path', 'user',])
+        pick(req, ['ip', 'session', 'path', 'user']),
       );
     }
     super.catch(exception, host);

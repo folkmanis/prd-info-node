@@ -1,6 +1,15 @@
 import {
-  Body, Controller, Delete, Get, Param, Patch, Put, Query,
-  UseInterceptors, UsePipes, ValidationPipe
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Put,
+  Query,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
@@ -16,11 +25,8 @@ import { Product } from './entities/product.entity';
 @Controller('products')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
-
 export class ProductsController {
-  constructor(
-    private readonly productsDao: ProductsDaoService,
-  ) { }
+  constructor(private readonly productsDao: ProductsDaoService) {}
 
   @Get(':name/productionStages')
   async getProductionStages(@Param('name') name: string) {
@@ -71,5 +77,4 @@ export class ProductsController {
   async deleteProducts(@Param('id', ObjectIdPipe) name: ObjectId) {
     return this.productsDao.deleteOne(name);
   }
-
 }

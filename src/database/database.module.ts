@@ -23,4 +23,4 @@ const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   providers: [connectionFactory, DatabaseService],
   exports: ['MONGO_CLIENT', DatabaseService],
 })
-export class DatabaseModule { }
+export class DatabaseModule {}

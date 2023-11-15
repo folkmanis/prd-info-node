@@ -9,7 +9,7 @@ export class SessionMiddleware implements NestMiddleware {
   constructor(
     private config: ConfigService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) { }
+  ) {}
 
   use = session({
     secret: 'HGG50EtOT7',

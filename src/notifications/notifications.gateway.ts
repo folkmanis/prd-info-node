@@ -42,6 +42,7 @@ export class NotificationsGateway
           }
         }),
         switchMap(() =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.sessionService.validateSession(client.authorized!.sessionId),
         ),
         tap((isSession) => {

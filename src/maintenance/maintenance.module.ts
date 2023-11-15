@@ -7,21 +7,17 @@ import { MaintenanceService } from './maintenance.service';
 import { JobsModule } from '../entities/jobs/jobs.module';
 
 @Module({
-    providers: [
-        MaintenanceService
-    ],
-    imports: [
-        ConfigModule.forRoot({
-            isGlobal: true,
-            validationSchema: dotEnvConfig,
-            cache: true,
-        }),
-        DatabaseModule,
-        JobsModule,
-        LoggingModule,
-    ],
-    exports: [
-        MaintenanceService
-    ]
+  providers: [MaintenanceService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: dotEnvConfig,
+      cache: true,
+    }),
+    DatabaseModule,
+    JobsModule,
+    LoggingModule,
+  ],
+  exports: [MaintenanceService],
 })
-export class MaintenanceModule { }
+export class MaintenanceModule {}

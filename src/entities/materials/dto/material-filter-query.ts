@@ -10,7 +10,9 @@ export class MaterialFilterQuery extends StartLimitFilter<Material> {
   @IsOptional()
   name?: string;
 
-  @Transform(({ value }) => typeof value === 'string' ? value.split(',') : undefined)
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.split(',') : undefined,
+  )
   @IsOptional()
   @IsString({ each: true })
   categories?: string[];

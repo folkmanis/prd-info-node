@@ -1,5 +1,4 @@
 import { FactoryProvider } from '@nestjs/common';
-import { Collection, Db } from 'mongodb';
 import { DatabaseService } from '../../../database';
 
 const JOBS_COLLECTION_NAME = 'jobs';
@@ -17,6 +16,3 @@ export const jobsCollectionProvider: FactoryProvider = {
   },
   inject: [DatabaseService],
 };
-
-
-

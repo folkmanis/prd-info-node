@@ -16,12 +16,16 @@ export class LoggingService implements LoggerService {
   }
   debug(message: any, ...meta: [...any, string?]) {
     this.transports
-      .filter((transport) => transport.debug !== undefined)
-      .forEach((transport) => transport.debug!(message, ...meta));
+      .map((transport) => transport.debug)
+      .filter((debug) => !!debug)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      .forEach((debug) => debug!(message, ...meta));
   }
   verbose(message: any, ...meta: [...any, string?]) {
     this.transports
-      .filter((transport) => transport.verbose !== undefined)
-      .forEach((transport) => transport.verbose!(message, ...meta));
+      .map((transport) => transport.verbose)
+      .filter((verbose) => !!verbose)
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      .forEach((verbose) => verbose!(message, ...meta));
   }
 }

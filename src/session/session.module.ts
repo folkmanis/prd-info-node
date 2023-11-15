@@ -4,10 +4,8 @@ import { SessionTokenModule } from './session-token/session-token.module';
 import { SessionService } from './session.service';
 
 @Module({
-  imports: [
-    SessionTokenModule
-  ],
+  imports: [SessionTokenModule],
   providers: [sessionProvider, SessionDaoService, SessionService],
   exports: [SessionService],
 })
-export class SessionModule { }
+export class SessionModule {}

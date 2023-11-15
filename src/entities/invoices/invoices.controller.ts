@@ -33,7 +33,7 @@ export class InvoicesController {
     private readonly invoicesDao: InvoicesDao,
     private readonly jobsService: JobsService,
     private readonly invoicesService: InvoicesService,
-  ) { }
+  ) {}
 
   @Put('report')
   async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
@@ -66,7 +66,9 @@ export class InvoicesController {
   }
 
   @Delete(':id')
-  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount', { wrapZero: true }))
+  @UseInterceptors(
+    new ResponseWrapperInterceptor('deletedCount', { wrapZero: true }),
+  )
   async deleteInvoice(@Param('id') invoiceId: string) {
     await this.jobsService.unsetInvoices(invoiceId);
     return this.invoicesDao.deleteInvoice(invoiceId);

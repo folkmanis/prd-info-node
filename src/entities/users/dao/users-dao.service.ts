@@ -6,9 +6,9 @@ import { ModuleUserPreferences, User } from '../entities/user.interface';
 import { SessionsDaoService } from './sessions-dao.service';
 import { USERS } from './users.provider';
 
-
-export type LoginCredentials = Partial<Record<'username' | 'password' | 'googleId', string>>;
-
+export type LoginCredentials = Partial<
+  Record<'username' | 'password' | 'googleId', string>
+>;
 
 @Injectable()
 export class UsersDaoService {
@@ -16,7 +16,7 @@ export class UsersDaoService {
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) { }
+  ) {}
 
   async findAllUsers(): Promise<Partial<User>[]> {
     const projection = {
@@ -47,15 +47,12 @@ export class UsersDaoService {
   }
 
   async getOne(filter: Filter<User>): Promise<User | null> {
-    return this.collection.findOne(
-      filter,
-      {
-        projection: {
-          _id: 0,
-          password: 0,
-        },
+    return this.collection.findOne(filter, {
+      projection: {
+        _id: 0,
+        password: 0,
       },
-    );
+    });
   }
 
   async addOne(user: User): Promise<User | null> {
@@ -110,8 +107,11 @@ export class UsersDaoService {
     return deletedCount;
   }
 
-
-  async login({ username, password, googleId }: LoginCredentials): Promise<User | null> {
+  async login({
+    username,
+    password,
+    googleId,
+  }: LoginCredentials): Promise<User | null> {
     const filter: Filter<User> = {
       userDisabled: { $not: { $eq: true } },
     };
@@ -182,7 +182,7 @@ export class UsersDaoService {
   async updateModuleUserPreferences(
     username: string,
     module: SystemModules,
-    val: { [key: string]: any; },
+    val: { [key: string]: any },
   ): Promise<number> {
     const user = await this.collection.findOne({ username });
     if (!user) {

@@ -11,13 +11,12 @@ import { ProductProductionStage } from '../entities/production-stage';
 import { PRODUCTS_COLLECTION } from './products-collection.provider';
 import { flatten } from 'flat';
 
-
 @Injectable()
 export class ProductsDaoService {
   constructor(
     @Inject(PRODUCTS_COLLECTION)
     private readonly collection: Collection<Product>,
-  ) { }
+  ) {}
 
   async insertOne(product: CreateProductDto): Promise<Product | null> {
     const { value } = await this.collection.findOneAndReplace(

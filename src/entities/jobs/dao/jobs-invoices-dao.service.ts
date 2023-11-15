@@ -12,7 +12,7 @@ import { JOBS_COLLECTION } from './jobs-collection.provider';
 export class JobsInvoicesDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) { }
+  ) {}
 
   async setInvoice(jobIds: number[], invoiceId: string): Promise<number[]> {
     const filter: Filter<Job> = {

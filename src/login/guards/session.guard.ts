@@ -10,7 +10,7 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class SessionGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private reflector: Reflector) {}
 
   canActivate(
     context: ExecutionContext,

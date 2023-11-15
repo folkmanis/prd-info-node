@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UsersDaoService } from './dao/users-dao.service';
 import { UsersController } from './users.controller';
@@ -7,20 +7,9 @@ import { usersProvider } from './dao/users.provider';
 import { NotificationsModule } from '../../notifications/notifications.module';
 
 @Module({
-  imports: [
-    NotificationsModule,
-  ],
-  providers: [
-    usersProvider,
-    UsersService,
-    UsersDaoService,
-    SessionsDaoService
-  ],
-  exports: [
-    UsersService
-  ],
-  controllers: [
-    UsersController
-  ],
+  imports: [NotificationsModule],
+  providers: [usersProvider, UsersService, UsersDaoService, SessionsDaoService],
+  exports: [UsersService],
+  controllers: [UsersController],
 })
-export class UsersModule { }
+export class UsersModule {}

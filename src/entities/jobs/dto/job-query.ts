@@ -1,11 +1,12 @@
-import { deserializeArray, Transform, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDate,
   IsIn,
   IsNumber,
   IsOptional,
-  IsString, IsArray
+  IsString,
+  IsArray,
 } from 'class-validator';
 import { pickNotNull } from '../../../lib/pick-not-null';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';

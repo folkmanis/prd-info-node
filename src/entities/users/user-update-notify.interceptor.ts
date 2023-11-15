@@ -1,15 +1,26 @@
-import { Inject, forwardRef, CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import {
+  Inject,
+  forwardRef,
+  CallHandler,
+  ExecutionContext,
+  Injectable,
+  NestInterceptor,
+} from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { Request } from 'express';
-import { SystemNotification, Systemoperations, NotificationsService } from '../../notifications';
+import {
+  SystemNotification,
+  Systemoperations,
+  NotificationsService,
+} from '../../notifications';
 import { User } from './entities/user.interface';
 
 @Injectable()
 export class UserUpdateNotifyInterceptor implements NestInterceptor {
-
   constructor(
-    @Inject(forwardRef(() => NotificationsService)) private notificationsService: NotificationsService
-  ) { }
+    @Inject(forwardRef(() => NotificationsService))
+    private notificationsService: NotificationsService,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const { instanceId, method } = context
@@ -20,9 +31,7 @@ export class UserUpdateNotifyInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    return next.handle().pipe(
-      tap(user => this.notify(instanceId, user)),
-    );
+    return next.handle().pipe(tap((user) => this.notify(instanceId, user)));
   }
 
   private notify(instance: string, user: User) {
@@ -36,5 +45,4 @@ export class UserUpdateNotifyInterceptor implements NestInterceptor {
     n.instanceId = instance;
     this.notificationsService.notify(n);
   }
-
 }

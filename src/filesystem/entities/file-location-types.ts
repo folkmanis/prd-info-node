@@ -1,7 +1,7 @@
 export enum FileLocationTypes {
-    JOB,
-    FTP,
-    USER,
-    NEWJOB,
-    DROPFOLDER,
+  JOB,
+  FTP,
+  USER,
+  NEWJOB,
+  DROPFOLDER,
 }

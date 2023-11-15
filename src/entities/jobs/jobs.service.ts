@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
 import { JobsCounterService } from './dao/counters.service';
 import { JobsDao } from './dao/jobs-dao.service';
@@ -14,7 +14,7 @@ export class JobsService {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly counters: JobsCounterService,
-  ) { }
+  ) {}
 
   async getAll(
     filter: FilterType<Job>,
@@ -69,4 +69,3 @@ export class JobsService {
     return this.jobsDao.updateJobs(jobsUpdate);
   }
 }
-

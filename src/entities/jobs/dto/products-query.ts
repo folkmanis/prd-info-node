@@ -1,8 +1,11 @@
 import { Transform } from 'class-transformer';
 import {
-  IsDate, IsIn, IsNumber,
+  IsDate,
+  IsIn,
+  IsNumber,
   IsOptional,
-  IsString, ValidateNested
+  IsString,
+  ValidateNested,
 } from 'class-validator';
 import { endOfDay, startOfDay } from 'date-fns';
 import { Filter } from 'mongodb';
