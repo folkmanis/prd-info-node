@@ -106,3 +106,5 @@ public
 dist/
 
 upload.sh
+
+testfolders/
