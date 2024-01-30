@@ -161,24 +161,22 @@ export class InvoicesDao {
   }
 
   async insertOne(invoice: Invoice): Promise<Invoice | null> {
-    const { value } = await this.collection.findOneAndReplace(
+    return this.collection.findOneAndReplace(
       { invoiceId: invoice.invoiceId },
       invoice,
       { upsert: true, returnDocument: 'after' },
     );
-    return value;
   }
 
   async updateInvoice(
     invoiceId: string,
     update: InvoiceUpdate,
   ): Promise<Invoice | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { invoiceId },
       { $set: update },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async deleteInvoice(invoiceId: string): Promise<number | undefined> {

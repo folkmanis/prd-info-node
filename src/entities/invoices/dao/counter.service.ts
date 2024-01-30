@@ -16,7 +16,7 @@ export class InvoicesCounterService {
   }
 
   async getNextInvoiceId(nums = 1): Promise<string> {
-    const { value } = await this.collection.findOneAndUpdate(
+    const value = await this.collection.findOneAndUpdate(
       {
         counter: 'lastInvoiceId',
       },

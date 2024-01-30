@@ -123,7 +123,7 @@ export class KastesDaoService {
     kaste: number,
     value: boolean,
   ): Promise<VeikalsKaste | null | undefined> {
-    const { value: veikals } = await this.collection.findOneAndUpdate(
+    const veikals = await this.collection.findOneAndUpdate(
       { _id },
       {
         $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${value} }`),

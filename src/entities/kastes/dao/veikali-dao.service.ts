@@ -80,7 +80,7 @@ export class VeikaliDaoService {
     _id,
     ...update
   }: VeikalsUpdateDto): Promise<Veikals | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id },
       {
         $set: update,
@@ -88,7 +88,6 @@ export class VeikaliDaoService {
       },
       { returnDocument: 'after' },
     );
-    return value;
   }
 }
 

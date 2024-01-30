@@ -19,24 +19,21 @@ export class ProductsDaoService {
   ) {}
 
   async insertOne(product: CreateProductDto): Promise<Product | null> {
-    const { value } = await this.collection.findOneAndReplace(
-      { name: product.name },
-      product,
-      { upsert: true, returnDocument: 'after' },
-    );
-    return value;
+    return this.collection.findOneAndReplace({ name: product.name }, product, {
+      upsert: true,
+      returnDocument: 'after',
+    });
   }
 
   async updateOne(
     _id: ObjectId,
     product: UpdateProductDto,
   ): Promise<Product | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id },
       { $set: flatten(product, { safe: true }) },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async deleteOne(_id: ObjectId): Promise<number | undefined> {

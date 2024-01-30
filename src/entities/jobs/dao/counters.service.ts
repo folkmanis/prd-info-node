@@ -16,7 +16,7 @@ export class JobsCounterService {
   }
 
   async getNextJobId(nums = 1): Promise<number> {
-    const { value } = await this.collection.findOneAndUpdate(
+    const value = await this.collection.findOneAndUpdate(
       {
         counter: 'lastJobId',
       },

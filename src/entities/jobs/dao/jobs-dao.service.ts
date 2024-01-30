@@ -30,12 +30,10 @@ export class JobsDao {
   }
 
   async insertOne(job: Job): Promise<Job | null> {
-    const { value } = await this.collection.findOneAndReplace(
-      { jobId: job.jobId },
-      job,
-      { upsert: true, returnDocument: 'after' },
-    );
-    return value;
+    return this.collection.findOneAndReplace({ jobId: job.jobId }, job, {
+      upsert: true,
+      returnDocument: 'after',
+    });
   }
 
   async insertJobs(insertJobs: Job[]): Promise<string[]> {
@@ -44,7 +42,7 @@ export class JobsDao {
   }
 
   async updateJob({ jobId, ...job }: UpdateJobDto): Promise<Job | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       {
         jobId,
         invoiceId: { $exists: false },
@@ -52,7 +50,6 @@ export class JobsDao {
       { $set: job },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async updateJobs(jobsUpdate: UpdateJobDto[]): Promise<number> {

@@ -43,24 +43,22 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   async insertOne(
     productionStage: CreateProductionStageDto,
   ): Promise<ProductionStage | null> {
-    const { value } = await this.collection.findOneAndReplace(
+    return this.collection.findOneAndReplace(
       { name: productionStage.name },
       productionStage,
       { upsert: true, returnDocument: 'after' },
     );
-    return value;
   }
 
   async updateOne(
     id: ObjectId,
     update: UpdateProductionStageDto,
   ): Promise<ProductionStage | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id: id },
       { $set: flatten(update, { safe: true }) },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async deleteOneById(id: ObjectId): Promise<number> {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { classToPlain } from 'class-transformer';
+import { classToPlain, instanceToPlain } from 'class-transformer';
 import { Collection, ObjectId, WithoutId } from 'mongodb';
 import { DatabaseService } from '../../../database';
 import { EntityDao } from '../../entityDao.interface';
@@ -35,12 +35,11 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
   }
 
   async insertOne(equipment: CreateEquipmentDto): Promise<Equipment | null> {
-    const { value } = await this.collection.findOneAndReplace(
+    return this.collection.findOneAndReplace(
       { name: equipment.name },
-      classToPlain(equipment) as WithoutId<Equipment>,
+      instanceToPlain(equipment) as WithoutId<Equipment>,
       { upsert: true, returnDocument: 'after' },
     );
-    return value;
   }
 
   async getOneById(_id: ObjectId): Promise<Equipment | null> {
@@ -51,12 +50,11 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
     _id: ObjectId,
     update: UpdateEquipmentDto,
   ): Promise<Equipment | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id },
       { $set: classToPlain(update) },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async deleteOneById(_id: ObjectId): Promise<number> {

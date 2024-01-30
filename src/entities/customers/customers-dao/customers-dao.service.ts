@@ -56,12 +56,10 @@ export class CustomersDaoService {
 
   async insertOne(customer: CreateCustomerDto): Promise<Customer | null> {
     const { CustomerName } = customer;
-    const { value } = await this.collection.findOneAndReplace(
-      { CustomerName },
-      customer,
-      { returnDocument: 'after', upsert: true },
-    );
-    return value;
+    return this.collection.findOneAndReplace({ CustomerName }, customer, {
+      returnDocument: 'after',
+      upsert: true,
+    });
   }
 
   async insertMany(cust: Customer[]): Promise<number> {
@@ -78,12 +76,11 @@ export class CustomersDaoService {
     _id: ObjectId,
     customer: UpdateCustomerDto,
   ): Promise<Customer | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { _id },
       { $set: customer },
       { returnDocument: 'after' },
     );
-    return value;
   }
 
   async validate<K extends keyof Customer>(

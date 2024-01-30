@@ -56,7 +56,7 @@ export class UsersDaoService {
   }
 
   async addOne(user: User): Promise<User | null> {
-    const { value } = await this.collection.findOneAndReplace(
+    return this.collection.findOneAndReplace(
       { username: user.username },
       user,
       {
@@ -69,14 +69,13 @@ export class UsersDaoService {
         },
       },
     );
-    return value;
   }
 
   async updateOne({
     username,
     ...user
   }: Pick<User, 'username'> & Partial<User>): Promise<User | null> {
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       { username },
       { $set: user },
       {
@@ -88,7 +87,6 @@ export class UsersDaoService {
         },
       },
     );
-    return value;
   }
 
   async deleteUser(username: string): Promise<number | undefined> {
@@ -133,7 +131,7 @@ export class UsersDaoService {
       tokens: 0,
     };
 
-    const { value } = await this.collection.findOneAndUpdate(
+    return this.collection.findOneAndUpdate(
       filter,
       { $set: { last_login: new Date() } },
       {
@@ -141,7 +139,6 @@ export class UsersDaoService {
         returnDocument: 'after',
       },
     );
-    return value;
   }
 
   async getOneSessionUser(username: string) {
