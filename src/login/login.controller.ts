@@ -44,7 +44,7 @@ export class LoginController {
   async login(@Req() req: Request) {
     req.session.user = req.user as User;
     req.session.lastSeen = {
-      ip: req.ip,
+      ip: req.ip!,
       date: new Date(),
     };
     return req.session.user;
