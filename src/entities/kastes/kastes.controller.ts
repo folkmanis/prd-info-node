@@ -5,17 +5,22 @@ import {
   ParseBoolPipe,
   ParseIntPipe,
   Patch,
+  Post,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe';
 import { Modules } from '../../login';
 import { KastesDaoService } from './dao/kastes-dao.service';
 import { VeikalsKaste } from './dto/veikals-kaste.dto';
+import { KastesService } from './kastes.service';
 
 @Controller('kastes')
 @Modules('kastes')
 export class KastesController {
-  constructor(private readonly kastesDao: KastesDaoService) {}
+  constructor(
+    private readonly kastesDao: KastesDaoService,
+    private readonly kastesService: KastesService,
+  ) {}
 
   @Patch(':id/:kaste/gatavs/:action')
   async setGatavs(
@@ -56,5 +61,10 @@ export class KastesController {
     @Param('jobId', ParseIntPipe) jobId: number,
   ): Promise<VeikalsKaste[]> {
     return this.kastesDao.findAllKastes(jobId);
+  }
+
+  @Post(':jobId/firestore')
+  async firestoreUpload(@Param('jobId', ParseIntPipe) jobId: number) {
+    return this.kastesService.copyToFirestore(jobId);
   }
 }

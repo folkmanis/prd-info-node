@@ -10,7 +10,7 @@ export class KastesDaoService {
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
   ) {}
 
-  async findAllKastes(pasutijums: number): Promise<VeikalsKaste[]> {
+  findAllKastesCursor(pasutijums: number) {
     const kastesPipeline = [
       {
         $match: { pasutijums },
@@ -26,7 +26,11 @@ export class KastesDaoService {
         },
       },
     ];
-    return this.collection.aggregate<VeikalsKaste>(kastesPipeline).toArray();
+    return this.collection.aggregate<VeikalsKaste>(kastesPipeline);
+  }
+
+  findAllKastes(pasutijums: number): Promise<VeikalsKaste[]> {
+    return this.findAllKastesCursor(pasutijums).toArray();
   }
 
   async findOneByPasutijums(

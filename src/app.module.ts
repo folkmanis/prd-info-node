@@ -16,6 +16,7 @@ import { SessionMiddleware } from './session/session.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { NullResponseInterceptor } from './lib/null-response.interceptor';
 import { dotEnvConfig } from './dot-env.config';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { dotEnvConfig } from './dot-env.config';
     FilesystemModule,
     FtpWatcherModule,
     GoogleModule,
+    FirebaseModule.forRoot(),
   ],
   controllers: [],
   providers: [

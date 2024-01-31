@@ -10,6 +10,8 @@ import { KastesDaoService } from './dao/kastes-dao.service';
 import { KastesPreferencesController } from './kastes-preferences.controller';
 import { UsersModule } from '../users';
 import { KastesJobsController } from './kastes-jobs.controller';
+import { KastesService } from './kastes.service';
+import { FirebaseModule } from '../../firebase/firebase.module';
 
 @Module({
   controllers: [
@@ -24,7 +26,8 @@ import { KastesJobsController } from './kastes-jobs.controller';
     VeikaliDaoService,
     KastesDaoService,
     XlsParserService,
+    KastesService,
   ],
-  imports: [JobsModule, UsersModule],
+  imports: [JobsModule, UsersModule, FirebaseModule],
 })
 export class KastesModule {}
