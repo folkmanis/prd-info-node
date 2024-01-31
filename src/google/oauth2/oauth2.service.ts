@@ -5,7 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Credentials } from 'google-auth-library';
 import { Auth, google, oauth2_v2 } from 'googleapis';
 import { Binary } from 'mongodb';
-import { firstValueFrom, map } from 'rxjs';
+import { catchError, firstValueFrom, map, of } from 'rxjs';
 import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter';
 import { GoogleConfig } from '../google-config.interface';
 
@@ -85,7 +85,9 @@ export class Oauth2Service {
     return client;
   }
 
-  async getUserPicture(url: string): Promise<{ image: Binary; type?: string }> {
+  async getUserPicture(
+    url: string,
+  ): Promise<{ image: Binary; type?: string } | null> {
     const image$ = this.httpService
       .get<Buffer>(url, { responseEncoding: 'binary' })
       .pipe(
@@ -93,6 +95,7 @@ export class Oauth2Service {
           image: new Binary(resp.data),
           type: resp.headers['content-type'],
         })),
+        catchError(() => of(null)),
       );
 
     return firstValueFrom(image$);

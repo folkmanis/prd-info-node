@@ -93,11 +93,14 @@ export class GoogleController {
     if (tokens.refresh_token) {
       userUpdate.tokens = tokens;
     }
-    if (profile.picture) {
-      userUpdate.avatar = await this.oauth2Service.getUserPicture(
-        profile.picture,
-      );
+
+    const avatar =
+      profile.picture &&
+      (await this.oauth2Service.getUserPicture(profile.picture));
+    if (avatar) {
+      userUpdate.avatar = avatar;
     }
+
     const user = await this.usersService.updateUser(
       session.user.username,
       userUpdate,
