@@ -106,7 +106,7 @@ export class GmailController {
   @Get('thread/:id')
   @UseInterceptors(
     new PluckInterceptor('data'),
-    ClassSerializerInterceptor,
+    // ClassSerializerInterceptor,
     new PlainToClassInterceptor(ThreadData),
   )
   getMessageThread(
