@@ -42,6 +42,6 @@ import { JOBS_COLLECTION } from './dao/jobs-collection.provider';
     JobsCounterService,
     JobsProductsDaoService,
   ],
-  exports: [JOBS_COLLECTION, JobsService],
+  exports: [JOBS_COLLECTION, JobsService, JobsDao],
 })
 export class JobsModule {}
