@@ -1,5 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection, ObjectId } from 'mongodb';
+import {
+  AnyBulkWriteOperation,
+  Collection,
+  ObjectId,
+  UpdateOneModel,
+  WithId,
+} from 'mongodb';
 import { VEIKALI } from './veikali.injector';
 import { Veikals } from '../entities/veikals';
 import { VeikalsKaste } from '../dto/veikals-kaste.dto';
@@ -126,8 +132,8 @@ export class KastesDaoService {
     _id: ObjectId,
     kaste: number,
     value: boolean,
-  ): Promise<VeikalsKaste | null | undefined> {
-    const veikals = await this.collection.findOneAndUpdate(
+  ): Promise<WithId<Veikals> | null | undefined> {
+    return this.collection.findOneAndUpdate(
       { _id },
       {
         $set: JSON.parse(`{ "kastes.${kaste}.gatavs": ${value} }`),
@@ -137,6 +143,24 @@ export class KastesDaoService {
         returnDocument: 'after',
       },
     );
-    return veikals && this.findOneById(veikals._id, kaste);
+  }
+
+  async setGatavsBulkUpdate(
+    updates: { _id: ObjectId; kaste: number; value: boolean }[],
+  ) {
+    const bulkUpdates: AnyBulkWriteOperation<Veikals>[] = updates.map(
+      (update) => ({
+        updateOne: {
+          filter: { _id: update._id },
+          update: {
+            $set: JSON.parse(
+              `{ "kastes.${update.kaste}.gatavs": ${update.value} }`,
+            ),
+            $currentDate: { lastModified: true },
+          },
+        },
+      }),
+    );
+    return this.collection.bulkWrite(bulkUpdates);
   }
 }

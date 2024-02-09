@@ -28,7 +28,8 @@ export class KastesController {
     @Param('kaste', ParseIntPipe) kaste: number,
     @Param('action', ParseBoolPipe) action: boolean,
   ): Promise<VeikalsKaste | null | undefined> {
-    return this.kastesDao.setGatavs(id, kaste, action);
+    await this.kastesDao.setGatavs(id, kaste, action);
+    return this.kastesDao.findOneById(id, kaste);
   }
 
   @Patch(':pasutijums/:kods/label')
@@ -63,8 +64,13 @@ export class KastesController {
     return this.kastesDao.findAllKastes(jobId);
   }
 
-  @Post(':jobId/firestore')
+  @Post(':jobId/firestore/upload')
   async firestoreUpload(@Param('jobId', ParseIntPipe) jobId: number) {
     return this.kastesService.copyToFirestore(jobId);
+  }
+
+  @Post(':jobId/firestore/download')
+  async firestoreDownload(@Param('jobId', ParseIntPipe) jobId: number) {
+    return this.kastesService.copyFromFirestore(jobId);
   }
 }
