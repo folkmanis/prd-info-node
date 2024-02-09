@@ -77,7 +77,7 @@
     "@types/flat": "^5.0.2",
     "@types/jest": "^29.5.1",
     "@types/lodash": "^4.14.178",
-    "@types/node": "^18.16.6",
+    "@types/node": "^20.11.17",
     "@types/passport-local": "^1.0.34",
     "@types/pdfmake": "^0.1.21",
     "@types/ws": "^8.2.2",
