@@ -46,7 +46,7 @@ export class User {
 
   @IsString()
   @IsOptional()
-  eMail: string;
+  eMail?: string;
 
   @IsOptional()
   google?: oauth2_v2.Schema$Userinfo;

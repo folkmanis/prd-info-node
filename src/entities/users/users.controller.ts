@@ -11,6 +11,7 @@ import {
   UseInterceptors,
   ParseArrayPipe,
   Query,
+  Post,
 } from '@nestjs/common';
 import { Modules } from '../../login';
 import { SessionsDaoService } from './dao/sessions-dao.service';
@@ -23,6 +24,7 @@ import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
 import { UsersService } from './users.service';
 import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor';
+import { UsersFirestoreService } from './users-firestore.service';
 
 @Controller('users')
 @Modules('admin')
@@ -36,7 +38,8 @@ export class UsersController {
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
     private usersService: UsersService,
-  ) {}
+    private usersFirestore: UsersFirestoreService,
+  ) { }
 
   @Get('validate/:property')
   async getProperty(
@@ -59,6 +62,12 @@ export class UsersController {
   @Put()
   async addUser(@Body() user: User) {
     return this.usersDao.addOne(user);
+  }
+
+  @Post(':id/firestore/upload')
+  @UseInterceptors(new ResponseWrapperInterceptor('updatedCount'))
+  async copyToFirestore(@Param('id') username: string) {
+    return this.usersFirestore.copyToFirestore(username);
   }
 
   @Patch(':id/password')

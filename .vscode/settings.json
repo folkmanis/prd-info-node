@@ -1,3 +1,5 @@
 {
-    "editor.guides.bracketPairs": true
+    "editor.guides.bracketPairs": true,
+    "javascript.preferences.quoteStyle": "single",
+    "typescript.preferences.quoteStyle": "single"
 }
