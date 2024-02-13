@@ -67,7 +67,7 @@ export class UsersController {
   @Post(':id/firestore/upload')
   @UseInterceptors(new ResponseWrapperInterceptor('updatedCount'))
   async copyToFirestore(@Param('id') username: string) {
-    return this.usersFirestore.copyToFirestore(username);
+    return this.usersFirestore.setUser(username);
   }
 
   @Patch(':id/password')
@@ -97,7 +97,9 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteUser(@Param('id') username: string) {
+    await this.usersFirestore.deleteUser(username);
     return this.usersDao.deleteUser(username);
   }
 }

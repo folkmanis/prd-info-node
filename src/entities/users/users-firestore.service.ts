@@ -31,11 +31,11 @@ export class UsersFirestoreService {
   constructor(private usersDao: UsersDaoService) {
   }
 
-  async copyToFirestore(username: string): Promise<number | null | undefined> {
+  async setUser(username: string): Promise<number | null | undefined> {
     const user = await this.usersDao.getOne({ username });
     assertUser(user);
 
-    this.assertEmail(user.eMail);
+    this.assertEmailIsSet(user.eMail);
 
     const firebaseUser: FirebaseUser = {
       username,
@@ -49,7 +49,21 @@ export class UsersFirestoreService {
     return 1;
   }
 
-  private assertEmail(value: unknown): asserts value is string {
+  async deleteUser(username: string) {
+    const user = await this.usersDao.getOne({ username });
+    assertUser(user);
+
+    this.assertEmailIsSet(user.eMail);
+
+    const batch = this.firestore.batch();
+
+    batch.delete(this.usersCollection.doc(user.eMail));
+    batch.delete(this.permissionsCollection.doc(user.eMail));
+
+    return batch.commit();
+  }
+
+  private assertEmailIsSet(value: unknown): asserts value is string {
     if (typeof value !== 'string') {
       throw new InvalidFirebaseUserException();
     }
