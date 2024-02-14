@@ -72,7 +72,7 @@ export class JobQuery extends StartLimitFilter<Job> {
 
         customer: this.customer || undefined,
 
-        name: this.name && { $regex: this.name, $options: 'gi' },
+        name: this.name && { $regex: this.name, $options: 'i' },
 
         invoiceId:
           this.invoice !== undefined ? { $exists: !!this.invoice } : undefined,
