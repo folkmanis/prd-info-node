@@ -26,7 +26,7 @@ import { Product } from './entities/product.entity';
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProductsController {
-  constructor(private readonly productsDao: ProductsDaoService) {}
+  constructor(private readonly productsDao: ProductsDaoService) { }
 
   @Get(':name/productionStages')
   async getProductionStages(@Param('name') name: string) {
@@ -44,6 +44,11 @@ export class ProductsController {
     property: keyof Product,
   ) {
     return this.productsDao.validate(property);
+  }
+
+  @Get('name/:name')
+  async getOneByName(@Param('name') name: string) {
+    return this.productsDao.getOne(name);
   }
 
   @Get(':id')
