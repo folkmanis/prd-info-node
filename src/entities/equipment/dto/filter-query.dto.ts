@@ -14,7 +14,7 @@ export class EquipmentFilterQuery extends StartLimitFilter<Equipment> {
       start,
       limit,
       filter: pickNotNull({
-        name: this.name && new RegExp(this.name, 'gi'),
+        name: this.name && new RegExp(this.name, 'i'),
       }),
     };
   }

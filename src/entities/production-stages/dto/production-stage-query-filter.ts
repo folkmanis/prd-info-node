@@ -15,7 +15,7 @@ export class ProductionStageQueryFilter extends StartLimitFilter<ProductionStage
       limit,
       start,
       filter: pickNotNull({
-        name: this.name && { $regex: this.name, $options: 'gi' },
+        name: this.name && { $regex: this.name, $options: 'i' },
       }),
     };
   }

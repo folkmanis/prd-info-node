@@ -1,11 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { getFirestore } from 'firebase-admin/firestore';
 import { assertUser } from '../../lib/assertions';
-import { SystemModules, SYSTEM_MODULES_KEYS } from '../../preferences/interfaces/system-modules.interface';
+import {
+  SystemModules,
+  SYSTEM_MODULES_KEYS,
+} from '../../preferences/interfaces/system-modules.interface';
 import { UsersDaoService } from './dao/users-dao.service';
 import { FirebaseUser } from './entities/firebase-user.interface';
 import { User } from './entities/user.interface';
-
 
 export class InvalidFirebaseUserException extends HttpException {
   constructor() {
@@ -14,7 +16,7 @@ export class InvalidFirebaseUserException extends HttpException {
 }
 
 const USERS_COLLECTION = 'users';
-const PERMISSIONS_COLLECTION = "permissions";
+const PERMISSIONS_COLLECTION = 'permissions';
 
 @Injectable()
 export class UsersFirestoreService {
@@ -28,8 +30,8 @@ export class UsersFirestoreService {
     return this.firestore.collection(PERMISSIONS_COLLECTION);
   }
 
-  constructor(private usersDao: UsersDaoService) {
-  }
+  // eslint-disable-next-line prettier/prettier
+  constructor(private usersDao: UsersDaoService) { }
 
   async setUser(username: string): Promise<number | null | undefined> {
     const user = await this.usersDao.getOne({ username });
@@ -42,9 +44,13 @@ export class UsersFirestoreService {
       name: user.name,
     };
 
-    await this.usersCollection.doc(user.eMail).set(firebaseUser, { merge: true });
+    await this.usersCollection
+      .doc(user.eMail)
+      .set(firebaseUser, { merge: true });
 
-    await this.permissionsCollection.doc(user.eMail).set(this.userPermissions(user));
+    await this.permissionsCollection
+      .doc(user.eMail)
+      .set(this.userPermissions(user));
 
     return 1;
   }
@@ -71,8 +77,9 @@ export class UsersFirestoreService {
 
   private userPermissions(user: User): Record<SystemModules, boolean> {
     const modules = user.preferences.modules;
-    return SYSTEM_MODULES_KEYS
-      .reduce((acc, curr) => (acc[curr] = modules.includes(curr), acc), {} as Record<SystemModules, boolean>);
+    return SYSTEM_MODULES_KEYS.reduce(
+      (acc, curr) => ((acc[curr] = modules.includes(curr)), acc),
+      {} as Record<SystemModules, boolean>,
+    );
   }
-
 }
