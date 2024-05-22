@@ -10,17 +10,22 @@ import {
 import { InvoiceProduct } from '../entities/invoice.entity';
 
 export class InvoiceReport {
-  private pdf = new DocumentDefinition();
-  private printer = new Pdfmake({
-    Roboto: {
-      normal: join(__dirname, 'fonts/Roboto-Regular.ttf'),
-      bold: join(__dirname, 'fonts/Roboto-Bold.ttf'),
-      italics: join(__dirname, 'fonts/Roboto-Italics.ttf'),
-      bolditalics: join(__dirname, 'fonts/Roboto-MediumItalic.ttf'),
-    },
-  });
+  private pdf: DocumentDefinition;
+  private printer: Pdfmake;
 
-  constructor(private invoice: InvoiceForReport, private locale: Locale = lv) {
+  constructor(
+    private invoice: InvoiceForReport,
+    private locale: Locale = lv,
+  ) {
+    this.pdf = new DocumentDefinition();
+    this.printer = new Pdfmake({
+      Roboto: {
+        normal: join(__dirname, 'fonts/Roboto-Regular.ttf'),
+        bold: join(__dirname, 'fonts/Roboto-Bold.ttf'),
+        italics: join(__dirname, 'fonts/Roboto-Italics.ttf'),
+        bolditalics: join(__dirname, 'fonts/Roboto-MediumItalic.ttf'),
+      },
+    });
     this.pdf.pageSize('A4');
     this.pdf.pageMargins([30, 30, 30, 30]);
     this.pdf.info({ title: `Report ${invoice.invoiceId}` });
