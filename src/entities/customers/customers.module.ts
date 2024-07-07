@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { CustomersService } from './customers.service';
-import { CustomersController } from './customers.controller';
-import { CustomersDaoService } from './customers-dao/customers-dao.service';
-import { customersCollectionProvider } from './customers-dao/customers-provider';
-import { NotificationsModule } from '../../notifications';
-import { MessagesModule } from '../../messages';
+import { CustomersService } from './customers.service.js';
+import { CustomersController } from './customers.controller.js';
+import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
+import { customersCollectionProvider } from './customers-dao/customers-provider.js';
+import { NotificationsModule } from '../../notifications/index.js';
+import { MessagesModule } from '../../messages/index.js';
 
 @Module({
   imports: [NotificationsModule, MessagesModule],
@@ -16,4 +16,4 @@ import { MessagesModule } from '../../messages';
   ],
   exports: [CustomersService],
 })
-export class CustomersModule {}
+export class CustomersModule { }

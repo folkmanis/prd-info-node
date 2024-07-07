@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { PreferencesService } from './preferences.service';
-import { UsersModule } from '../entities/users';
-import { PreferencesDao } from './dao/preferencesDao.service';
-import { PreferencesController } from './preferences.controller';
+import { PreferencesService } from './preferences.service.js';
+import { UsersModule } from '../entities/users/index.js';
+import { PreferencesDao } from './dao/preferencesDao.service.js';
+import { PreferencesController } from './preferences.controller.js';
 
 @Module({
   imports: [UsersModule],
@@ -10,4 +10,4 @@ import { PreferencesController } from './preferences.controller';
   exports: [PreferencesService],
   controllers: [PreferencesController],
 })
-export class PreferencesModule {}
+export class PreferencesModule { }

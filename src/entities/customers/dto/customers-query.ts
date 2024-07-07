@@ -1,8 +1,8 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Filter } from 'mongodb';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { Customer } from '../entities/customer.entity';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { Customer } from '../entities/customer.entity.js';
 
 export class CustomersQuery extends StartLimitFilter<Customer> {
   @IsString()

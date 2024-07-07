@@ -1,4 +1,4 @@
-import { NotificationBase } from './notification-base';
+import { NotificationBase } from './notification-base.js';
 
 export class JobsNotification extends NotificationBase<'jobs'> {
   readonly module = 'jobs';

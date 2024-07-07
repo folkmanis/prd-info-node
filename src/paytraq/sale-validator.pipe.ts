@@ -1,5 +1,5 @@
 import { Injectable, PipeTransform, BadRequestException } from '@nestjs/common';
-import { SalesInputSchema } from './interfaces/sales-input.schema';
+import { SalesInputSchema } from './interfaces/sales-input.schema.js';
 
 @Injectable()
 export class SaleValidatorPipe implements PipeTransform {

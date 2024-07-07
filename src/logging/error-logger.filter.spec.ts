@@ -1,4 +1,4 @@
-import { ErrorLoggerFilter } from './error-logger.filter';
+import { ErrorLoggerFilter } from './error-logger.filter.js';
 
 describe('ErrorLoggerFilter', () => {
   it('should be defined', () => {

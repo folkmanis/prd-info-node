@@ -1,8 +1,8 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseService } from '../database/database.service';
-import { Job } from '../entities/jobs/entities/job.entity';
-import { JOBS_COLLECTION } from '../entities/jobs/dao/jobs-collection.provider';
+import { DatabaseService } from '../database/database.service.js';
+import { Job } from '../entities/jobs/entities/job.entity.js';
+import { JOBS_COLLECTION } from '../entities/jobs/dao/jobs-collection.provider.js';
 import { Collection } from 'mongodb';
 import path from 'path';
 
@@ -47,7 +47,7 @@ export class MaintenanceService {
     private dbService: DatabaseService,
     @Inject(JOBS_COLLECTION) private jobsCollection: Collection<Job>,
     private config: ConfigService,
-  ) {}
+  ) { }
 
   async performTasks() {
     await this.createCollection();

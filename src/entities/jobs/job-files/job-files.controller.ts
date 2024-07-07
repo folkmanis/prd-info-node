@@ -19,14 +19,14 @@ import {
   FileLocationTypes,
   FilesystemService,
   ValidPathPipe,
-} from '../../../filesystem';
-import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor';
-import { Modules } from '../../../login';
-import { User, Usr } from '../../../session';
-import { FtpFileCopyDto, UserFileMoveDto } from '../dto/file-move.dto';
-import { JobId } from '../job-id.decorator';
-import { JobNotifyInterceptor } from '../job-notify.interceptor';
-import { JobFilesService } from './job-files.service';
+} from '../../../filesystem/index.js';
+import { ResponseWrapperInterceptor } from '../../../lib/response-wrapper.interceptor.js';
+import { Modules } from '../../../login/index.js';
+import { User, Usr } from '../../../session/index.js';
+import { FtpFileCopyDto, UserFileMoveDto } from '../dto/file-move.dto.js';
+import { JobId } from '../job-id.decorator.js';
+import { JobNotifyInterceptor } from '../job-notify.interceptor.js';
+import { JobFilesService } from './job-files.service.js';
 
 @Controller('jobs/files')
 @Modules('jobs')
@@ -35,7 +35,7 @@ export class JobFilesController {
   constructor(
     private readonly fileService: FilesystemService,
     private readonly jobFilesService: JobFilesService,
-  ) {}
+  ) { }
 
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
   @Put('user/upload')

@@ -1,8 +1,8 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { copyFile, rename, rm, writeFile } from 'fs/promises';
-import { sanitizeFileName } from '../../lib/filename-functions';
-import { FileLocation } from './file-location';
-import { FileElement } from './file-element';
+import { sanitizeFileName } from '../../lib/filename-functions.js';
+import { FileLocation } from './file-location.js';
+import { FileElement } from './file-element.js';
 
 export class JobFile {
   location: FileLocation;

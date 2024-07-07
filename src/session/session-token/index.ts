@@ -1,3 +1,3 @@
-export * from './session-token.entity';
-export * from './session-token.service';
-export * from './session-token.module';
+export * from './session-token.entity.js';
+export * from './session-token.service.js';
+export * from './session-token.module.js';

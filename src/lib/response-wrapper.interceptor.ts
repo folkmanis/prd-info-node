@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { set } from 'lodash';
+import { set } from 'lodash-es';
 
 export type ResponseKeys =
   | 'data'
@@ -26,7 +26,7 @@ export class ResponseWrapperInterceptor implements NestInterceptor {
   constructor(
     @Optional() private key: ResponseKeys = 'data',
     @Optional() private parameters: ResponseWrapperInterceptorOptions = {},
-  ) {}
+  ) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(map(wrapRespone(this.key, this.parameters)));

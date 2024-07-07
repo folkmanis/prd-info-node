@@ -1,4 +1,4 @@
-import { PasswordPipe } from './password.pipe';
+import { PasswordPipe } from './password.pipe.js';
 
 describe('PasswordPipe', () => {
   it('should be defined', () => {

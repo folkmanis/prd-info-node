@@ -1,13 +1,13 @@
 import { Controller, Post, Req } from '@nestjs/common';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { Modules } from '../../../login';
-import { XlsParserService } from './xls-parser.service';
+import { Modules } from '../../../login/index.js';
+import { XlsParserService } from './xls-parser.service.js';
 
 @Controller('kastes')
 @Modules('kastes')
 export class XlsParserController {
-  constructor(private readonly parser: XlsParserService) {}
+  constructor(private readonly parser: XlsParserService) { }
 
   @Post('parseXlsx')
   async parseXlsx(@Req() req: Request) {

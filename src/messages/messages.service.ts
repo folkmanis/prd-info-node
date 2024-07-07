@@ -1,23 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
 import { from, Observable } from 'rxjs';
-import { DatabaseService } from '../database/database.service';
+import { DatabaseService } from '../database/database.service.js';
 import {
   NotificationsService,
   SystemNotification,
   Systemoperations,
-} from '../notifications';
-import { SystemModules } from '../preferences';
-import { Message } from './entities';
+} from '../notifications/index.js';
+import { SystemModules } from '../preferences/index.js';
+import { Message } from './entities/index.js';
 
 @Injectable()
 export class MessagesService {
-  collection: Collection<Message> = this.dbService.db().collection('messages');
+  collection: Collection<Message>;
 
   constructor(
     private dbService: DatabaseService,
     private notifications: NotificationsService,
   ) {
+    this.collection = this.dbService.db().collection('messages');
+
     this.createIndexes();
   }
 
@@ -73,7 +75,7 @@ export class MessagesService {
   async markAs(
     prop: 'seenBy' | 'deletedBy',
     user: string,
-    filter: { _id?: ObjectId } = {},
+    filter: { _id?: ObjectId; } = {},
   ): Promise<number> {
     const resp = await this.collection.updateMany(filter, {
       $addToSet: {

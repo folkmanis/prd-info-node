@@ -1,4 +1,4 @@
-import { ValidPathPipe } from './valid-path.pipe';
+import { ValidPathPipe } from './valid-path.pipe.js';
 
 describe('ValidPathPipe', () => {
   it('should be defined', () => {

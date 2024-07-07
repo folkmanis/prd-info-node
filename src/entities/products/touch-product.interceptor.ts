@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { Observable, of } from 'rxjs';
 import { mergeMap, mapTo } from 'rxjs/operators';
-import { ProductsService } from './products.service';
-import { JobLike } from './products.service';
+import { ProductsService } from './products.service.js';
+import { JobLike } from './products.service.js';
 import { validateSync } from 'class-validator';
 import { plainToClass } from 'class-transformer';
 
@@ -21,7 +21,7 @@ export class TouchProductInterceptor implements NestInterceptor {
     }
   };
 
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(mergeMap((job) => this.touch(job)));

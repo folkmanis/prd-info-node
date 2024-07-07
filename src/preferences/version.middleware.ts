@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response, RequestHandler } from 'express';
-import { VERSION } from '../version';
+import { VERSION } from '../version.js';
 
 export function versionMiddleware(): RequestHandler {
   return (req: Request, res: Response, next: NextFunction) => {

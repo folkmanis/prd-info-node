@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 
 interface Counter {
   counter: string;

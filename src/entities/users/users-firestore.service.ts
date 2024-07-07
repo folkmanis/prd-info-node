@@ -1,13 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { getFirestore } from 'firebase-admin/firestore';
-import { assertUser } from '../../lib/assertions';
+import { assertUser } from '../../lib/assertions.js';
 import {
   SystemModules,
   SYSTEM_MODULES_KEYS,
-} from '../../preferences/interfaces/system-modules.interface';
-import { UsersDaoService } from './dao/users-dao.service';
-import { FirebaseUser } from './entities/firebase-user.interface';
-import { User } from './entities/user.interface';
+} from '../../preferences/interfaces/system-modules.interface.js';
+import { UsersDaoService } from './dao/users-dao.service.js';
+import { FirebaseUser } from './entities/firebase-user.interface.js';
+import { User } from './entities/user.interface.js';
 
 export class InvalidFirebaseUserException extends HttpException {
   constructor() {

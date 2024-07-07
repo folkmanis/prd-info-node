@@ -1,4 +1,4 @@
-import { UpdateJobFilesLocationInterceptor } from './update-job-files-location.interceptor';
+import { UpdateJobFilesLocationInterceptor } from './update-job-files-location.interceptor.js';
 
 describe('UpdateJobFilesLocationInterceptor', () => {
   it('should be defined', () => {

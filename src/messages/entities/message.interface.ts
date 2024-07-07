@@ -1,4 +1,4 @@
-import { JobMessage } from './job-message';
-import { XmfUploadMessage } from './xmf-upload-message';
+import { JobMessage } from './job-message.js';
+import { XmfUploadMessage } from './xmf-upload-message.js';
 
 export type Message = JobMessage | XmfUploadMessage;

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
-import { JobsCounterService } from './dao/counters.service';
-import { JobsDao } from './dao/jobs-dao.service';
-import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
-import { UpdateJobDto } from './dto/update-job.dto';
-import { Production } from './entities/job-categories';
-import { Job } from './entities/job.entity';
-import { assertCondition } from '../../lib/assertions';
+import { FilterType } from '../../lib/start-limit-filter/filter-type.interface.js';
+import { JobsCounterService } from './dao/counters.service.js';
+import { JobsDao } from './dao/jobs-dao.service.js';
+import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
+import { UpdateJobDto } from './dto/update-job.dto.js';
+import { Production } from './entities/job-categories.js';
+import { Job } from './entities/job.entity.js';
+import { assertCondition } from '../../lib/assertions.js';
 
 @Injectable()
 export class JobsService {
@@ -14,7 +14,7 @@ export class JobsService {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly counters: JobsCounterService,
-  ) {}
+  ) { }
 
   async getAll(
     filter: FilterType<Job>,

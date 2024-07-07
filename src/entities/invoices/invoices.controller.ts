@@ -14,16 +14,16 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { Modules } from '../../login';
-import { JobsService } from '../jobs/jobs.service';
-import { InvoicesDao } from './dao/invoices-dao.service';
-import { InvoiceInsert } from './dto/invoice-insert.dto';
-import { InvoiceUpdate } from './dto/invoice-update.dto';
-import { InvoiceForReport } from './entities/invoice-for-report.interface';
-import { InvoicesFilter } from './entities/invoice.entity';
-import { InvoiceReport } from './invoices-report/invoices-report.class';
-import { InvoicesService } from './invoices.service';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
+import { Modules } from '../../login/index.js';
+import { JobsService } from '../jobs/jobs.service.js';
+import { InvoicesDao } from './dao/invoices-dao.service.js';
+import { InvoiceInsert } from './dto/invoice-insert.dto.js';
+import { InvoiceUpdate } from './dto/invoice-update.dto.js';
+import { InvoiceForReport } from './entities/invoice-for-report.interface.js';
+import { InvoicesFilter } from './entities/invoice.entity.js';
+import { InvoiceReport } from './invoices-report/invoices-report.class.js';
+import { InvoicesService } from './invoices.service.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 
 @Controller('invoices')
 @Modules('jobs', 'calculations')
@@ -33,7 +33,7 @@ export class InvoicesController {
     private readonly invoicesDao: InvoicesDao,
     private readonly jobsService: JobsService,
     private readonly invoicesService: InvoicesService,
-  ) {}
+  ) { }
 
   @Put('report')
   async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {

@@ -1,4 +1,4 @@
-import { MessagePart } from './message-part';
+import { MessagePart } from './message-part.js';
 
 describe('MessagePart', () => {
   it('should create an instance', () => {

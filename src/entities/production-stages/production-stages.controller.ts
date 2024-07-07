@@ -12,21 +12,21 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { CreateProductionStageDto } from './dto/create-production-stage.dto';
-import { UpdateProductionStageDto } from './dto/update-production-stage.dto';
-import { ProductionStagesDaoService } from './dao/production-stages-dao.service';
-import { Modules } from '../../login';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { ProductionStage } from './entities/production-stage.entity';
-import { ProductionStageQueryFilter } from './dto/production-stage-query-filter';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
+import { CreateProductionStageDto } from './dto/create-production-stage.dto.js';
+import { UpdateProductionStageDto } from './dto/update-production-stage.dto.js';
+import { ProductionStagesDaoService } from './dao/production-stages-dao.service.js';
+import { Modules } from '../../login/index.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { ProductionStage } from './entities/production-stage.entity.js';
+import { ProductionStageQueryFilter } from './dto/production-stage-query-filter.js';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
 
 @Controller('production-stages')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Modules('jobs')
 export class ProductionStagesController {
-  constructor(private readonly daoService: ProductionStagesDaoService) {}
+  constructor(private readonly daoService: ProductionStagesDaoService) { }
 
   @Put()
   @Modules('jobs-admin')

@@ -1,13 +1,13 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity';
-import { XmfUploadProgressDao } from '../dao/xmf-upload-progress.dao';
+import { XmfUploadProgress } from '../entities/xmf-upload-progress.entity.js';
+import { XmfUploadProgressDao } from '../dao/xmf-upload-progress.dao.js';
 
 @Injectable({ scope: Scope.REQUEST })
 export class UploadProgressService {
   private _state = new XmfUploadProgress();
   private filenames: string[] = [];
 
-  constructor(private readonly progressDao: XmfUploadProgressDao) {}
+  constructor(private readonly progressDao: XmfUploadProgressDao) { }
 
   get state(): XmfUploadProgress {
     return {

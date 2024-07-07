@@ -1,5 +1,5 @@
-import { ArchiveJob } from '../entities/xmf-archive.interface';
-import { DataObject } from './data-object.class';
+import { ArchiveJob } from '../entities/xmf-archive.interface.js';
+import { DataObject } from './data-object.class.js';
 import { Observable, OperatorFunction } from 'rxjs';
 
 export function linesToObject(): OperatorFunction<string, ArchiveJob> {
@@ -52,7 +52,7 @@ export function linesToObject(): OperatorFunction<string, ArchiveJob> {
 
 function lineValue(
   line: string,
-): { key: string; val: string | number | boolean } | null {
+): { key: string; val: string | number | boolean; } | null {
   line = removeBlanks(line);
 
   const k = line.indexOf(':');

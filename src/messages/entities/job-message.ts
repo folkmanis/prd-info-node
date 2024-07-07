@@ -1,5 +1,5 @@
 import { Stats } from 'fs';
-import { MessageBase } from './message-base';
+import { MessageBase } from './message-base.js';
 
 export type FsOperations = 'add' | 'addDir' | 'change' | 'unlink' | 'ready';
 

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { getFirestore } from 'firebase-admin/firestore';
-import { JobsDao } from '../jobs/dao/jobs-dao.service';
-import { KastesDaoService } from './dao/kastes-dao.service';
-import { VeikalsKaste } from './dto/veikals-kaste.dto';
-import { COLORS, Colors } from './entities/colors';
+import { JobsDao } from '../jobs/dao/jobs-dao.service.js';
+import { KastesDaoService } from './dao/kastes-dao.service.js';
+import { VeikalsKaste } from './dto/veikals-kaste.dto.js';
+import { COLORS, Colors } from './entities/colors.js';
 import { ObjectId } from 'mongodb';
 
 const PACKAGING_JOBS_COLLECTION = 'packaging_jobs';
@@ -20,7 +20,7 @@ export class KastesService {
   constructor(
     private kastesDao: KastesDaoService,
     private readonly jobsDao: JobsDao,
-  ) {}
+  ) { }
 
   async copyToFirestore(jobId: number) {
     const docRef = this.packagingJobsCollection.doc(jobId.toString());
@@ -81,7 +81,7 @@ export class KastesService {
     const snapshot = await collectionRef
       .select('document_id', 'box_sequence', 'completed')
       .get();
-    const updates: { _id: ObjectId; kaste: number; value: boolean }[] =
+    const updates: { _id: ObjectId; kaste: number; value: boolean; }[] =
       snapshot.docs
         .map((doc) => doc.data())
         .filter((data) => this.isDataDefined(data))

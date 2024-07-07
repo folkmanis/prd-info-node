@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { Collection, Db } from 'mongodb';
-import { DatabaseService } from '../../../database';
-import { InvoiceUpdate } from '../dto/invoice-update.dto';
-import { InvoiceForReport } from '../entities/invoice-for-report.interface';
+import { DatabaseService } from '../../../database/index.js';
+import { InvoiceUpdate } from '../dto/invoice-update.dto.js';
+import { InvoiceForReport } from '../entities/invoice-for-report.interface.js';
 import {
   Invoice,
   InvoiceResponse,
   InvoicesFilter,
   INVOICE_SCHEMA,
-} from '../entities/invoice.entity';
+} from '../entities/invoice.entity.js';
 
 @Injectable()
 export class InvoicesDao {
@@ -191,7 +191,7 @@ export class InvoicesDao {
           $jsonSchema: INVOICE_SCHEMA,
         },
       });
-    } catch (error) {}
+    } catch (error) { }
   }
 
   private createIndexes(): void {

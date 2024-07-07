@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { IsString, IsOptional, IsObject } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
-import { DropFolder } from './drop-folder.entity';
+import { DropFolder } from './drop-folder.entity.js';
 
 export class ProductionStage {
   @Type(() => ObjectId)

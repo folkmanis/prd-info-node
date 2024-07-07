@@ -2,12 +2,12 @@ import { format, Locale } from 'date-fns';
 import { lv } from 'date-fns/locale';
 import { join } from 'path';
 import Pdfmake from 'pdfmake';
-import { Cell, DocumentDefinition, Table, Txt } from 'pdfmake-wrapper/server';
+import { Cell, DocumentDefinition, Table, Txt } from 'pdfmake-wrapper/server/index.js';
 import {
   InvoiceForReport,
   JobBase,
-} from '../entities/invoice-for-report.interface';
-import { InvoiceProduct } from '../entities/invoice.entity';
+} from '../entities/invoice-for-report.interface.js';
+import { InvoiceProduct } from '../entities/invoice.entity.js';
 
 export class InvoiceReport {
   private pdf: DocumentDefinition;

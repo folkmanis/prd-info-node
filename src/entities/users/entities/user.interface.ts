@@ -7,8 +7,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Message } from '../../../messages';
-import { SystemModules } from '../../../preferences';
+import { Message } from '../../../messages/index.js';
+import { SystemModules } from '../../../preferences/index.js';
 import { oauth2_v2 } from 'googleapis';
 import { Credentials } from 'google-auth-library';
 import { Binary } from 'mongodb';

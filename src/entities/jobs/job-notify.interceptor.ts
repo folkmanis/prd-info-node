@@ -6,13 +6,13 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { NotificationsService, JobsNotification } from '../../notifications';
+import { NotificationsService, JobsNotification } from '../../notifications/index.js';
 import { Request } from 'express';
-import { Job } from './entities/job.entity';
+import { Job } from './entities/job.entity.js';
 
 @Injectable()
 export class JobNotifyInterceptor implements NestInterceptor<Job, Job> {
-  constructor(private readonly notifications: NotificationsService) {}
+  constructor(private readonly notifications: NotificationsService) { }
 
   intercept(
     context: ExecutionContext,

@@ -2,12 +2,12 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { Observable } from 'rxjs';
-import { SystemModules } from '../../preferences';
-import { intersection } from 'lodash';
+import { SystemModules } from '../../preferences/index.js';
+import { intersection } from 'lodash-es';
 
 @Injectable()
 export class ModulesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(private reflector: Reflector) { }
 
   canActivate(
     context: ExecutionContext,

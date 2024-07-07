@@ -9,7 +9,7 @@ import {
   IsOptional,
   IsObject,
 } from 'class-validator';
-import { ProductProductionStage } from './production-stage';
+import { ProductProductionStage } from './production-stage.js';
 
 export class ProductPrice {
   @IsString()

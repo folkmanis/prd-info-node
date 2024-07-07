@@ -2,19 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { Collection, MatchKeysAndValues } from 'mongodb';
 import { from, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { DatabaseService } from '../../../database';
-import { ArchiveJob } from '../entities/xmf-archive.interface';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
+import { DatabaseService } from '../../../database/index.js';
+import { ArchiveJob } from '../entities/xmf-archive.interface.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { flatten } from 'flat';
 
 @Injectable()
 export class XmfSearchDao {
-  private db = this.dbService.db();
 
-  private collection: Collection<ArchiveJob> =
-    this.db.collection('xmfarchives');
+  private collection: Collection<ArchiveJob>;
 
-  constructor(private readonly dbService: DatabaseService) {
+  constructor(dbService: DatabaseService) {
+    this.collection = dbService.db().collection('xmfarchives');
+
     this.createIndexes();
   }
 
@@ -86,7 +86,7 @@ export class XmfSearchDao {
       },
     ];
     const customers = await this.collection
-      .aggregate<{ _id: string }>(pipeline)
+      .aggregate<{ _id: string; }>(pipeline)
       .toArray();
     return customers.map((res) => res._id);
   }
@@ -115,7 +115,7 @@ export class XmfSearchDao {
 
   insertManyRx(
     jobs: ArchiveJob[],
-  ): Observable<{ modifiedCount: number; upsertedCount: number }> {
+  ): Observable<{ modifiedCount: number; upsertedCount: number; }> {
     if (jobs.length === 0) {
       return of({ modifiedCount: 0, upsertedCount: 0 });
     }

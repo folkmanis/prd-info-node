@@ -2,16 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { URL } from 'url';
 import https from 'https';
 import { IncomingMessage } from 'http';
-import { PaytraqClients, PaytraqClient } from '../interfaces/client';
-import { PaytraqProduct, PaytraqProducts } from '../interfaces/product';
-import { PaytraqSales, PaytraqSale } from '../interfaces/sale';
-import { RequestParameters } from '../interfaces/request-parameters';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface';
-import { xmlToJs, Options, jsToXml } from './xml-converter';
-import { ApiURLWithQuery } from './api-url-with-query';
-import { ApiURL } from './api-url.class';
-import { PreferencesService } from '../../preferences';
-import { SalesInput } from '../interfaces/sales-input';
+import { PaytraqClients, PaytraqClient } from '../interfaces/client.js';
+import { PaytraqProduct, PaytraqProducts } from '../interfaces/product.js';
+import { PaytraqSales, PaytraqSale } from '../interfaces/sale.js';
+import { RequestParameters } from '../interfaces/request-parameters.js';
+import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
+import { xmlToJs, Options, jsToXml } from './xml-converter.js';
+import { ApiURLWithQuery } from './api-url-with-query.js';
+import { ApiURL } from './api-url.class.js';
+import { PreferencesService } from '../../preferences/index.js';
+import { SalesInput } from '../interfaces/sales-input.js';
 
 const CLIENT_OPTIONS: Options = { stringFields: ['RegNumber', 'Zip', 'Phone'] };
 const SALE_OPTIONS: Options = {
@@ -29,7 +29,7 @@ export class PaytraqDaoService {
     ) as Promise<PaytraqSystemPreference>;
   }
 
-  constructor(private preferencesService: PreferencesService) {}
+  constructor(private preferencesService: PreferencesService) { }
 
   async getClients(query: RequestParameters): Promise<PaytraqClients> {
     const params = await this.params();
@@ -105,7 +105,7 @@ export class PaytraqDaoService {
       );
   }
 
-  async postSale(sale: SalesInput): Promise<{ [key: string]: any }> {
+  async postSale(sale: SalesInput): Promise<{ [key: string]: any; }> {
     const params = await this.params();
     const url = new ApiURL(params, 'sale');
     const xml = jsToXml(sale);

@@ -3,10 +3,10 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { json, urlencoded } from 'express';
-import { AppModule } from './app.module';
-import { APP_LOGGER } from './logging/logger.factory';
-import { versionMiddleware } from './preferences';
-import { parseInstanceId } from './preferences/instance-id-parser';
+import { AppModule } from './app.module.js';
+import { APP_LOGGER } from './logging/logger.factory.js';
+import { versionMiddleware } from './preferences/index.js';
+import { parseInstanceId } from './preferences/instance-id-parser.js';
 
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(AppModule, {

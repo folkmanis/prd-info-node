@@ -1,4 +1,4 @@
-import { xmlToJs } from './xml-converter';
+import { xmlToJs } from './xml-converter.js';
 
 const client = `<Client>
 <ClientID>7249</ClientID>

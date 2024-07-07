@@ -1,3 +1,3 @@
-import { Veikals } from '../entities/veikals';
+import { Veikals } from '../entities/veikals.js';
 
-export class VeikalsCreateDto extends Veikals {}
+export class VeikalsCreateDto extends Veikals { }

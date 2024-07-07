@@ -1,20 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { defaultsDeep } from 'lodash';
+import { defaultsDeep } from 'lodash-es';
 import { AnyBulkWriteOperation, Collection } from 'mongodb';
-import { DatabaseService } from '../../database/database.service';
-import { SystemModules } from '../interfaces/system-modules.interface';
+import { DatabaseService } from '../../database/database.service.js';
+import { SystemModules } from '../interfaces/system-modules.interface.js';
 import {
   SystemPreferenceModule,
   SystemPreference,
-} from '../interfaces/system-preferences.interface';
-import { DEFAULT_PREFERENCES } from './default-preferences';
+} from '../interfaces/system-preferences.interface.js';
+import { DEFAULT_PREFERENCES } from './default-preferences.js';
 import { flatten } from 'flat';
 
 interface BulkUpdateOne {
   updateOne: {
-    filter: { [key: string]: any };
+    filter: { [key: string]: any; };
     update: {
-      $set: { [key: string]: any };
+      $set: { [key: string]: any; };
     };
     upsert?: boolean;
   };
@@ -22,13 +22,16 @@ interface BulkUpdateOne {
 
 @Injectable()
 export class PreferencesDao {
-  preferences: Collection<SystemPreferenceModule> = this.dbService
-    .db()
-    .collection('preferences');
+  preferences: Collection<SystemPreferenceModule>;
 
   constructor(private dbService: DatabaseService) {
-    this.insertDefaults(DEFAULT_PREFERENCES);
+    this.preferences = this.dbService
+      .db()
+      .collection('preferences');
+
     this.createindexes();
+    this.insertDefaults(DEFAULT_PREFERENCES);
+
   }
 
   async getModulePreferences(mod: SystemModules): Promise<SystemPreference> {

@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
 
-import { Job } from '../entities/job.entity';
-import { JOBS_COLLECTION } from './jobs-collection.provider';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { SortOrder } from '../dto/products-query';
+import { Job } from '../entities/job.entity.js';
+import { JOBS_COLLECTION } from './jobs-collection.provider.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { SortOrder } from '../dto/products-query.js';
 
 interface ProductsTotalsOptions {
   category?: string[];
@@ -15,7 +15,7 @@ interface ProductsTotalsOptions {
 export class JobsProductsDaoService {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) {}
+  ) { }
 
   async getProductsTotals(
     { start, limit, filter }: FilterType<Job>,

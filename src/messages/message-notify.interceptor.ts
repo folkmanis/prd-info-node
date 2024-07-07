@@ -10,11 +10,11 @@ import {
   NotificationsService,
   SystemNotification,
   Systemoperations,
-} from '../notifications';
+} from '../notifications/index.js';
 
 @Injectable()
 export class MessageNotifyInterceptor implements NestInterceptor {
-  constructor(private notificationsService: NotificationsService) {}
+  constructor(private notificationsService: NotificationsService) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const { instanceId, method } = context

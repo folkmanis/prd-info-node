@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ObjectId, Collection } from 'mongodb';
-import { EntityDao } from '../../entityDao.interface';
-import { ProductionStage } from '../entities/production-stage.entity';
-import { CreateProductionStageDto } from '../dto/create-production-stage.dto';
-import { UpdateProductionStageDto } from '../dto/update-production-stage.dto';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { PRODUCTION_STAGES_COLLECTION } from './production-stages.provider';
+import { EntityDao } from '../../entityDao.interface.js';
+import { ProductionStage } from '../entities/production-stage.entity.js';
+import { CreateProductionStageDto } from '../dto/create-production-stage.dto.js';
+import { UpdateProductionStageDto } from '../dto/update-production-stage.dto.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { PRODUCTION_STAGES_COLLECTION } from './production-stages.provider.js';
 import { flatten } from 'flat';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   constructor(
     @Inject(PRODUCTION_STAGES_COLLECTION)
     private readonly collection: Collection<ProductionStage>,
-  ) {}
+  ) { }
 
   async findAll({
     limit,

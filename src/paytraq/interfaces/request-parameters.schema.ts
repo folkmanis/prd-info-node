@@ -1,4 +1,4 @@
-import { RequestParameters } from './request-parameters';
+import { RequestParameters } from './request-parameters.js';
 import Joi from 'joi';
 
 export const RequestParametersSchema = Joi.object<RequestParameters>({

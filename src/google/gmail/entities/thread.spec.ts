@@ -1,4 +1,4 @@
-import { Thread } from './thread';
+import { Thread } from './thread.js';
 
 describe('Thread', () => {
   it('should be defined', () => {

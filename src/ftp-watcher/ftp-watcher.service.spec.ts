@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { FtpWatcherService } from './ftp-watcher.service';
+import { FtpWatcherService } from './ftp-watcher.service.js';
 
 describe('FtpWatcherService', () => {
   let service: FtpWatcherService;

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PreferencesController } from './preferences.controller';
+import { PreferencesController } from './preferences.controller.js';
 
 describe('PreferencesController', () => {
   let controller: PreferencesController;

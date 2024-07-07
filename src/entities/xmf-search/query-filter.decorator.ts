@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { Request } from 'express';
-import { XmfJobsFilter } from './dto/xmf-jobs-filter';
+import { XmfJobsFilter } from './dto/xmf-jobs-filter.js';
 
 export const QueryFilter = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {

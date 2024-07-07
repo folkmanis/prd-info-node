@@ -1,5 +1,5 @@
-import { MessageBase } from './message-base';
-import { XmfUploadProgress } from '../../entities/xmf-search/entities/xmf-upload-progress.entity';
+import { MessageBase } from './message-base.js';
+import { XmfUploadProgress } from '../../entities/xmf-search/entities/xmf-upload-progress.entity.js';
 
 export class XmfUploadMessage extends MessageBase {
   readonly module = 'xmf-upload';

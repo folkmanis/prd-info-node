@@ -1,4 +1,4 @@
-import { ModulesGuard } from './modules.guard';
+import { ModulesGuard } from './modules.guard.js';
 
 describe('ModulesGuard', () => {
   it('should be defined', () => {

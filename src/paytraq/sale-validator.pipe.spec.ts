@@ -1,4 +1,4 @@
-import { SaleValidatorPipe } from './sale-validator.pipe';
+import { SaleValidatorPipe } from './sale-validator.pipe.js';
 
 describe('SaleValidatorPipe', () => {
   it('should be defined', () => {

@@ -1,4 +1,4 @@
-import { PlainToClassInterceptor } from './plain-to-class.interceptor';
+import { PlainToClassInterceptor } from './plain-to-class.interceptor.js';
 
 describe('PlainToClassInterceptor', () => {
   it('should be defined', () => {

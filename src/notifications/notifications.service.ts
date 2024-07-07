@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Notification, NotificationModules } from './entities';
+import { Notification, NotificationModules } from './entities/index.js';
 
 @Injectable()
 export class NotificationsService {

@@ -12,21 +12,21 @@ import {
   Query,
   Put,
 } from '@nestjs/common';
-import { CreateEquipmentDto } from './dto/create-equipment.dto';
-import { UpdateEquipmentDto } from './dto/update-equipment.dto';
-import { EquipmentDaoService } from './dao/equipment-dao.service';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { Equipment } from './entities/equipment.entity';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { EquipmentFilterQuery } from './dto/filter-query.dto';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Modules } from '../../login';
+import { CreateEquipmentDto } from './dto/create-equipment.dto.js';
+import { UpdateEquipmentDto } from './dto/update-equipment.dto.js';
+import { EquipmentDaoService } from './dao/equipment-dao.service.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { Equipment } from './entities/equipment.entity.js';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+import { EquipmentFilterQuery } from './dto/filter-query.dto.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { Modules } from '../../login/index.js';
 
 @Controller('equipment')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Modules('jobs')
 export class EquipmentController {
-  constructor(private readonly daoService: EquipmentDaoService) {}
+  constructor(private readonly daoService: EquipmentDaoService) { }
 
   @Get('validate/:property')
   async getProperty(

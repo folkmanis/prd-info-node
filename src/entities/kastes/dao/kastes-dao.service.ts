@@ -6,15 +6,15 @@ import {
   UpdateOneModel,
   WithId,
 } from 'mongodb';
-import { VEIKALI } from './veikali.injector';
-import { Veikals } from '../entities/veikals';
-import { VeikalsKaste } from '../dto/veikals-kaste.dto';
+import { VEIKALI } from './veikali.injector.js';
+import { Veikals } from '../entities/veikals.js';
+import { VeikalsKaste } from '../dto/veikals-kaste.dto.js';
 
 @Injectable()
 export class KastesDaoService {
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-  ) {}
+  ) { }
 
   findAllKastesCursor(pasutijums: number) {
     const kastesPipeline = [
@@ -146,7 +146,7 @@ export class KastesDaoService {
   }
 
   async setGatavsBulkUpdate(
-    updates: { _id: ObjectId; kaste: number; value: boolean }[],
+    updates: { _id: ObjectId; kaste: number; value: boolean; }[],
   ) {
     const bulkUpdates: AnyBulkWriteOperation<Veikals>[] = updates.map(
       (update) => ({

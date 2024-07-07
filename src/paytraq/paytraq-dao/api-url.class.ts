@@ -1,5 +1,5 @@
 import { URL, URLSearchParams } from 'url';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface';
+import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 
 export class ApiURL extends URL {
   constructor(

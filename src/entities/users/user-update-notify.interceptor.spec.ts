@@ -1,4 +1,4 @@
-import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor';
+import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor.js';
 
 describe('UserUpdateNotifyInterceptor', () => {
   it('should be defined', () => {

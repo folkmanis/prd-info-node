@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ClientSession as MongoClientSession, Collection } from 'mongodb';
-import { UserSession } from '../entities/user.interface';
-import { DatabaseService } from '../../../database/database.service';
-import { Session } from '../entities/session.interface';
+import { UserSession } from '../entities/user.interface.js';
+import { DatabaseService } from '../../../database/database.service.js';
+import { Session } from '../entities/session.interface.js';
 
 @Injectable()
 export class SessionsDaoService {

@@ -7,16 +7,16 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Modules } from '../../login';
-import { JobQuery } from '../jobs/dto/job-query';
-import { Job, KastesJob } from '../jobs/entities/job.entity';
-import { JobsService } from '../jobs/jobs.service';
+import { Modules } from '../../login/index.js';
+import { JobQuery } from '../jobs/dto/job-query.js';
+import { Job, KastesJob } from '../jobs/entities/job.entity.js';
+import { JobsService } from '../jobs/jobs.service.js';
 
 @Controller('kastes/jobs')
 @Modules('kastes')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class KastesJobsController {
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobsService) { }
 
   @Get()
   async getKastesJobs(@Query() query: JobQuery): Promise<KastesJob[]> {

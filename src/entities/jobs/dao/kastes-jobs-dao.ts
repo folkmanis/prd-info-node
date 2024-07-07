@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { KastesJob } from '../entities/job.entity';
-import { JOBS_COLLECTION } from './jobs-collection.provider';
+import { KastesJob } from '../entities/job.entity.js';
+import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 
 @Injectable()
 export class KastesJobsDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<KastesJob>,
-  ) {}
+  ) { }
 
   async getKastesJobs(veikali = false) {
     const pipeline = [

@@ -1,4 +1,4 @@
-import { NotificationModules } from './notification-modules';
+import { NotificationModules } from './notification-modules.js';
 
 export abstract class NotificationBase<T extends NotificationModules> {
   abstract readonly module: T;

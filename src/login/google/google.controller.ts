@@ -9,16 +9,16 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Session as Sess, SessionData } from 'express-session';
-import { PublicRoute } from '../public-route.decorator';
-import { AllowNullResponse } from '../../lib/null-response.interceptor';
+import { PublicRoute } from '../public-route.decorator.js';
+import { AllowNullResponse } from '../../lib/null-response.interceptor.js';
 import {
   InvalidGoogleUserFilter,
   InvalidGoogleUserException,
-} from './invalid-google-user.filter';
-import { Oauth2Service } from '../../google/oauth2/oauth2.service';
-import { LoginService } from '../../login/login.service';
-import { UpdateUserDto, UsersService } from '../../entities/users';
-import { UserUpdateNotifyInterceptor } from '../../entities/users';
+} from './invalid-google-user.filter.js';
+import { Oauth2Service } from '../../google/oauth2/oauth2.service.js';
+import { LoginService } from '../../login/login.service.js';
+import { UpdateUserDto, UsersService } from '../../entities/users/index.js';
+import { UserUpdateNotifyInterceptor } from '../../entities/users/index.js';
 
 @Controller('login/google')
 export class GoogleController {
@@ -26,7 +26,7 @@ export class GoogleController {
     private loginService: LoginService,
     private oauth2Service: Oauth2Service,
     private usersService: UsersService,
-  ) {}
+  ) { }
 
   @PublicRoute()
   @Get()

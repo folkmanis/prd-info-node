@@ -1,19 +1,19 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Collection, ObjectId } from 'mongodb';
 import { from, map, Observable, tap } from 'rxjs';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { CreateCustomerDto } from '../dto/create-customer.dto';
-import { ListCustomer } from '../dto/list-customer.dto';
-import { UpdateCustomerDto } from '../dto/update-customer.dto';
-import { Customer } from '../entities/customer.entity';
-import { CUSTOMERS_COLLECTION } from './customers-provider';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { CreateCustomerDto } from '../dto/create-customer.dto.js';
+import { ListCustomer } from '../dto/list-customer.dto.js';
+import { UpdateCustomerDto } from '../dto/update-customer.dto.js';
+import { Customer } from '../entities/customer.entity.js';
+import { CUSTOMERS_COLLECTION } from './customers-provider.js';
 
 @Injectable()
 export class CustomersDaoService {
   constructor(
     @Inject(CUSTOMERS_COLLECTION)
     private readonly collection: Collection<Customer>,
-  ) {}
+  ) { }
 
   async getCustomers({
     start,

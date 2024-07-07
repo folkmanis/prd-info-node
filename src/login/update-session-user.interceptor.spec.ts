@@ -1,4 +1,4 @@
-import { UpdateSessionUserInterceptor } from './update-session-user.interceptor';
+import { UpdateSessionUserInterceptor } from './update-session-user.interceptor.js';
 
 describe('UpdateSessionUserInterceptor', () => {
   it('should be defined', () => {

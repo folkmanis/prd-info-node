@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { Kaste } from './kaste.entity';
+import { Kaste } from './kaste.entity.js';
 import { Exclude, Transform, Type } from 'class-transformer';
 import {
   IsNumber,

@@ -1,7 +1,7 @@
 import { WebSocket } from 'ws';
-import { SessionTokenEntity } from '../session';
+import { SessionTokenEntity } from '../session/index.js';
 import { Subscription } from 'rxjs';
-import { NotificationModules } from '.';
+import { NotificationModules } from './index.js';
 
 export interface NotificationsWebSocket extends WebSocket {
   authorized?: SessionTokenEntity;

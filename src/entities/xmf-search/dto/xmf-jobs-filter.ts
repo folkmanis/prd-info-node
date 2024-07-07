@@ -1,8 +1,8 @@
-import { intersection } from 'lodash';
+import { intersection } from 'lodash-es';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { ArchiveJob } from '../entities/xmf-archive.interface';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { ArchiveJob } from '../entities/xmf-archive.interface.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 
 export class XmfJobsFilter extends StartLimitFilter<ArchiveJob> {
   @IsOptional()

@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { SystemModules } from '../../preferences';
-import { SessionsDaoService } from './dao/sessions-dao.service';
-import { LoginCredentials, UsersDaoService } from './dao/users-dao.service';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ModuleUserPreferences, User } from './entities/user.interface';
-import { assertUser } from '../../lib/assertions';
+import { SystemModules } from '../../preferences/index.js';
+import { SessionsDaoService } from './dao/sessions-dao.service.js';
+import { LoginCredentials, UsersDaoService } from './dao/users-dao.service.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { ModuleUserPreferences, User } from './entities/user.interface.js';
+import { assertUser } from '../../lib/assertions.js';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersDao: UsersDaoService,
     private sessionsDao: SessionsDaoService,
-  ) {}
+  ) { }
 
   async getOneByUsername(username: string): Promise<User> {
     const user = await this.usersDao.getOne({ username });

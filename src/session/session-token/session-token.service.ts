@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { SessionTokenEntity } from './session-token.entity';
+import { SessionTokenEntity } from './session-token.entity.js';
 import { Session } from 'express-session';
-import { User } from '../../entities/users';
+import { User } from '../../entities/users/index.js';
 
 @Injectable()
 export class SessionTokenService {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(private readonly jwtService: JwtService) { }
 
   token(session: Session, instanceId: string, user: User): string {
     const token: SessionTokenEntity = {

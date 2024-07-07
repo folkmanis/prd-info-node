@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { NotificationBase } from './notification-base';
+import { NotificationBase } from './notification-base.js';
 
 export enum Systemoperations {
   MESSAGE_DELETED,

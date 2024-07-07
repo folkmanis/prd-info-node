@@ -1,22 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { classToPlain, instanceToPlain } from 'class-transformer';
 import { Collection, ObjectId, WithoutId } from 'mongodb';
-import { DatabaseService } from '../../../database';
-import { EntityDao } from '../../entityDao.interface';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { CreateEquipmentDto } from '../dto/create-equipment.dto';
-import { UpdateEquipmentDto } from '../dto/update-equipment.dto';
-import { Equipment } from '../entities/equipment.entity';
+import { DatabaseService } from '../../../database/index.js';
+import { EntityDao } from '../../entityDao.interface.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { CreateEquipmentDto } from '../dto/create-equipment.dto.js';
+import { UpdateEquipmentDto } from '../dto/update-equipment.dto.js';
+import { Equipment } from '../entities/equipment.entity.js';
 
 const EQUIPMENT_COLLECTION_NAME = 'equipment';
 
 @Injectable()
 export class EquipmentDaoService implements EntityDao<Equipment> {
-  private readonly collection: Collection<Equipment> = this.dbService
-    .db()
-    .collection(EQUIPMENT_COLLECTION_NAME);
+  private readonly collection: Collection<Equipment>;
 
   constructor(private readonly dbService: DatabaseService) {
+    this.collection = this.dbService
+      .db()
+      .collection(EQUIPMENT_COLLECTION_NAME);
+
     this.createIndexes();
   }
 

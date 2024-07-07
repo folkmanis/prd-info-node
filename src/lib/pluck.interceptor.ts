@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { get } from 'lodash';
+import { get } from 'lodash-es';
 
 @Injectable()
 export class PluckInterceptor implements NestInterceptor {

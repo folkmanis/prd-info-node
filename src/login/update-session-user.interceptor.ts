@@ -5,13 +5,13 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, from } from 'rxjs';
-import { mergeMapTo, tap } from 'rxjs/operators';
+import { mergeMap, tap } from 'rxjs/operators';
 import { Request } from 'express';
-import { UsersService } from '../entities/users';
+import { UsersService } from '../entities/users/index.js';
 
 @Injectable()
 export class UpdateSessionUserInterceptor implements NestInterceptor {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req: Request = context.switchToHttp().getRequest();
@@ -24,7 +24,7 @@ export class UpdateSessionUserInterceptor implements NestInterceptor {
 
     return from(this.usersService.getSessionUser(user.username)).pipe(
       tap((usr) => (req.session.user = usr)),
-      mergeMapTo(next.handle()),
+      mergeMap(() => next.handle()),
     );
   }
 }

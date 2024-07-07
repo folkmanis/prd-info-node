@@ -1,4 +1,4 @@
-import { CustomerNotifyInterceptor } from './customer-notify.interceptor';
+import { CustomerNotifyInterceptor } from './customer-notify.interceptor.js';
 
 describe('CustomerNotifyInterceptor', () => {
   it('should be defined', () => {

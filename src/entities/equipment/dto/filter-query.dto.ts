@@ -1,7 +1,7 @@
 import { IsOptional, IsString } from 'class-validator';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { Equipment } from '../entities/equipment.entity';
+import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { Equipment } from '../entities/equipment.entity.js';
 
 export class EquipmentFilterQuery extends StartLimitFilter<Equipment> {
   @IsString()

@@ -1,5 +1,5 @@
-import { SystemModules } from '../../preferences';
-export { SystemModules } from '../../preferences';
+import { SystemModules } from '../../preferences/index.js';
+export { SystemModules } from '../../preferences/index.js';
 
 export interface SessionTokenEntity {
   userId: string;

@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { XmfSearchController } from './xmf-search.controller';
-import { XmfSearchService } from './xmf-search.service';
+import { XmfSearchController } from './xmf-search.controller.js';
+import { XmfSearchService } from './xmf-search.service.js';
 
 describe('XmfSearchController', () => {
   let controller: XmfSearchController;

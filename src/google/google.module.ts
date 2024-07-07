@@ -3,10 +3,10 @@ import { ConfigFactory, ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
-import { FilesystemModule } from '../filesystem';
-import { PreferencesModule } from '../preferences';
-import { GmailController } from './gmail/gmail.controller';
-import { Oauth2Service } from './oauth2/oauth2.service';
+import { FilesystemModule } from '../filesystem/index.js';
+import { PreferencesModule } from '../preferences/index.js';
+import { GmailController } from './gmail/gmail.controller.js';
+import { Oauth2Service } from './oauth2/oauth2.service.js';
 import { HttpModule } from '@nestjs/axios';
 
 const googleConfig: ConfigFactory = async () => {
@@ -44,4 +44,4 @@ const googleConfig: ConfigFactory = async () => {
   providers: [Oauth2Service],
   exports: [Oauth2Service],
 })
-export class GoogleModule {}
+export class GoogleModule { }

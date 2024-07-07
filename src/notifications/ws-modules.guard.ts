@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { NotificationsWebSocket } from './notifications-websocket.interface';
+import { NotificationsWebSocket } from './notifications-websocket.interface.js';
 
 @Injectable()
 export class WsModulesGuard implements CanActivate {

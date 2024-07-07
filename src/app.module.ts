@@ -1,22 +1,22 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { DatabaseModule } from './database/database.module';
-import { EntitiesModule } from './entities/entities.module';
-import { FilesystemModule } from './filesystem/filesystem.module';
-import { FtpWatcherModule } from './ftp-watcher/ftp-watcher.module';
-import { GoogleModule } from './google/google.module';
-import { LoggingModule } from './logging/logging.module';
-import { LoginModule } from './login/login.module';
-import { MessagesModule } from './messages/messages.module';
-import { NotificationsModule } from './notifications/notifications.module';
-import { PaytraqModule } from './paytraq/paytraq.module';
-import { PreferencesModule } from './preferences/preferences.module';
-import { SessionModule } from './session/session.module';
-import { SessionMiddleware } from './session/session.middleware';
+import { DatabaseModule } from './database/database.module.js';
+import { EntitiesModule } from './entities/entities.module.js';
+import { FilesystemModule } from './filesystem/filesystem.module.js';
+import { FtpWatcherModule } from './ftp-watcher/ftp-watcher.module.js';
+import { GoogleModule } from './google/google.module.js';
+import { LoggingModule } from './logging/logging.module.js';
+import { LoginModule } from './login/login.module.js';
+import { MessagesModule } from './messages/messages.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
+import { PaytraqModule } from './paytraq/paytraq.module.js';
+import { PreferencesModule } from './preferences/preferences.module.js';
+import { SessionModule } from './session/session.module.js';
+import { SessionMiddleware } from './session/session.middleware.js';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { NullResponseInterceptor } from './lib/null-response.interceptor';
-import { dotEnvConfig } from './dot-env.config';
-import { FirebaseModule } from './firebase/firebase.module';
+import { NullResponseInterceptor } from './lib/null-response.interceptor.js';
+import { dotEnvConfig } from './dot-env.config.js';
+import { FirebaseModule } from './firebase/firebase.module.js';
 
 @Module({
   imports: [

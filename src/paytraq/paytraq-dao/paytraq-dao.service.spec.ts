@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PaytraqDaoService } from './paytraq-dao.service';
+import { PaytraqDaoService } from './paytraq-dao.service.js';
 
 describe('PaytraqDaoService', () => {
   let service: PaytraqDaoService;

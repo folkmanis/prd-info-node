@@ -1,10 +1,10 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Collection, Filter, MongoClient } from 'mongodb';
-import { Message } from '../../../messages/entities/message.interface';
-import { SystemModules } from '../../../preferences';
-import { ModuleUserPreferences, User } from '../entities/user.interface';
-import { SessionsDaoService } from './sessions-dao.service';
-import { USERS } from './users.provider';
+import { Message } from '../../../messages/entities/message.interface.js';
+import { SystemModules } from '../../../preferences/index.js';
+import { ModuleUserPreferences, User } from '../entities/user.interface.js';
+import { SessionsDaoService } from './sessions-dao.service.js';
+import { USERS } from './users.provider.js';
 
 export type LoginCredentials = Partial<
   Record<'username' | 'password' | 'googleId', string>
@@ -16,7 +16,7 @@ export class UsersDaoService {
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) {}
+  ) { }
 
   async findAllUsers(): Promise<Partial<User>[]> {
     const projection = {
@@ -179,7 +179,7 @@ export class UsersDaoService {
   async updateModuleUserPreferences(
     username: string,
     module: SystemModules,
-    val: { [key: string]: any },
+    val: { [key: string]: any; },
   ): Promise<number> {
     const user = await this.collection.findOne({ username });
     if (!user) {

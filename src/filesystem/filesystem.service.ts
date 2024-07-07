@@ -1,46 +1,28 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions';
-import { FileLocation, JobPathComponents } from './entities/file-location';
-import { FileLocationTypes } from './entities/file-location-types';
-import { JobFile } from './entities/job-file';
-import { FileElement } from './entities/file-element';
+import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions.js';
+import { FileLocation, JobPathComponents } from './entities/file-location.js';
+import { FileLocationTypes } from './entities/file-location-types.js';
+import { JobFile } from './entities/job-file.js';
+import { FileElement } from './entities/file-element.js';
 import { CopyOptions } from 'fs';
-import { AppConfig } from '../dot-env.config';
+import { AppConfig } from '../dot-env.config.js';
 
 const HOMES_ROOT = 'UserFiles';
 
 type FileLocationResolver = Record<
   FileLocationTypes,
-  (params?: any) => { root: string; path: string[] }
+  (params?: any) => { root: string; path: string[]; }
 >;
 
 @Injectable()
 export class FilesystemService {
-  private readonly fileLocationsResolvers: FileLocationResolver = {
-    [FileLocationTypes.FTP]: (ftpPath: string[] = []) => ({
-      root: this.configService.get('FTP_FOLDER'),
-      path: ftpPath,
-    }),
-    [FileLocationTypes.USER]: (username: string) => ({
-      root: this.configService.get('JOBS_INPUT'),
-      path: [HOMES_ROOT, username],
-    }),
-    [FileLocationTypes.NEWJOB]: jobPathFromComponents(
-      this.configService.get('JOBS_INPUT'),
-    ),
-    [FileLocationTypes.JOB]: (jobPath: string[]) => ({
-      root: this.configService.get('JOBS_INPUT'),
-      path: jobPath,
-    }),
-    [FileLocationTypes.DROPFOLDER]: (dropPath: string[]) => ({
-      root: this.configService.get('DROP_FOLDER'),
-      path: dropPath,
-    }),
-  };
+  private readonly fileLocationsResolvers: FileLocationResolver;
 
-  constructor(private configService: ConfigService<AppConfig, true>) {}
+  constructor(configService: ConfigService<AppConfig, true>) {
+    this.fileLocationsResolvers = this.getResolvers(configService);
+  }
 
   location<T extends FileLocationTypes>(
     type: T,
@@ -88,11 +70,35 @@ export class FilesystemService {
     );
     return 1;
   }
+
+  private getResolvers(configService: ConfigService<AppConfig, true>): FileLocationResolver {
+    return {
+      [FileLocationTypes.FTP]: (ftpPath: string[] = []) => ({
+        root: configService.get('FTP_FOLDER'),
+        path: ftpPath,
+      }),
+      [FileLocationTypes.USER]: (username: string) => ({
+        root: configService.get('JOBS_INPUT'),
+        path: [HOMES_ROOT, username],
+      }),
+      [FileLocationTypes.NEWJOB]: jobPathFromComponents(
+        configService.get('JOBS_INPUT'),
+      ),
+      [FileLocationTypes.JOB]: (jobPath: string[]) => ({
+        root: configService.get('JOBS_INPUT'),
+        path: jobPath,
+      }),
+      [FileLocationTypes.DROPFOLDER]: (dropPath: string[]) => ({
+        root: configService.get('DROP_FOLDER'),
+        path: dropPath,
+      }),
+    };
+  }
 }
 
 function jobPathFromComponents(
   jobsRoot: string,
-): (params: JobPathComponents) => { root: string; path: string[] } {
+): (params: JobPathComponents) => { root: string; path: string[]; } {
   return ({ receivedDate, custCode, jobId, name }) => ({
     root: jobsRoot,
     path: [

@@ -1,7 +1,7 @@
 import { Module, Global, FactoryProvider } from '@nestjs/common';
 import { MongoClient, MongoClientOptions } from 'mongodb';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseService } from './database.service';
+import { DatabaseService } from './database.service.js';
 
 const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   provide: 'MONGO_CLIENT',
@@ -23,4 +23,4 @@ const connectionFactory: FactoryProvider<Promise<MongoClient>> = {
   providers: [connectionFactory, DatabaseService],
   exports: ['MONGO_CLIENT', DatabaseService],
 })
-export class DatabaseModule {}
+export class DatabaseModule { }

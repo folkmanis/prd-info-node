@@ -1,4 +1,4 @@
-import { JobFile } from './job-file';
+import { JobFile } from './job-file.js';
 
 describe('JobFile', () => {
   it('should be defined', () => {

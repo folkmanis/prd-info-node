@@ -1,4 +1,4 @@
-import { ResponseWrapperInterceptor } from './response-wrapper.interceptor';
+import { ResponseWrapperInterceptor } from './response-wrapper.interceptor.js';
 
 describe('ResponseWrapperInterceptor', () => {
   it('should be defined', () => {

@@ -3,10 +3,10 @@ import Busboy from 'busboy';
 import { Request } from 'express';
 import { createWriteStream, CopyOptions } from 'fs';
 import { cp, mkdir, readdir, rename } from 'fs/promises';
-import { last } from 'lodash';
+import { last } from 'lodash-es';
 import path from 'path';
-import { sanitizeFileName } from '../../lib/filename-functions';
-import { FileElement, fromDirent } from './file-element';
+import { sanitizeFileName } from '../../lib/filename-functions.js';
+import { FileElement, fromDirent } from './file-element.js';
 
 export interface JobPathComponents {
   receivedDate: Date;
@@ -28,7 +28,7 @@ export class FileLocation {
     };
   }
 
-  constructor(params: { root: string; path: string[] }) {
+  constructor(params: { root: string; path: string[]; }) {
     this.rootPath = params.root.split(path.sep);
     this.path = params.path;
   }

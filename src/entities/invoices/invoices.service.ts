@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InvoicesDao } from './dao/invoices-dao.service';
-import { CustomersService } from '../customers/customers.service';
-import { InvoiceForReport } from './entities/invoice-for-report.interface';
-import { InvoiceInsert } from './dto/invoice-insert.dto';
-import { InvoicesCounterService } from './dao/counter.service';
-import { JobsService } from '../jobs/jobs.service';
+import { InvoicesDao } from './dao/invoices-dao.service.js';
+import { CustomersService } from '../customers/customers.service.js';
+import { InvoiceForReport } from './entities/invoice-for-report.interface.js';
+import { InvoiceInsert } from './dto/invoice-insert.dto.js';
+import { InvoicesCounterService } from './dao/counter.service.js';
+import { JobsService } from '../jobs/jobs.service.js';
 import { ObjectId } from 'mongodb';
 
 @Injectable()
@@ -14,7 +14,7 @@ export class InvoicesService {
     private readonly customersService: CustomersService,
     private readonly counterService: InvoicesCounterService,
     private readonly jobsService: JobsService,
-  ) {}
+  ) { }
 
   async createInvoice({ jobIds, customerId }: InvoiceInsert): Promise<string> {
     const invoiceId = await this.counterService.getNextInvoiceId();

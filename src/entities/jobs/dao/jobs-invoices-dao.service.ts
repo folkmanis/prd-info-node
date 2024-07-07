@@ -3,16 +3,16 @@ import { Collection, Filter, UpdateFilter } from 'mongodb';
 import {
   InvoiceProduct,
   ProductTotals,
-} from '../../invoices/entities/invoice.entity';
-import { JobsWithoutInvoicesTotals } from '../dto/jobs-without-invoices-totals.interface';
-import { Job } from '../entities/job.entity';
-import { JOBS_COLLECTION } from './jobs-collection.provider';
+} from '../../invoices/entities/invoice.entity.js';
+import { JobsWithoutInvoicesTotals } from '../dto/jobs-without-invoices-totals.interface.js';
+import { Job } from '../entities/job.entity.js';
+import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 
 @Injectable()
 export class JobsInvoicesDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) {}
+  ) { }
 
   async setInvoice(jobIds: number[], invoiceId: string): Promise<number[]> {
     const filter: Filter<Job> = {

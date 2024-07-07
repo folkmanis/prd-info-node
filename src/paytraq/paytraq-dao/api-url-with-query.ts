@@ -1,6 +1,6 @@
-import { RequestParameters } from '../interfaces/request-parameters';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface';
-import { ApiURL } from './api-url.class';
+import { RequestParameters } from '../interfaces/request-parameters.js';
+import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
+import { ApiURL } from './api-url.class.js';
 
 export class ApiURLWithQuery extends ApiURL {
   constructor(

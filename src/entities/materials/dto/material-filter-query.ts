@@ -1,9 +1,9 @@
 import { Transform } from 'class-transformer';
 import { IsOptional, IsString } from 'class-validator';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { Material } from '../entities/material.entity';
+import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { Material } from '../entities/material.entity.js';
 
 export class MaterialFilterQuery extends StartLimitFilter<Material> {
   @IsString()

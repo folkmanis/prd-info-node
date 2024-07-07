@@ -5,15 +5,15 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Modules } from '../login';
-import { LogQuery } from './interfaces/log-query.class';
-import { LoggerDaoService } from './logger-dao/logger-dao.service';
+import { Modules } from '../login/index.js';
+import { LogQuery } from './interfaces/log-query.class.js';
+import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
 
 @Controller('logging')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @Modules('admin')
 export class LoggingController {
-  constructor(private logDao: LoggerDaoService) {}
+  constructor(private logDao: LoggerDaoService) { }
 
   @Get('dates-groups')
   async getDatesGroups(@Query() query: LogQuery) {

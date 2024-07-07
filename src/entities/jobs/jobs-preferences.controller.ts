@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common';
-import { Modules } from '../../login';
-import { Usr } from '../../session';
-import { ModuleUserPreferences, UsersService } from '../users';
+import { Modules } from '../../login/index.js';
+import { Usr } from '../../session/index.js';
+import { ModuleUserPreferences, UsersService } from '../users/index.js';
 
 @Controller('jobs/preferences')
 @Modules('jobs')
 export class JobsPreferencesController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @Get()
   async getPreferences(@Usr('username') username: string) {

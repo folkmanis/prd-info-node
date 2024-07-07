@@ -13,18 +13,18 @@ import {
   Query,
   Post,
 } from '@nestjs/common';
-import { Modules } from '../../login';
-import { SessionsDaoService } from './dao/sessions-dao.service';
-import { UsersDaoService } from './dao/users-dao.service';
-import { User } from './entities/user.interface';
-import { PasswordPipe } from './password.pipe';
-import { PasswordDto } from './dto/password-dto.class';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { UsersService } from './users.service';
-import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor';
-import { UsersFirestoreService } from './users-firestore.service';
+import { Modules } from '../../login/index.js';
+import { SessionsDaoService } from './dao/sessions-dao.service.js';
+import { UsersDaoService } from './dao/users-dao.service.js';
+import { User } from './entities/user.interface.js';
+import { PasswordPipe } from './password.pipe.js';
+import { PasswordDto } from './dto/password-dto.class.js';
+import { UpdateUserDto } from './dto/update-user.dto.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { UsersService } from './users.service.js';
+import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor.js';
+import { UsersFirestoreService } from './users-firestore.service.js';
 
 @Controller('users')
 @Modules('admin')

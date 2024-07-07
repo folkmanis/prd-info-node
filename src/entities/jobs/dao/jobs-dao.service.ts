@@ -1,16 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AnyBulkWriteOperation, Collection, UpdateFilter } from 'mongodb';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { UpdateJobDto } from '../dto/update-job.dto';
-import { JobProduct } from '../entities/job-product.entity';
-import { Job } from '../entities/job.entity';
-import { JOBS_COLLECTION } from './jobs-collection.provider';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { UpdateJobDto } from '../dto/update-job.dto.js';
+import { JobProduct } from '../entities/job-product.entity.js';
+import { Job } from '../entities/job.entity.js';
+import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 
 @Injectable()
 export class JobsDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) {}
+  ) { }
 
   async getAll(
     query: FilterType<Job>,

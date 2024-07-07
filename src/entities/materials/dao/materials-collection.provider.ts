@@ -1,4 +1,4 @@
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 import { FactoryProvider } from '@nestjs/common';
 import { Collection } from 'mongodb';
 

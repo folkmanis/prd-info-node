@@ -1,21 +1,24 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import chokidar, { FSWatcher } from 'chokidar';
-import { MessagesService, JobMessage, FsOperations } from '../messages';
-import { AppConfig } from '../dot-env.config';
+import { MessagesService, JobMessage, FsOperations } from '../messages/index.js';
+import { AppConfig } from '../dot-env.config.js';
 
 @Injectable()
 export class FtpWatcherService implements OnApplicationBootstrap {
   private readonly logger = new Logger('FtpWatcher');
 
-  protected readonly ftpPath = this.configService.get('FTP_FOLDER');
+  protected readonly ftpPath: string;
 
   private watcher: FSWatcher | undefined;
 
   constructor(
     private msgService: MessagesService,
-    private configService: ConfigService<AppConfig, true>,
-  ) {}
+    configService: ConfigService<AppConfig, true>,
+  ) {
+    this.ftpPath = configService.get('FTP_FOLDER');
+
+  }
 
   onApplicationBootstrap() {
     this.start();

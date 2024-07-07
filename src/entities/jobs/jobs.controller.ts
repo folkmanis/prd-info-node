@@ -10,18 +10,18 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Modules } from '../../login';
-import { TouchProductInterceptor } from '../products/touch-product.interceptor';
-import { JobsDao } from './dao/jobs-dao.service';
-import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service';
-import { CreateJobDto } from './dto/create-job.dto';
-import { JobQuery } from './dto/job-query';
-import { UpdateJobDto } from './dto/update-job.dto';
-import { JobId } from './job-id.decorator';
-import { JobNotifyInterceptor } from './job-notify.interceptor';
-import { JobsService } from './jobs.service';
-import { JobFilesService } from './job-files/job-files.service';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { Modules } from '../../login/index.js';
+import { TouchProductInterceptor } from '../products/touch-product.interceptor.js';
+import { JobsDao } from './dao/jobs-dao.service.js';
+import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
+import { CreateJobDto } from './dto/create-job.dto.js';
+import { JobQuery } from './dto/job-query.js';
+import { UpdateJobDto } from './dto/update-job.dto.js';
+import { JobId } from './job-id.decorator.js';
+import { JobNotifyInterceptor } from './job-notify.interceptor.js';
+import { JobsService } from './jobs.service.js';
+import { JobFilesService } from './job-files/job-files.service.js';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -33,7 +33,7 @@ export class JobsController {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly jobFilesService: JobFilesService,
-  ) {}
+  ) { }
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId() jobId: number) {

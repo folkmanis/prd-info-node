@@ -12,15 +12,15 @@ import {
   SystemNotification,
   Systemoperations,
   NotificationsService,
-} from '../../notifications';
-import { User } from './entities/user.interface';
+} from '../../notifications/index.js';
+import { User } from './entities/user.interface.js';
 
 @Injectable()
 export class UserUpdateNotifyInterceptor implements NestInterceptor {
   constructor(
     @Inject(forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService,
-  ) {}
+  ) { }
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const { instanceId, method } = context

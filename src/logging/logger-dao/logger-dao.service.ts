@@ -1,20 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { DatabaseService } from '../../database';
-import { FilterType } from '../../lib/start-limit-filter/filter-type.interface';
-import { LogRecord } from '../interfaces/log-record.interface';
+import { DatabaseService } from '../../database/index.js';
+import { FilterType } from '../../lib/start-limit-filter/filter-type.interface.js';
+import { LogRecord } from '../interfaces/log-record.interface.js';
 
 @Injectable()
 export class LoggerDaoService {
   private logger = new Logger(LoggerDaoService.name);
 
-  private collection: Collection<LogRecord> = this.dbService
-    .db()
-    .collection('log');
+  private collection: Collection<LogRecord>;
 
   constructor(private dbService: DatabaseService) {
+    this.collection = dbService.db().collection('log');
     this.createIndexes();
   }
+
 
   async insertOne(record: LogRecord) {
     return this.collection.insertOne(record, { writeConcern: { w: 0 } });

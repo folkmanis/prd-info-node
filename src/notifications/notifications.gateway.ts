@@ -10,18 +10,17 @@ import {
 } from '@nestjs/websockets';
 import { interval } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
-import { Server } from 'ws';
-import { NotificationModules } from '../notifications';
-import { SessionService } from '../session';
-import { NotificationsWebSocket } from './notifications-websocket.interface';
-import { NotificationsService } from './notifications.service';
-import { TokenGuard } from './token.guard';
-import { WsModulesGuard } from './ws-modules.guard';
+import Server from 'ws';
+import { NotificationModules } from '../notifications/index.js';
+import { SessionService } from '../session/index.js';
+import { NotificationsWebSocket } from './notifications-websocket.interface.js';
+import { NotificationsService } from './notifications.service.js';
+import { TokenGuard } from './token.guard.js';
+import { WsModulesGuard } from './ws-modules.guard.js';
 
 @WebSocketGateway({ path: '/ws-notifications' })
 export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+  implements OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(NotificationsGateway.name);
 
   @WebSocketServer() server: Server;
@@ -29,7 +28,7 @@ export class NotificationsGateway
   constructor(
     private readonly notificationService: NotificationsService,
     private readonly sessionService: SessionService,
-  ) {}
+  ) { }
 
   handleConnection(client: NotificationsWebSocket) {
     client.on('pong', () => (client.isAlive = true));

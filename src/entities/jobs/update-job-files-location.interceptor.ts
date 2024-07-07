@@ -12,11 +12,11 @@ import {
   map,
   MonoTypeOperatorFunction,
 } from 'rxjs';
-import { JobFilesService } from './job-files/job-files.service';
+import { JobFilesService } from './job-files/job-files.service.js';
 
 @Injectable()
 export class UpdateJobFilesLocationInterceptor implements NestInterceptor {
-  constructor(private jobFilesService: JobFilesService) {}
+  constructor(private jobFilesService: JobFilesService) { }
 
   intercept<R>(context: ExecutionContext, next: CallHandler<R>): Observable<R> {
     const req = context.switchToHttp().getRequest() as Request;

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CustomersDaoService } from './customers-dao.service';
+import { CustomersDaoService } from './customers-dao.service.js';
 
 describe('CustomersDaoService', () => {
   let service: CustomersDaoService;

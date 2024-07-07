@@ -1,4 +1,4 @@
-import { MessageNotifyInterceptor } from './message-notify.interceptor';
+import { MessageNotifyInterceptor } from './message-notify.interceptor.js';
 
 describe('MessageNotifyInterceptor', () => {
   it('should be defined', () => {

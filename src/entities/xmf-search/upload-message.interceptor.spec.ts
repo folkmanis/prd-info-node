@@ -1,4 +1,4 @@
-import { UploadMessageInterceptor } from './upload-message.interceptor';
+import { UploadMessageInterceptor } from './upload-message.interceptor.js';
 
 describe('UploadMessageInterceptor', () => {
   it('should be defined', () => {

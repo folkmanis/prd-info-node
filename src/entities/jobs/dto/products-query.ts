@@ -9,11 +9,11 @@ import {
 } from 'class-validator';
 import { endOfDay, startOfDay } from 'date-fns';
 import { Filter } from 'mongodb';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { JobProduct } from '../entities/job-product.entity';
-import { Job } from '../entities/job.entity';
+import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { JobProduct } from '../entities/job-product.entity.js';
+import { Job } from '../entities/job.entity.js';
 
 export class SortOrder {
   @IsIn(['name', 'category', 'units', 'sum', 'count', 'total'])

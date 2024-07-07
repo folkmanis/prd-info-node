@@ -23,20 +23,20 @@ import {
   UsersService,
   UserUpdateNotifyInterceptor,
   Usr,
-} from '../entities/users';
-import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
-import { InstanceId } from '../preferences/instance-id.decorator';
-import { SessionTokenService } from '../session/session-token';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { PublicRoute } from './public-route.decorator';
-import { UpdateSessionUserInterceptor } from './update-session-user.interceptor';
+} from '../entities/users/index.js';
+import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor.js';
+import { InstanceId } from '../preferences/instance-id.decorator.js';
+import { SessionTokenService } from '../session/session-token/index.js';
+import { LocalAuthGuard } from './guards/local-auth.guard.js';
+import { PublicRoute } from './public-route.decorator.js';
+import { UpdateSessionUserInterceptor } from './update-session-user.interceptor.js';
 
 @Controller('login')
 export class LoginController {
   constructor(
     private readonly tokenService: SessionTokenService,
     private readonly usersService: UsersService,
-  ) {}
+  ) { }
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()

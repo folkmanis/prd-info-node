@@ -1,4 +1,4 @@
-import { Notification } from './notification';
+import { Notification } from './notification.js';
 
 describe('Notification', () => {
   it('should be defined', () => {

@@ -15,25 +15,25 @@ import {
   UseFilters,
   Patch,
 } from '@nestjs/common';
-import { User } from '../../entities/users';
-import { FilesystemService } from '../../filesystem';
-import { PlainToClassInterceptor } from '../../lib/plain-to-class.interceptor';
-import { PluckInterceptor } from '../../lib/pluck.interceptor';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Modules } from '../../login';
-import { Usr } from '../../session';
+import { User } from '../../entities/users/index.js';
+import { FilesystemService } from '../../filesystem/index.js';
+import { PlainToClassInterceptor } from '../../lib/plain-to-class.interceptor.js';
+import { PluckInterceptor } from '../../lib/pluck.interceptor.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { Modules } from '../../login/index.js';
+import { Usr } from '../../session/index.js';
 import {
   AttachmentSaveDto,
   ThreadQuery,
   ThreadsQuery,
   MessageModifyDto,
-} from './dto';
-import { MessageData } from './entities';
-import { ThreadData } from './entities/thread';
-import { Gmail } from './gmail.decorator';
-import { GoogleClientGuard } from '../oauth2/google-client.guard';
-import { GmailGuard } from './gmail.guard';
-import { InvalidGrantFilter } from '../invalid-grant.filter';
+} from './dto/index.js';
+import { MessageData } from './entities/index.js';
+import { ThreadData } from './entities/thread.js';
+import { Gmail } from './gmail.decorator.js';
+import { GoogleClientGuard } from '../oauth2/google-client.guard.js';
+import { GmailGuard } from './gmail.guard.js';
+import { InvalidGrantFilter } from '../invalid-grant.filter.js';
 
 const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 
@@ -43,7 +43,7 @@ const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 @UseFilters(InvalidGrantFilter)
 export class GmailController {
-  constructor(private readonly fileSystem: FilesystemService) {}
+  constructor(private readonly fileSystem: FilesystemService) { }
 
   @Put('message/attachment')
   @UseInterceptors(new ResponseWrapperInterceptor('names'))

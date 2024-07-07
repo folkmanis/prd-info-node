@@ -1,9 +1,9 @@
-import { EntityDao } from '../../entityDao.interface';
-import { Material } from '../entities/material.entity';
-import { CreateMaterialDto } from '../dto/create-material.dto';
-import { UpdateMaterialDto } from '../dto/update-material.dto';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { MATERIALS_COLLECTION } from './materials-collection.provider';
+import { EntityDao } from '../../entityDao.interface.js';
+import { Material } from '../entities/material.entity.js';
+import { CreateMaterialDto } from '../dto/create-material.dto.js';
+import { UpdateMaterialDto } from '../dto/update-material.dto.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { MATERIALS_COLLECTION } from './materials-collection.provider.js';
 import { Collection, ObjectId } from 'mongodb';
 import { Inject } from '@nestjs/common';
 import { flatten } from 'flat';
@@ -12,7 +12,7 @@ export class MaterialsDaoService implements EntityDao<Material> {
   constructor(
     @Inject(MATERIALS_COLLECTION)
     private readonly collection: Collection<Material>,
-  ) {}
+  ) { }
 
   async findAll({
     start,

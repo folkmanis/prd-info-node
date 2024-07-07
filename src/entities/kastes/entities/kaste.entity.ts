@@ -1,4 +1,4 @@
-import { Colors } from './colors';
+import { Colors } from './colors.js';
 import { IsNumber, IsBoolean } from 'class-validator';
 
 export type VeikalsKasteLike = Record<Colors, number> & {

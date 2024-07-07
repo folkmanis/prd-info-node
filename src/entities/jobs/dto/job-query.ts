@@ -8,11 +8,11 @@ import {
   IsString,
   IsArray,
 } from 'class-validator';
-import { pickNotNull } from '../../../lib/pick-not-null';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class';
-import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories';
-import { Job } from '../entities/job.entity';
+import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { JobCategories, JOB_CATEGORIES } from '../entities/job-categories.js';
+import { Job } from '../entities/job.entity.js';
 
 export class JobQuery extends StartLimitFilter<Job> {
   @Type(() => Date)

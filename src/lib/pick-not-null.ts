@@ -1,4 +1,4 @@
-import { pickBy } from 'lodash';
+import { pickBy } from 'lodash-es';
 
 export function pickNotNull<T extends Record<string | number, any>>(
   obj: T,

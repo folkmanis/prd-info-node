@@ -8,7 +8,7 @@ import {
   ValidateNested,
   IsNumber,
 } from 'class-validator';
-import { Customer } from '../../customers/entities/customer.entity';
+import { Customer } from '../../customers/entities/customer.entity.js';
 
 export class PaytraqInvoice {
   @Type(() => Number)
@@ -89,7 +89,7 @@ export interface ProductTotals {
   total: number;
 }
 
-export const INVOICE_SCHEMA: { [key: string]: any } = {
+export const INVOICE_SCHEMA: { [key: string]: any; } = {
   bsonType: 'object',
   required: ['invoiceId', 'customer'],
   properties: {

@@ -8,17 +8,17 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { User } from '../entities/users';
-import { ObjectIdPipe } from '../lib/object-id.pipe';
-import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor';
-import { Usr } from '../session';
-import { MessageNotifyInterceptor } from './message-notify.interceptor';
-import { MessagesService } from './messages.service';
+import { User } from '../entities/users/index.js';
+import { ObjectIdPipe } from '../lib/object-id.pipe.js';
+import { ResponseWrapperInterceptor } from '../lib/response-wrapper.interceptor.js';
+import { Usr } from '../session/index.js';
+import { MessageNotifyInterceptor } from './message-notify.interceptor.js';
+import { MessagesService } from './messages.service.js';
 
 @Controller('messages')
 @UseInterceptors(MessageNotifyInterceptor)
 export class MessagesController {
-  constructor(private messagesService: MessagesService) {}
+  constructor(private messagesService: MessagesService) { }
 
   @Get()
   async getMessages(@Usr() user: User) {

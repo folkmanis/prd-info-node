@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { SalesInput } from './sales-input';
+import { SalesInput } from './sales-input.js';
 
 export const SalesInputSchema = Joi.object<SalesInput>({
   data: Joi.object({

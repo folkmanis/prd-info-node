@@ -8,15 +8,15 @@ import { Request } from 'express';
 import { ObjectId } from 'mongodb';
 import { Observable, of } from 'rxjs';
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators';
-import { MessagesService } from '../../messages';
+import { MessagesService } from '../../messages/index.js';
 import {
   NotificationsService,
   SystemNotification,
   Systemoperations,
-} from '../../notifications';
-import { CustomersDaoService } from './customers-dao/customers-dao.service';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Customer } from './entities/customer.entity';
+} from '../../notifications/index.js';
+import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
+import { UpdateCustomerDto } from './dto/update-customer.dto.js';
+import { Customer } from './entities/customer.entity.js';
 
 @Injectable()
 export class CustomerNotifyInterceptor implements NestInterceptor {
@@ -29,7 +29,7 @@ export class CustomerNotifyInterceptor implements NestInterceptor {
     private readonly notifications: NotificationsService,
     private readonly messages: MessagesService,
     private readonly dao: CustomersDaoService,
-  ) {}
+  ) { }
 
   intercept(
     context: ExecutionContext,
@@ -64,9 +64,9 @@ export class CustomerNotifyInterceptor implements NestInterceptor {
     return !folder
       ? of(false)
       : this.messages.ftpFolderUploads(folder).pipe(
-          map((msgs) => msgs.length > 0),
-          tap((upd) => upd && this.notify()),
-        );
+        map((msgs) => msgs.length > 0),
+        tap((upd) => upd && this.notify()),
+      );
   }
 
   private isUpdate(upd: UpdateCustomerDto): boolean {

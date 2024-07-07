@@ -7,17 +7,17 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Modules } from '../login';
-import { RequestParameters } from './interfaces/request-parameters';
-import { SalesInput } from './interfaces/sales-input';
-import { PaytraqDaoService } from './paytraq-dao/paytraq-dao.service';
-import { RequestParametersPipe } from './request-parameters.pipe';
-import { SaleValidatorPipe } from './sale-validator.pipe';
+import { Modules } from '../login/index.js';
+import { RequestParameters } from './interfaces/request-parameters.js';
+import { SalesInput } from './interfaces/sales-input.js';
+import { PaytraqDaoService } from './paytraq-dao/paytraq-dao.service.js';
+import { RequestParametersPipe } from './request-parameters.pipe.js';
+import { SaleValidatorPipe } from './sale-validator.pipe.js';
 
 @Controller('paytraq')
 @Modules('jobs')
 export class PaytraqController {
-  constructor(private paytraqDao: PaytraqDaoService) {}
+  constructor(private paytraqDao: PaytraqDaoService) { }
 
   @Get('clients')
   async getClients(@Query(RequestParametersPipe) query: RequestParameters) {

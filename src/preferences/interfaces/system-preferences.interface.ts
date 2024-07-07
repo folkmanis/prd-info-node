@@ -1,4 +1,4 @@
-import { SystemModules } from './system-modules.interface';
+import { SystemModules } from './system-modules.interface.js';
 
 export type LogLevel =
   | 'error'
@@ -23,7 +23,7 @@ export interface SystemPreferenceModule {
 }
 
 export interface KastesSystemPreference {
-  colors: { [key: string]: string };
+  colors: { [key: string]: string; };
 }
 
 export interface SystemSystemPreference {

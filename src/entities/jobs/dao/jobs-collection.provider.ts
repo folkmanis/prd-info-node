@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 
 const JOBS_COLLECTION_NAME = 'jobs';
 

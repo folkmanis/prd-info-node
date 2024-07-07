@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
-import { Header } from './header';
-import { MessagePartBody } from './message-part-body';
+import { Header } from './header.js';
+import { MessagePartBody } from './message-part-body.js';
 
 export class MessagePart {
   partId: string;

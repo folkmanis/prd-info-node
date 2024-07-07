@@ -2,7 +2,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../entities/users';
+import { User } from '../entities/users/index.js';
 
 export function assertCondition(
   condition: any,

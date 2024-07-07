@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
-import { Modules } from '../login';
-import { PreferencesDao } from './dao/preferencesDao.service';
-import { SystemModules } from './interfaces/system-modules.interface';
-import { SystemPreferenceModule } from './interfaces/system-preferences.interface';
+import { Modules } from '../login/index.js';
+import { PreferencesDao } from './dao/preferencesDao.service.js';
+import { SystemModules } from './interfaces/system-modules.interface.js';
+import { SystemPreferenceModule } from './interfaces/system-preferences.interface.js';
 
 @Controller('preferences')
 export class PreferencesController {
-  constructor(private preferencesDao: PreferencesDao) {}
+  constructor(private preferencesDao: PreferencesDao) { }
 
   @Modules('admin')
   @Patch()

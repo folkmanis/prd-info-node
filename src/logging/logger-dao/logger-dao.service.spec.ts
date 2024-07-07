@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LoggerDaoService } from './logger-dao.service';
+import { LoggerDaoService } from './logger-dao.service.js';
 
 describe('LoggerDaoService', () => {
   let service: LoggerDaoService;

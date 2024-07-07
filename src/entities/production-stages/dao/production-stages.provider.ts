@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 import { Collection } from 'mongodb';
 
 export const PRODUCTION_STAGES_COLLECTION = 'PRODUCTION_STAGES_COLLECTION';

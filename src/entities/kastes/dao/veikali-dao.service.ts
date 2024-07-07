@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { VeikalsCreateDto } from '../dto/veikals-create.dto';
-import { VeikalsUpdateDto } from '../dto/veikals-update.dto';
-import { Veikals } from '../entities/veikals';
-import { VEIKALI } from './veikali.injector';
+import { VeikalsCreateDto } from '../dto/veikals-create.dto.js';
+import { VeikalsUpdateDto } from '../dto/veikals-update.dto.js';
+import { Veikals } from '../entities/veikals.js';
+import { VEIKALI } from './veikali.injector.js';
 
 @Injectable()
 export class VeikaliDaoService {
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-  ) {}
+  ) { }
 
   async pasutijums(pasutijums: number): Promise<Veikals[]> {
     return this.collection
@@ -51,7 +51,7 @@ export class VeikaliDaoService {
       },
     ];
     const result = await this.collection
-      .aggregate<{ total: number }>(pipeline)
+      .aggregate<{ total: number; }>(pipeline)
       .toArray();
     return result.map((total) => total.total);
   }

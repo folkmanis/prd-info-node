@@ -12,15 +12,15 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { Modules } from '../../login';
-import { ProductsDaoService } from './dao/products-dao.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { ProductQuery } from './dto/product-query.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
-import { Product } from './entities/product.entity';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { Modules } from '../../login/index.js';
+import { ProductsDaoService } from './dao/products-dao.service.js';
+import { CreateProductDto } from './dto/create-product.dto.js';
+import { ProductQuery } from './dto/product-query.dto.js';
+import { UpdateProductDto } from './dto/update-product.dto.js';
+import { Product } from './entities/product.entity.js';
 
 @Controller('products')
 @Modules('jobs')

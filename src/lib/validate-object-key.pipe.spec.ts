@@ -1,4 +1,4 @@
-import { ValidateObjectKeyPipe } from './validate-object-key.pipe';
+import { ValidateObjectKeyPipe } from './validate-object-key.pipe.js';
 
 describe('ValidateObjectKeyPipe', () => {
   it('should be defined', () => {

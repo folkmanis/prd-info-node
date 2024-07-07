@@ -1,4 +1,4 @@
-import { User } from '../../src/entities/users';
+import { User } from '../../src/entities/users/index.js';
 import { Credentials } from 'googleapis';
 
 declare module 'express-session' {

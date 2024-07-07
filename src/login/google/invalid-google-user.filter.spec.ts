@@ -1,4 +1,4 @@
-import { InvalidGoogleUserFilter } from './invalid-google-user.filter';
+import { InvalidGoogleUserFilter } from './invalid-google-user.filter.js';
 
 describe('InvalidGoogleUserFilter', () => {
   it('should be defined', () => {

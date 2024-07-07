@@ -1,10 +1,10 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { CustomersDaoService } from './customers-dao/customers-dao.service';
-import { Customer } from './entities/customer.entity';
+import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
+import { Customer } from './entities/customer.entity.js';
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly customersDao: CustomersDaoService) {}
+  constructor(private readonly customersDao: CustomersDaoService) { }
 
   async getCustomerByName(name: string): Promise<Customer> {
     const customer = await this.customersDao.getCustomerByName(name);

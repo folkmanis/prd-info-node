@@ -1,5 +1,5 @@
 import { Injectable, PipeTransform } from '@nestjs/common';
-import { sanitizeFileName } from '../lib/filename-functions';
+import { sanitizeFileName } from '../lib/filename-functions.js';
 
 @Injectable()
 export class ValidPathPipe implements PipeTransform<string, string[]> {

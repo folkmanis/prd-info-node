@@ -3,7 +3,7 @@ import {
   PreferencesService,
   SystemSystemPreference,
   LogLevel,
-} from '../preferences';
+} from '../preferences/index.js';
 
 export const logLevelsFactory: FactoryProvider = {
   provide: 'LOG_LEVELS',

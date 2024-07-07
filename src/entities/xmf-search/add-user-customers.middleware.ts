@@ -1,10 +1,10 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import { PreferencesService } from '../../preferences';
+import { PreferencesService } from '../../preferences/index.js';
 import { Request, Response } from 'express';
 
 @Injectable()
 export class AddUserCustomersMiddleware implements NestMiddleware {
-  constructor(private readonly prefService: PreferencesService) {}
+  constructor(private readonly prefService: PreferencesService) { }
 
   async use(req: Request, res: Response, next: () => void) {
     const user = req.session?.user;

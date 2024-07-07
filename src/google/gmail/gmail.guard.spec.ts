@@ -1,4 +1,4 @@
-import { GmailGuard } from './gmail.guard';
+import { GmailGuard } from './gmail.guard.js';
 
 describe('GmailGuard', () => {
   it('should be defined', () => {

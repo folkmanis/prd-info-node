@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { SessionTokenService } from './session-token.service';
+import { SessionTokenService } from './session-token.service.js';
 
 // TODO
 const SECRET = 'IvI3cS3wIZ';
@@ -18,4 +18,4 @@ const SECRET = 'IvI3cS3wIZ';
   exports: [SessionTokenService],
   controllers: [],
 })
-export class SessionTokenModule {}
+export class SessionTokenModule { }

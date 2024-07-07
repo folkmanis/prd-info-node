@@ -1,7 +1,7 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 import { Collection } from 'mongodb';
-import { Veikals } from '../entities/veikals';
+import { Veikals } from '../entities/veikals.js';
 
 export const VEIKALI = 'kastes-kastes';
 

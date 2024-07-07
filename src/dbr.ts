@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { MaintenanceModule } from './maintenance/maintenance.module';
-import { DatabaseService } from './database/database.service';
-import { MaintenanceService } from './maintenance/maintenance.service';
+import { MaintenanceModule } from './maintenance/maintenance.module.js';
+import { DatabaseService } from './database/database.service.js';
+import { MaintenanceService } from './maintenance/maintenance.service.js';
 
 async function bootstrap() {
   const app = await NestFactory.createApplicationContext(MaintenanceModule);

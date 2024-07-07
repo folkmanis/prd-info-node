@@ -1,11 +1,11 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { SessionTokenService } from '../session';
-import { NotificationsWebSocket } from './notifications-websocket.interface';
+import { SessionTokenService } from '../session/index.js';
+import { NotificationsWebSocket } from './notifications-websocket.interface.js';
 
 @Injectable()
 export class TokenGuard implements CanActivate {
-  constructor(private readonly tokenService: SessionTokenService) {}
+  constructor(private readonly tokenService: SessionTokenService) { }
 
   canActivate(
     context: ExecutionContext,

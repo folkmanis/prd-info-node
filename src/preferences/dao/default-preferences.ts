@@ -1,4 +1,4 @@
-import { SystemPreferenceModule } from '../interfaces/system-preferences.interface';
+import { SystemPreferenceModule } from '../interfaces/system-preferences.interface.js';
 
 export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
   {

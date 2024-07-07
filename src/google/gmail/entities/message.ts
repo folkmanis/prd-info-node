@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { MessagePart } from './message-part';
+import { MessagePart } from './message-part.js';
 
 export class Message {
   id: string;

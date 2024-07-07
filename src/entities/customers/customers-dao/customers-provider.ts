@@ -1,5 +1,5 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database';
+import { DatabaseService } from '../../../database/index.js';
 
 export const CUSTOMERS_COLLECTION = 'CUSTOMERS_COLLECTION';
 

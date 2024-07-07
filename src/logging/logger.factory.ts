@@ -1,9 +1,9 @@
 import { Provider } from '@nestjs/common';
-import { LoggerDaoService } from './logger-dao/logger-dao.service';
-import { LoggingService } from './logging.service';
-import { ConsoleTransport } from './transports/console.transport';
-import { MongoTransport } from './transports/mongo.transport';
-import { AppLogLevels } from '../preferences';
+import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
+import { LoggingService } from './logging.service.js';
+import { ConsoleTransport } from './transports/console.transport.js';
+import { MongoTransport } from './transports/mongo.transport.js';
+import { AppLogLevels } from '../preferences/index.js';
 
 export const APP_LOGGER = 'APP_LOGGER';
 

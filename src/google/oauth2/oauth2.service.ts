@@ -6,8 +6,8 @@ import { Credentials } from 'google-auth-library';
 import { Auth, google, oauth2_v2 } from 'googleapis';
 import { Binary } from 'mongodb';
 import { catchError, firstValueFrom, map, of } from 'rxjs';
-import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter';
-import { GoogleConfig } from '../google-config.interface';
+import { InvalidGoogleUserException } from '../../login/google/invalid-google-user.filter.js';
+import { GoogleConfig } from '../google-config.interface.js';
 
 const auth = google.auth;
 
@@ -21,19 +21,24 @@ export class Oauth2Service {
     return new URL(this.redirectUrl).pathname;
   }
 
-  private config = this.configService.get('google') as GoogleConfig;
+  private config: GoogleConfig;
 
-  private oauth2Client = new auth.OAuth2({
-    clientId: this.config.web.client_id,
-    clientSecret: this.config.web.client_secret,
-    redirectUri: this.config.oAuthRedirect,
-  });
+  private oauth2Client: Auth.OAuth2Client;
 
   constructor(
     private configService: ConfigService,
     private jwtService: JwtService,
     private httpService: HttpService,
-  ) {}
+  ) {
+    this.config = this.configService.get('google') as GoogleConfig;
+
+    this.oauth2Client = new auth.OAuth2({
+      clientId: this.config.web.client_id,
+      clientSecret: this.config.web.client_secret,
+      redirectUri: this.config.oAuthRedirect,
+    });
+
+  }
 
   async getAuthUrl(sessionId: string, scopes: string[]): Promise<string> {
     const state = await this.jwtService.signAsync({ s: sessionId });
@@ -52,7 +57,7 @@ export class Oauth2Service {
     sessionId: string,
   ): Promise<Credentials> {
     try {
-      const tokenData: { s: string } = await this.jwtService.verifyAsync(state);
+      const tokenData: { s: string; } = await this.jwtService.verifyAsync(state);
       if (tokenData.s !== sessionId) {
         throw new Error('Invalid state returned');
       }
@@ -87,7 +92,7 @@ export class Oauth2Service {
 
   async getUserPicture(
     url: string,
-  ): Promise<{ image: Binary; type?: string } | null> {
+  ): Promise<{ image: Binary; type?: string; } | null> {
     const image$ = this.httpService
       .get<Buffer>(url, { responseEncoding: 'binary' })
       .pipe(

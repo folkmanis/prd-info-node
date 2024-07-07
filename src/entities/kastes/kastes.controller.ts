@@ -8,11 +8,11 @@ import {
   Post,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { Modules } from '../../login';
-import { KastesDaoService } from './dao/kastes-dao.service';
-import { VeikalsKaste } from './dto/veikals-kaste.dto';
-import { KastesService } from './kastes.service';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+import { Modules } from '../../login/index.js';
+import { KastesDaoService } from './dao/kastes-dao.service.js';
+import { VeikalsKaste } from './dto/veikals-kaste.dto.js';
+import { KastesService } from './kastes.service.js';
 
 @Controller('kastes')
 @Modules('kastes')
@@ -20,7 +20,7 @@ export class KastesController {
   constructor(
     private readonly kastesDao: KastesDaoService,
     private readonly kastesService: KastesService,
-  ) {}
+  ) { }
 
   @Patch(':id/:kaste/gatavs/:action')
   async setGatavs(

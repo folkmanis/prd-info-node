@@ -1,16 +1,16 @@
 import { IntersectionType, PickType } from '@nestjs/mapped-types';
-import { Invoice } from './invoice.entity';
+import { Invoice } from './invoice.entity.js';
 import { Type } from 'class-transformer';
 import { ValidateNested, IsNumber } from 'class-validator';
-import { Customer } from '../../customers/entities/customer.entity';
+import { Customer } from '../../customers/entities/customer.entity.js';
 
-import { JobOneProduct } from '../../jobs/entities/job-one-product';
+import { JobOneProduct } from '../../jobs/entities/job-one-product.js';
 
 export class JobBase extends PickType(JobOneProduct, [
   'products',
   'receivedDate',
   'name',
-]) {}
+]) { }
 
 export class ReportData {
   @Type(() => JobBase)
@@ -27,4 +27,4 @@ export class ReportData {
 export class InvoiceForReport extends IntersectionType(
   PickType(Invoice, ['invoiceId', 'customer', 'createdDate', 'products']),
   ReportData,
-) {}
+) { }

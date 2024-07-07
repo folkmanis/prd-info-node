@@ -14,9 +14,9 @@ import {
   PrintProduction,
   ProductionCategory,
   ReproProduction,
-} from './job-categories';
-import { JobProduct } from './job-product.entity';
-import { JobProductionStage } from './job-production-stage.entity';
+} from './job-categories.js';
+import { JobProduct } from './job-product.entity.js';
+import { JobProductionStage } from './job-production-stage.entity.js';
 
 export const CURRENT_VERSION = 3;
 
@@ -109,13 +109,13 @@ export class Job {
 }
 
 export class KastesJob extends Job {
-  production: KastesProduction;
+  declare production: KastesProduction;
 }
 
 export class ReproJob extends Job {
-  production: ReproProduction;
+  declare production: ReproProduction;
 }
 
 export class PrintJob extends Job {
-  production: PrintProduction;
+  declare production: PrintProduction;
 }

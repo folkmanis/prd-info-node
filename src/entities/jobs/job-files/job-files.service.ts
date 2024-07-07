@@ -4,12 +4,12 @@ import {
   FileLocationTypes,
   FileLocation,
   FilesystemService,
-} from '../../../filesystem';
-import { JobsService } from '../jobs.service';
-import { CustomersService } from '../../customers/customers.service';
+} from '../../../filesystem/index.js';
+import { JobsService } from '../jobs.service.js';
+import { CustomersService } from '../../customers/customers.service.js';
 import { Request } from 'express';
-import { Job } from '../entities/job.entity';
-import { last } from 'lodash';
+import { Job } from '../entities/job.entity.js';
+import { last } from 'lodash-es';
 
 @Injectable()
 export class JobFilesService {
@@ -19,7 +19,7 @@ export class JobFilesService {
     private readonly filesystemService: FilesystemService,
     private readonly jobsService: JobsService,
     private readonly customersService: CustomersService,
-  ) {}
+  ) { }
 
   async addFolderPathToJob(jobId: number): Promise<FileLocation> {
     const job = await this.jobsService.getOne(jobId);

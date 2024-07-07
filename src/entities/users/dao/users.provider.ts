@@ -1,6 +1,6 @@
 import { FactoryProvider } from '@nestjs/common';
 import { Collection } from 'mongodb';
-import { DatabaseService } from '../../../database/database.service';
+import { DatabaseService } from '../../../database/database.service.js';
 
 export const USERS = 'users-collection';
 

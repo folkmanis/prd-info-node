@@ -1,4 +1,4 @@
-import { SessionMiddleware } from './session.middleware';
+import { SessionMiddleware } from './session.middleware.js';
 
 describe('SessionMiddleware', () => {
   it('should be defined', () => {

@@ -11,13 +11,13 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { Modules } from '../../login';
-import { JobsService } from '../jobs/jobs.service';
-import { VeikaliDaoService } from './dao/veikali-dao.service';
-import { VeikalsCreateDto } from './dto/veikals-create.dto';
-import { VeikalsUpdateDto } from './dto/veikals-update.dto';
-import { Veikals } from './entities/veikals';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { Modules } from '../../login/index.js';
+import { JobsService } from '../jobs/jobs.service.js';
+import { VeikaliDaoService } from './dao/veikali-dao.service.js';
+import { VeikalsCreateDto } from './dto/veikals-create.dto.js';
+import { VeikalsUpdateDto } from './dto/veikals-update.dto.js';
+import { Veikals } from './entities/veikals.js';
 
 @Controller('kastes')
 @Modules('kastes')
@@ -26,7 +26,7 @@ export class VeikaliController {
   constructor(
     private readonly veikaliDao: VeikaliDaoService,
     private readonly jobsService: JobsService,
-  ) {}
+  ) { }
 
   @Put()
   @UseInterceptors(new ResponseWrapperInterceptor('modifiedCount'))

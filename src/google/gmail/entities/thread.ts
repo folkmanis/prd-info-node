@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { Message } from './message';
+import { Message } from './message.js';
 
 export class Thread {
   id: string;

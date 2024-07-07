@@ -12,22 +12,22 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { Modules } from '../../login';
-import { CustomersDaoService } from './customers-dao/customers-dao.service';
-import { CreateCustomerDto } from './dto/create-customer.dto';
-import { CustomersQuery } from './dto/customers-query';
-import { ListCustomer } from './dto/list-customer.dto';
-import { UpdateCustomerDto } from './dto/update-customer.dto';
-import { Customer } from './entities/customer.entity';
-import { CustomerNotifyInterceptor } from './customer-notify.interceptor';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { Modules } from '../../login/index.js';
+import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
+import { CreateCustomerDto } from './dto/create-customer.dto.js';
+import { CustomersQuery } from './dto/customers-query.js';
+import { ListCustomer } from './dto/list-customer.dto.js';
+import { UpdateCustomerDto } from './dto/update-customer.dto.js';
+import { Customer } from './entities/customer.entity.js';
+import { CustomerNotifyInterceptor } from './customer-notify.interceptor.js';
 
 @Controller('customers')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class CustomersController {
-  constructor(private readonly customersDao: CustomersDaoService) {}
+  constructor(private readonly customersDao: CustomersDaoService) { }
 
   @Put()
   async newCustomer(@Body() customer: CreateCustomerDto) {

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MessagesController } from './messages.controller';
-import { MessagesService } from './messages.service';
-import { NotificationsModule } from '../notifications';
+import { MessagesController } from './messages.controller.js';
+import { MessagesService } from './messages.service.js';
+import { NotificationsModule } from '../notifications/index.js';
 
 @Module({
   imports: [NotificationsModule],
@@ -9,4 +9,4 @@ import { NotificationsModule } from '../notifications';
   providers: [MessagesService],
   exports: [MessagesService],
 })
-export class MessagesModule {}
+export class MessagesModule { }

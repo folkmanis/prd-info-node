@@ -12,21 +12,21 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe';
-import { Modules } from '../../login';
-import { MaterialsDaoService } from './dao/materials-dao.service';
-import { CreateMaterialDto } from './dto/create-material.dto';
-import { MaterialFilterQuery } from './dto/material-filter-query';
-import { UpdateMaterialDto } from './dto/update-material.dto';
-import { Material } from './entities/material.entity';
+import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { Modules } from '../../login/index.js';
+import { MaterialsDaoService } from './dao/materials-dao.service.js';
+import { CreateMaterialDto } from './dto/create-material.dto.js';
+import { MaterialFilterQuery } from './dto/material-filter-query.js';
+import { UpdateMaterialDto } from './dto/update-material.dto.js';
+import { Material } from './entities/material.entity.js';
 
 @Controller('materials')
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class MaterialsController {
-  constructor(private readonly materialsDao: MaterialsDaoService) {}
+  constructor(private readonly materialsDao: MaterialsDaoService) { }
 
   @Put()
   @Modules('jobs-admin')

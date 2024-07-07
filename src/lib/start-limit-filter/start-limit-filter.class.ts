@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsNumber } from 'class-validator';
-import { FilterType } from './filter-type.interface';
+import { FilterType } from './filter-type.interface.js';
 
 export class StartLimit {
   @Type(() => Number)

@@ -1,4 +1,4 @@
-import { WsModulesGuard } from './ws-modules.guard';
+import { WsModulesGuard } from './ws-modules.guard.js';
 
 describe('WsModulesGuard', () => {
   it('should be defined', () => {

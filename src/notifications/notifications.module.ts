@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { NotificationsService } from './notifications.service';
-import { NotificationsGateway } from './notifications.gateway';
-import { SessionTokenModule, SessionModule } from '../session';
+import { NotificationsService } from './notifications.service.js';
+import { NotificationsGateway } from './notifications.gateway.js';
+import { SessionTokenModule, SessionModule } from '../session/index.js';
 
 @Module({
   imports: [SessionTokenModule, SessionModule],
@@ -9,4 +9,4 @@ import { SessionTokenModule, SessionModule } from '../session';
   providers: [NotificationsService, NotificationsGateway],
   exports: [NotificationsService],
 })
-export class NotificationsModule {}
+export class NotificationsModule { }
