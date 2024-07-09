@@ -8,6 +8,8 @@ import {
   JobBase,
 } from '../entities/invoice-for-report.interface.js';
 import { InvoiceProduct } from '../entities/invoice.entity.js';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 export class InvoiceReport {
   private pdf: DocumentDefinition;
@@ -17,6 +19,7 @@ export class InvoiceReport {
     private invoice: InvoiceForReport,
     private locale: Locale = lv,
   ) {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
     this.pdf = new DocumentDefinition();
     this.printer = new Pdfmake({
       Roboto: {
