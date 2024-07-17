@@ -17,7 +17,12 @@ import { SaleValidatorPipe } from './sale-validator.pipe.js';
 @Controller('paytraq')
 @Modules('jobs')
 export class PaytraqController {
-  constructor(private paytraqDao: PaytraqDaoService) { }
+  constructor(private paytraqDao: PaytraqDaoService) {}
+
+  @Get('client/shippingAddresses/:id')
+  async getClientShippingAddresses(@Param('id', ParseIntPipe) id: number) {
+    return this.paytraqDao.getClientShippingAddresses(id);
+  }
 
   @Get('clients')
   async getClients(@Query(RequestParametersPipe) query: RequestParameters) {

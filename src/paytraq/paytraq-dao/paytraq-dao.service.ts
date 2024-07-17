@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { URL } from 'url';
 import https from 'https';
 import { IncomingMessage } from 'http';
-import { PaytraqClients, PaytraqClient } from '../interfaces/client.js';
+import {
+  PaytraqClients,
+  PaytraqClient,
+  ShippingAddress,
+  ShippingAddresses,
+} from '../interfaces/client.js';
 import { PaytraqProduct, PaytraqProducts } from '../interfaces/product.js';
 import { PaytraqSales, PaytraqSale } from '../interfaces/sale.js';
 import { RequestParameters } from '../interfaces/request-parameters.js';
@@ -29,7 +34,7 @@ export class PaytraqDaoService {
     ) as Promise<PaytraqSystemPreference>;
   }
 
-  constructor(private preferencesService: PreferencesService) { }
+  constructor(private preferencesService: PreferencesService) {}
 
   async getClients(query: RequestParameters): Promise<PaytraqClients> {
     const params = await this.params();
@@ -54,6 +59,25 @@ export class PaytraqDaoService {
       .then(httpsGetPromise(url))
       .then(retrieveData)
       .then((xml) => xmlToJs<PaytraqClient>(xml, CLIENT_OPTIONS));
+  }
+
+  async getClientShippingAddresses(
+    clientId: number,
+  ): Promise<ShippingAddresses> {
+    const params = await this.params();
+    const url = new ApiURL(
+      params,
+      'client',
+      'shippingAddresses',
+      clientId.toString(),
+    );
+
+    return this.delay()
+      .then(httpsGetPromise(url))
+      .then(retrieveData)
+      .then((xml) =>
+        xmlToJs<ShippingAddresses>(xml, { forceArray: ['ShippingAddresses'] }),
+      );
   }
 
   async getProducts(query: RequestParameters): Promise<PaytraqProducts> {
@@ -105,7 +129,7 @@ export class PaytraqDaoService {
       );
   }
 
-  async postSale(sale: SalesInput): Promise<{ [key: string]: any; }> {
+  async postSale(sale: SalesInput): Promise<{ [key: string]: any }> {
     const params = await this.params();
     const url = new ApiURL(params, 'sale');
     const xml = jsToXml(sale);

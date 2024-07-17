@@ -38,3 +38,16 @@ export interface PaytraqClient {
 export interface PaytraqClients {
   clients: PaytraqClient[];
 }
+
+export interface ShippingAddress {
+  addressID: string;
+  shipTo: string;
+  address: string;
+  zip: string;
+  country: string;
+  isDefault: boolean;
+}
+
+export interface ShippingAddresses {
+  shippingAddresses: ShippingAddress[];
+}
