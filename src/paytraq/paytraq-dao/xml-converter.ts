@@ -52,6 +52,7 @@ function clearArray<A>(
   stringFields: string[] = [],
 ): Array<A> {
   return obj
+    .filter((v) => v !== undefined)
     .map((v) => [key, v] as [string, any])
     .map(parseNumbers(stringFields))
     .map(parseBoolean)
