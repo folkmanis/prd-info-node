@@ -25,6 +25,7 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
         [3, 'http'],
       ],
       hostname: 'http://localhost',
+      shippingAddress: null,
     },
   },
   {
@@ -63,6 +64,17 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
   },
   {
     module: 'paytraq',
-    settings: { enabled: false },
+    settings: { enabled: false, connectionParams: null },
+  },
+  {
+    module: 'transportation',
+    settings: {
+      fuelTypes: [
+        { type: 'gasoline', description: 'Benzīns', units: 'l' },
+        { type: 'diesel', description: 'Dīzelis', units: 'l' },
+        { type: 'electric', description: 'Elektrība', units: 'kWh' },
+      ],
+      shippingAddress: null,
+    },
   },
 ];

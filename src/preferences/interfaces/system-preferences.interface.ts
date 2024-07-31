@@ -1,3 +1,5 @@
+import { ShippingAddress } from '../../entities/customers/entities/customer.entity.js';
+import { FuelType } from '../../entities/transportation/index.js';
 import { SystemModules } from './system-modules.interface.js';
 
 export type LogLevel =
@@ -15,7 +17,8 @@ export type SystemPreference =
   | KastesSystemPreference
   | SystemSystemPreference
   | JobsSystemPreference
-  | PaytraqSystemPreference;
+  | PaytraqSystemPreference
+  | TransportationSystemPreference;
 
 export interface SystemPreferenceModule {
   module: SystemModules;
@@ -23,7 +26,7 @@ export interface SystemPreferenceModule {
 }
 
 export interface KastesSystemPreference {
-  colors: { [key: string]: string; };
+  colors: { [key: string]: string };
 }
 
 export interface SystemSystemPreference {
@@ -52,7 +55,13 @@ export interface JobsSystemPreference {
 
 export interface PaytraqSystemPreference {
   enabled: boolean;
-  connectionParams?: PaytraqConnectionParams;
+  connectionParams: PaytraqSystemPreference['enabled'] extends true
+    ? PaytraqConnectionParams
+    : null;
+}
+export interface TransportationSystemPreference {
+  shippingAddress: ShippingAddress | null;
+  fuelTypes: FuelType[];
 }
 
 export interface PaytraqConnectionParams {
