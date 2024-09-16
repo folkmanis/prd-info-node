@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, FindOptions, ObjectId } from 'mongodb';
 import { from, map, Observable, tap } from 'rxjs';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { CreateCustomerDto } from '../dto/create-customer.dto.js';
@@ -13,16 +13,15 @@ export class CustomersDaoService {
   constructor(
     @Inject(CUSTOMERS_COLLECTION)
     private readonly collection: Collection<Customer>,
-  ) { }
+  ) {}
 
-  async getCustomers({
-    start,
-    limit,
-    filter,
-  }: FilterType<Customer>): Promise<ListCustomer[]> {
+  async getCustomers(
+    { start, limit, filter }: FilterType<Customer>,
+    projection?: FindOptions<Customer>['projection'],
+  ): Promise<ListCustomer[]> {
     return this.collection
       .find(filter, {
-        projection: {
+        projection: projection ?? {
           _id: 1,
           CustomerName: 1,
           code: 1,

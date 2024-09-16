@@ -1,14 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { TransportationRouteSheetDaoService } from './dao/route-sheet-dao.service.js';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ObjectId } from 'mongodb';
+import {
+  CalculatedRoute,
+  Location,
+  RoutingService,
+} from '../../google/routing/routing.service.js';
+import { TransportationRouteSheetDaoService } from './dao/route-sheet-dao.service.js';
+import { CreateRouteSheetDto } from './dto/create-route-sheet.dto.js';
+import {
+  DistanceRequestQuery,
+  RouteTripStopAddress,
+} from './dto/distance-request.query.js';
+import { RouteSheetFilterQuery } from './dto/route-sheet-filter.query.js';
 import { UpdateRouteSheetDto } from './dto/update-route-sheet.dto.js';
 import { TransportationRouteSheet } from './entities/route-sheet.entity.js';
-import { CreateRouteSheetDto } from './dto/create-route-sheet.dto.js';
-import { RouteSheetFilterQuery } from './dto/route-sheet-filter.query.js';
 
 @Injectable()
 export class TransportationService {
-  constructor(private routeSheetDao: TransportationRouteSheetDaoService) {}
+  constructor(
+    private routeSheetDao: TransportationRouteSheetDaoService,
+    private routingService: RoutingService,
+  ) {}
 
   async getAll(
     query: RouteSheetFilterQuery,
@@ -16,8 +32,12 @@ export class TransportationService {
     return this.routeSheetDao.findAll(query.toFilter());
   }
 
-  async getOne(id: ObjectId): Promise<TransportationRouteSheet | null> {
-    return this.routeSheetDao.getOneById(id);
+  async getOne(id: ObjectId): Promise<TransportationRouteSheet> {
+    const data = await this.routeSheetDao.getOneById(id);
+    if (!data) {
+      throw new NotFoundException({ message: 'Route sheet not found', id });
+    }
+    return data;
   }
 
   async create(
@@ -35,5 +55,45 @@ export class TransportationService {
 
   async delete(id: ObjectId): Promise<number> {
     return this.routeSheetDao.deleteOneById(id);
+  }
+
+  async calculateDistance(request: DistanceRequestQuery): Promise<number> {
+    const stops = request.tripStops.map(getLocation);
+    const destination = stops.pop();
+    if (!destination) {
+      throw new BadRequestException('No destination provided');
+    }
+    const [origin, ...waypoints] = stops;
+
+    const response = await this.routingService.calculateRoute(
+      origin,
+      destination,
+      waypoints,
+    );
+
+    return assertFirstRouteDistance(response)!;
+  }
+}
+
+function assertFirstRouteDistance(response: CalculatedRoute): number {
+  if (
+    !response[0] ||
+    !response[0].routes ||
+    !response[0]?.routes[0] ||
+    typeof response[0].routes[0].distanceMeters !== 'number'
+  )
+    throw new Error('No route found');
+  return response[0].routes[0].distanceMeters;
+}
+
+function getLocation(stop: RouteTripStopAddress): Location {
+  if (stop.googleLocationId) {
+    return {
+      placeId: stop.googleLocationId,
+    };
+  } else {
+    return {
+      address: stop.address,
+    };
   }
 }

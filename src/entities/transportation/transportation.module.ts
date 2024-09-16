@@ -11,6 +11,8 @@ import { VehicleService } from './vehicle.service.js';
 import { VehicleController } from './vehicle.controller.js';
 import { DriverService } from './driver.service.js';
 import { DriverController } from './driver.controller.js';
+import { CustomersModule } from '../customers/customers.module.js';
+import { GoogleModule } from '../../google/google.module.js';
 
 @Module({
   controllers: [DriverController, VehicleController, TransportationController],
@@ -25,5 +27,6 @@ import { DriverController } from './driver.controller.js';
     transportationDriverCollectionProvider,
     transportationVehicleCollectionProvider,
   ],
+  imports: [CustomersModule, GoogleModule],
 })
 export class TransportationModule {}

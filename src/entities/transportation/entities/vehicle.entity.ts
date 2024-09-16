@@ -24,7 +24,12 @@ export class FuelType {
 
 export class TransportationVehicle {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(({ value }) => ObjectId.createFromHexString(value), {
+    toClassOnly: true,
+  })
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   _id: ObjectId;
 

@@ -1,22 +1,27 @@
-import { ObjectId } from 'mongodb';
+import { Transform, Type } from 'class-transformer';
 import {
-  IsString,
-  IsBoolean,
   IsDate,
   IsNotEmpty,
-  ValidateNested,
-  IsOptional,
   IsNumber,
   IsObject,
-  Min,
+  IsOptional,
+  IsString,
   Max,
+  Min,
+  ValidateNested,
 } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { ObjectId } from 'mongodb';
 import { TransportationVehicle } from './vehicle.entity.js';
+import { TransportationDriver } from './driver.entity.js';
 
 export class TransportationRouteSheet {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(({ value }) => ObjectId.createFromHexString(value), {
+    toClassOnly: true,
+  })
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   _id: ObjectId;
 
@@ -30,7 +35,11 @@ export class TransportationRouteSheet {
   month: number;
 
   @IsNumber()
-  fuelRemainingStart: number;
+  fuelRemainingStartLitres: number;
+
+  @Type(() => TransportationDriver)
+  @ValidateNested()
+  driver: TransportationDriver;
 
   @Type(() => TransportationVehicle)
   @ValidateNested()
@@ -38,11 +47,11 @@ export class TransportationRouteSheet {
 
   @Type(() => RouteTrip)
   @ValidateNested({ each: true })
-  trips: RouteTrip[] = [];
+  trips: RouteTrip[];
 
   @Type(() => FuelPurchase)
   @ValidateNested({ each: true })
-  fuelPurchases: FuelPurchase[] = [];
+  fuelPurchases: FuelPurchase[];
 }
 
 export class RouteTrip {
@@ -51,19 +60,30 @@ export class RouteTrip {
   date: Date;
 
   @IsNumber()
-  tripLength: number;
+  tripLengthKm: number;
 
   @IsNumber()
   fuelConsumed: number;
 
+  @IsNumber()
+  odoStartKm: number;
+
+  @IsNumber()
+  odoStopKm: number;
+
   @Type(() => RouteTripStop)
   @ValidateNested({ each: true })
-  stops: RouteTripStop[] = [];
+  stops: RouteTripStop[];
 }
 
 export class RouteTripStop {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(({ value }) => value && ObjectId.createFromHexString(value), {
+    toClassOnly: true,
+  })
+  @Transform(({ value }) => value && value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   @IsOptional()
   customerId: ObjectId;
@@ -84,6 +104,12 @@ export class FuelPurchase {
   @Type(() => Date)
   @IsDate()
   date: Date;
+
+  @IsString()
+  type: string;
+
+  @IsString()
+  units: string;
 
   @IsNumber()
   amount: number;

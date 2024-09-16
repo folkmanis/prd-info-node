@@ -5,6 +5,7 @@ import { FilterType } from '../../../lib/start-limit-filter/filter-type.interfac
 import { CreateRouteSheetDto } from '../dto/create-route-sheet.dto.js';
 import { TransportationRouteSheet } from '../entities/route-sheet.entity.js';
 import { TRANSPORTATION_ROUTE_SHEET_COLLECTION } from './route-sheet-provider.js';
+import { instanceToPlain } from 'class-transformer';
 
 @Injectable()
 export class TransportationRouteSheetDaoService {
@@ -51,7 +52,7 @@ export class TransportationRouteSheetDaoService {
   ): Promise<TransportationRouteSheet | null> {
     return this.collection.findOneAndUpdate(
       { _id: id },
-      { $set: flatten(obj, { safe: true }) },
+      { $set: flatten(instanceToPlain(obj), { safe: true }) },
       { returnDocument: 'after' },
     );
   }
