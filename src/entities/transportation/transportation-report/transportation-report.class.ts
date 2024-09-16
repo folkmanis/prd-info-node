@@ -44,11 +44,15 @@ export class TransportationReport {
     this.pdf.add(new Txt(title).fontSize(14).bold().alignment('center').end);
     this.pdf.add(
       new Txt(
-        `${this.routeSheet.year}. gada ${format(new Date().setMonth(this.routeSheet.month-1), 'LLLL', { locale: this.locale })}`,
+        `${this.routeSheet.year}. gada ${format(new Date().setMonth(this.routeSheet.month - 1), 'LLLL', { locale: this.locale })}`,
       ).end,
     );
-    this.pdf.add(new Txt(`Vadītājs ${this.routeSheet.driver.name}`).end)
-    this.pdf.add(new Txt(`Auto ${this.routeSheet.vehicle.name}, ${this.routeSheet.vehicle.}`).end)
+    this.pdf.add(new Txt(`Vadītājs ${this.routeSheet.driver.name}`).end);
+    this.pdf.add(
+      new Txt(
+        `Auto ${this.routeSheet.vehicle.name}, ${this.routeSheet.vehicle.licencePlate}`,
+      ).end,
+    );
 
     return this.printer.createPdfKitDocument(this.pdf.getDefinition());
   }

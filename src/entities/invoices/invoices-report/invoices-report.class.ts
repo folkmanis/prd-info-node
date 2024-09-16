@@ -2,14 +2,20 @@ import { format, Locale } from 'date-fns';
 import { lv } from 'date-fns/locale';
 import { join } from 'path';
 import Pdfmake from 'pdfmake';
-import { Cell, DocumentDefinition, Table, Txt } from 'pdfmake-wrapper/server/index.js';
+import {
+  Cell,
+  DocumentDefinition,
+  Table,
+  Txt,
+} from 'pdfmake-wrapper/server/index.js';
 import {
   InvoiceForReport,
   JobBase,
 } from '../entities/invoice-for-report.interface.js';
 import { InvoiceProduct } from '../entities/invoice.entity.js';
-import { fileURLToPath } from "url";
-import { dirname } from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import { pdfMakeConfigured } from '../../../lib/pdf-make-configured.js';
 
 export class InvoiceReport {
   private pdf: DocumentDefinition;
@@ -19,14 +25,17 @@ export class InvoiceReport {
     private invoice: InvoiceForReport,
     private locale: Locale = lv,
   ) {
-    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const __dirname = join(
+      dirname(fileURLToPath(import.meta.url)),
+      '../../../lib/fonts',
+    );
     this.pdf = new DocumentDefinition();
     this.printer = new Pdfmake({
       Roboto: {
-        normal: join(__dirname, 'fonts/Roboto-Regular.ttf'),
-        bold: join(__dirname, 'fonts/Roboto-Bold.ttf'),
-        italics: join(__dirname, 'fonts/Roboto-Italics.ttf'),
-        bolditalics: join(__dirname, 'fonts/Roboto-MediumItalic.ttf'),
+        normal: join(__dirname, 'Roboto-Regular.ttf'),
+        bold: join(__dirname, 'Roboto-Bold.ttf'),
+        italics: join(__dirname, 'Roboto-Italics.ttf'),
+        bolditalics: join(__dirname, 'Roboto-MediumItalic.ttf'),
       },
     });
     this.pdf.pageSize('A4');
@@ -62,7 +71,7 @@ export class InvoiceReport {
         .fontSize(8)
         .headerRows(1).end,
     );
-    return this.printer.createPdfKitDocument(this.pdf.getDefinition());
+    return pdfMakeConfigured().createPdfKitDocument(this.pdf.getDefinition());
   }
 
   private createProductsTable(products: InvoiceProduct[]): any[][] {
