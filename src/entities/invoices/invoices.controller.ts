@@ -21,7 +21,7 @@ import { InvoiceInsert } from './dto/invoice-insert.dto.js';
 import { InvoiceUpdate } from './dto/invoice-update.dto.js';
 import { InvoiceForReport } from './entities/invoice-for-report.interface.js';
 import { InvoicesFilter } from './entities/invoice.entity.js';
-import { InvoiceReport } from './invoices-report/invoices-report.class.js';
+import { invoicesReport } from './invoices-report/invoices-report.js';
 import { InvoicesService } from './invoices.service.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 
@@ -33,11 +33,11 @@ export class InvoicesController {
     private readonly invoicesDao: InvoicesDao,
     private readonly jobsService: JobsService,
     private readonly invoicesService: InvoicesService,
-  ) { }
+  ) {}
 
   @Put('report')
   async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
-    const pdf = new InvoiceReport(invoice).open();
+    const pdf = invoicesReport(invoice);
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
@@ -87,7 +87,7 @@ export class InvoicesController {
     @Res() res: Response,
   ) {
     const data = await this.invoicesService.invoiceForReport(invoiceId);
-    const pdf = new InvoiceReport(data).open();
+    const pdf = invoicesReport(data);
 
     res.contentType('application/pdf');
     pdf.pipe(res);

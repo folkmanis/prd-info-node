@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UsePipes,
   ValidationPipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
 import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
@@ -24,11 +25,10 @@ import { UpdateRouteSheetDto } from './dto/update-route-sheet.dto.js';
 import { TransportationService } from './transportation.service.js';
 import { DistanceRequestQuery } from './dto/distance-request.query.js';
 import { Response } from 'express';
-import { TransportationReport } from './transportation-report/transportation-report.class.js';
+import { transportationReport } from './transportation-report/transportation-report.js';
 
 @Controller('transportation')
 @Modules('transportation')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class TransportationController {
   constructor(
     private readonly transportationService: TransportationService,
@@ -36,6 +36,7 @@ export class TransportationController {
   ) {}
 
   @Put()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   insertOne(@Body() createTransportationDto: CreateRouteSheetDto) {
     return this.transportationService.create(createTransportationDto);
   }
@@ -46,7 +47,7 @@ export class TransportationController {
     @Res() res: Response,
   ) {
     const data = await this.transportationService.getOne(id);
-    const pdf = new TransportationReport(data).open();
+    const pdf = transportationReport(data);
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
@@ -59,17 +60,31 @@ export class TransportationController {
     return this.customersService.getCustomersWithLocation();
   }
 
+  @Get('descriptions')
+  async getDescriptions(
+    @Query('count', new ParseIntPipe({ optional: true })) count: number,
+  ) {
+    return this.transportationService.getDescriptions(count);
+  }
+
+  @Get('historical-data/:licencePlate')
+  async getHistoricalData(@Param('licencePlate') licencePlate: string) {
+    return this.transportationService.getHistoricalData(licencePlate);
+  }
+
   @Get(':id')
   findOne(@Param('id', ObjectIdPipe) id: ObjectId) {
     return this.transportationService.getOne(id);
   }
 
   @Get()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   findAll(@Query() query: RouteSheetFilterQuery) {
     return this.transportationService.getAll(query);
   }
 
   @Patch(':id')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   update(
     @Param('id', ObjectIdPipe) id: ObjectId,
     @Body() updateTransportationDto: UpdateRouteSheetDto,
@@ -84,6 +99,7 @@ export class TransportationController {
   }
 
   @Post('distance-request')
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   @UseInterceptors(new ResponseWrapperInterceptor('distance'))
   distanceRequest(@Body() request: DistanceRequestQuery) {
     return this.transportationService.calculateDistance(request);

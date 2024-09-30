@@ -18,6 +18,8 @@ import {
 import { RouteSheetFilterQuery } from './dto/route-sheet-filter.query.js';
 import { UpdateRouteSheetDto } from './dto/update-route-sheet.dto.js';
 import { TransportationRouteSheet } from './entities/route-sheet.entity.js';
+import { plainToInstance } from 'class-transformer';
+import { HistoricalData } from './entities/historical-data.entity.js';
 
 @Injectable()
 export class TransportationService {
@@ -37,7 +39,7 @@ export class TransportationService {
     if (!data) {
       throw new NotFoundException({ message: 'Route sheet not found', id });
     }
-    return data;
+    return plainToInstance(TransportationRouteSheet, data);
   }
 
   async create(
@@ -72,6 +74,29 @@ export class TransportationService {
     );
 
     return assertFirstRouteDistance(response)!;
+  }
+
+  async getDescriptions(count?: number): Promise<string[]> {
+    const result = await this.routeSheetDao.getDescriptions({
+      resultsLimit: count,
+    });
+    return result.map((r) => r._id);
+  }
+
+  async getHistoricalData(licencePlate: string): Promise<HistoricalData> {
+    const odometers =
+      await this.routeSheetDao.getLastMonthAndOdometer(licencePlate);
+    if (!odometers) {
+      throw new NotFoundException(
+        `No historical data for vehicle ${licencePlate}`,
+      );
+    }
+    const { fuelConsumed, fuelPurchased, fuelRemained } =
+      await this.routeSheetDao.getLastTripData(licencePlate);
+    return {
+      fuelRemaining: fuelRemained + fuelPurchased - fuelConsumed,
+      ...odometers,
+    };
   }
 }
 

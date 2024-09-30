@@ -7,6 +7,7 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -16,9 +17,13 @@ import { TransportationDriver } from './driver.entity.js';
 
 export class TransportationRouteSheet {
   @Type(() => ObjectId)
-  @Transform(({ value }) => ObjectId.createFromHexString(value), {
-    toClassOnly: true,
-  })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    {
+      toClassOnly: true,
+    },
+  )
   @Transform(({ value }) => value.toString(), {
     toPlainOnly: true,
   })
@@ -52,6 +57,36 @@ export class TransportationRouteSheet {
   @Type(() => FuelPurchase)
   @ValidateNested({ each: true })
   fuelPurchases: FuelPurchase[];
+
+  totalFuelPurchased = () =>
+    this.fuelPurchases?.reduce((prev, curr) => prev + curr.amount, 0) ?? 0;
+
+  fuelUnits = () => {
+    if (!this.fuelPurchases) return '';
+    return [
+      ...new Set(this.fuelPurchases.map((fuelPurchase) => fuelPurchase.units)),
+    ].join(',');
+  };
+
+  totalFuelConsumed = () =>
+    this.trips?.reduce((prev, curr) => prev + curr.fuelConsumed, 0) ?? 0;
+
+  fuelRemaining = () =>
+    this.fuelRemainingStartLitres +
+    this.totalFuelPurchased() -
+    this.totalFuelConsumed();
+
+  totalTripsLength = () =>
+    this.trips?.reduce((acc, trip) => acc + trip.tripLengthKm, 0) ?? 0;
+
+  averageConsumption = () => {
+    const totalLength = this.totalTripsLength();
+    if (totalLength === 0) {
+      return 0;
+    } else {
+      return this.totalFuelConsumed() / totalLength;
+    }
+  };
 }
 
 export class RouteTrip {
@@ -70,6 +105,10 @@ export class RouteTrip {
 
   @IsNumber()
   odoStopKm: number;
+
+  @IsString()
+  @MaxLength(255)
+  description: string;
 
   @Type(() => RouteTripStop)
   @ValidateNested({ each: true })

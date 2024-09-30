@@ -4,9 +4,13 @@ import { ObjectId } from 'mongodb';
 
 export class TransportationDriver {
   @Type(() => ObjectId)
-  @Transform(({ value }) => ObjectId.createFromHexString(value), {
-    toClassOnly: true,
-  })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    {
+      toClassOnly: true,
+    },
+  )
   @Transform(({ value }) => value.toString(), {
     toPlainOnly: true,
   })

@@ -9,8 +9,8 @@ export function pdfMakeConfigured(): Pdfmake {
     Roboto: {
       normal: join(__dirname, 'Roboto-Regular.ttf'),
       bold: join(__dirname, 'Roboto-Bold.ttf'),
-      italics: join(__dirname, 'Roboto-Italics.ttf'),
-      bolditalics: join(__dirname, 'Roboto-MediumItalic.ttf'),
+      italics: join(__dirname, 'Roboto-Italic.ttf'),
+      bolditalics: join(__dirname, 'Roboto-BoldItalic.ttf'),
     },
   });
 }
