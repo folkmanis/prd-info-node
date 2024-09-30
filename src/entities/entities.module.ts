@@ -9,6 +9,7 @@ import { KastesModule } from './kastes/kastes.module.js';
 import { EquipmentModule } from './equipment/equipment.module.js';
 import { MaterialsModule } from './materials/materials.module.js';
 import { ProductionStagesModule } from './production-stages/production-stages.module.js';
+import { TransportationModule } from './transportation/transportation.module.js';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProductionStagesModule } from './production-stages/production-stages.mo
     EquipmentModule,
     MaterialsModule,
     ProductionStagesModule,
+    TransportationModule,
   ],
 })
-export class EntitiesModule { }
+export class EntitiesModule {}

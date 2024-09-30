@@ -8,6 +8,7 @@ export const SYSTEM_MODULES_KEYS = [
   'xmf-search',
   'xmf-upload',
   'jobs-admin',
+  'transportation',
 ] as const;
 
 export const SYSTEM_MODULES: string[] = [...SYSTEM_MODULES_KEYS];

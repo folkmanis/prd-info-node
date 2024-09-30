@@ -39,6 +39,25 @@ class CustomerContact {
   email?: string;
 }
 
+export class ShippingAddress {
+  @IsString()
+  address: string;
+
+  @IsString()
+  zip: string;
+
+  @IsString()
+  country: string;
+
+  @IsNumber()
+  @IsOptional()
+  paytraqId?: number;
+
+  @IsString()
+  @IsOptional()
+  googleId?: string;
+}
+
 export class Customer {
   @Type(() => ObjectId)
   @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
@@ -81,4 +100,9 @@ export class Customer {
   @Type(() => CustomerContact)
   @ValidateNested({ each: true })
   contacts?: CustomerContact[];
+
+  @Type(() => ShippingAddress)
+  @ValidateNested()
+  @IsOptional()
+  shippingAddress?: ShippingAddress;
 }

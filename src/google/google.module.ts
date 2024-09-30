@@ -8,6 +8,7 @@ import { PreferencesModule } from '../preferences/index.js';
 import { GmailController } from './gmail/gmail.controller.js';
 import { Oauth2Service } from './oauth2/oauth2.service.js';
 import { HttpModule } from '@nestjs/axios';
+import { RoutingService } from './routing/routing.service.js';
 
 const googleConfig: ConfigFactory = async () => {
   const oAuthLocation = process.env.GOOGLE_OAUTH2_CREDENTIALS || '';
@@ -22,6 +23,7 @@ const googleConfig: ConfigFactory = async () => {
       oAuthRedirect,
       scopes: ['https://mail.google.com/', 'profile'],
       web: oAuth2.web,
+      mapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
     },
   };
 };
@@ -41,7 +43,7 @@ const googleConfig: ConfigFactory = async () => {
     }),
   ],
   controllers: [GmailController],
-  providers: [Oauth2Service],
-  exports: [Oauth2Service],
+  providers: [Oauth2Service, RoutingService],
+  exports: [Oauth2Service, RoutingService],
 })
-export class GoogleModule { }
+export class GoogleModule {}
