@@ -19,7 +19,7 @@ export class JobFilesService {
     private readonly filesystemService: FilesystemService,
     private readonly jobsService: JobsService,
     private readonly customersService: CustomersService,
-  ) { }
+  ) {}
 
   async addFolderPathToJob(jobId: number): Promise<FileLocation> {
     const job = await this.jobsService.getOne(jobId);
@@ -129,7 +129,7 @@ export class JobFilesService {
       await oldLoc.rename(newLoc);
     } catch (error) {
       throw new BadRequestException(
-        `Job ${jobId} folder rename unsussecful. "${oldLoc.resolve()}" -> "${newLoc.resolve()}"`,
+        `Job ${jobId} folder rename unsuccesful. "${oldLoc.resolve()}" -> "${newLoc.resolve()}"`,
       );
     }
 
