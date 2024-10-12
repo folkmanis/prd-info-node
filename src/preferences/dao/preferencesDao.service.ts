@@ -12,9 +12,9 @@ import { flatten } from 'flat';
 
 interface BulkUpdateOne {
   updateOne: {
-    filter: { [key: string]: any; };
+    filter: { [key: string]: any };
     update: {
-      $set: { [key: string]: any; };
+      $set: { [key: string]: any };
     };
     upsert?: boolean;
   };
@@ -25,13 +25,10 @@ export class PreferencesDao {
   preferences: Collection<SystemPreferenceModule>;
 
   constructor(private dbService: DatabaseService) {
-    this.preferences = this.dbService
-      .db()
-      .collection('preferences');
+    this.preferences = this.dbService.db().collection('preferences');
 
     this.createindexes();
     this.insertDefaults(DEFAULT_PREFERENCES);
-
   }
 
   async getModulePreferences(mod: SystemModules): Promise<SystemPreference> {
@@ -56,7 +53,7 @@ export class PreferencesDao {
       updateOne: {
         filter: { module: pr.module },
         update: {
-          $set: flatten({ settings: pr.settings }, { maxDepth: 1, safe: true }),
+          $set: flatten({ settings: pr.settings }, { safe: true }),
         },
       },
     }));

@@ -18,8 +18,8 @@ import { Request } from 'express';
 import { Session as Sess } from 'express-session';
 import {
   PasswordPipe,
-  UpdateUserDto,
   User,
+  UserSelfChangeableDto,
   UsersService,
   UserUpdateNotifyInterceptor,
   Usr,
@@ -36,7 +36,7 @@ export class LoginController {
   constructor(
     private readonly tokenService: SessionTokenService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
 
   @UseGuards(LocalAuthGuard)
   @PublicRoute()
@@ -100,7 +100,7 @@ export class LoginController {
   )
   @UseInterceptors(UpdateSessionUserInterceptor, UserUpdateNotifyInterceptor)
   @Patch()
-  async updateUser(@Usr() user: User, @Body() update: UpdateUserDto) {
+  async updateUser(@Usr() user: User, @Body() update: UserSelfChangeableDto) {
     await this.usersService.updateUser(user.username, update);
     return this.usersService.getOneByUsername(user.username);
   }

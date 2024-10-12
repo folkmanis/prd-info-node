@@ -51,6 +51,10 @@ export class User {
   @IsOptional()
   google?: oauth2_v2.Schema$Userinfo;
 
+  @IsOptional()
+  @IsBoolean()
+  prefersDarkMode?: boolean;
+
   tokens?: Credentials;
   last_login?: Date;
   sessions?: UserSession[];
