@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { sanitizeFileName, toMonthNumberName } from '../lib/filename-functions.js';
+import {
+  sanitizeFileName,
+  toMonthNumberName,
+} from '../lib/filename-functions.js';
 import { FileLocation, JobPathComponents } from './entities/file-location.js';
 import { FileLocationTypes } from './entities/file-location-types.js';
 import { JobFile } from './entities/job-file.js';
@@ -13,7 +16,7 @@ const HOMES_ROOT = 'UserFiles';
 
 type FileLocationResolver = Record<
   FileLocationTypes,
-  (params?: any) => { root: string; path: string[]; }
+  (params?: any) => { root: string; path: string[] }
 >;
 
 @Injectable()
@@ -71,7 +74,9 @@ export class FilesystemService {
     return 1;
   }
 
-  private getResolvers(configService: ConfigService<AppConfig, true>): FileLocationResolver {
+  private getResolvers(
+    configService: ConfigService<AppConfig, true>,
+  ): FileLocationResolver {
     return {
       [FileLocationTypes.FTP]: (ftpPath: string[] = []) => ({
         root: configService.get('FTP_FOLDER'),
@@ -81,7 +86,7 @@ export class FilesystemService {
         root: configService.get('JOBS_INPUT'),
         path: [HOMES_ROOT, username],
       }),
-      [FileLocationTypes.NEWJOB]: jobPathFromComponents(
+      [FileLocationTypes.NEWJOB]: jobPathFromComponentsFn(
         configService.get('JOBS_INPUT'),
       ),
       [FileLocationTypes.JOB]: (jobPath: string[]) => ({
@@ -96,9 +101,9 @@ export class FilesystemService {
   }
 }
 
-function jobPathFromComponents(
+function jobPathFromComponentsFn(
   jobsRoot: string,
-): (params: JobPathComponents) => { root: string; path: string[]; } {
+): (params: JobPathComponents) => { root: string; path: string[] } {
   return ({ receivedDate, custCode, jobId, name }) => ({
     root: jobsRoot,
     path: [
