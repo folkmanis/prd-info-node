@@ -5,3 +5,4 @@ export * from './dto/update-user.dto.js';
 export * from './password.pipe.js';
 export * from './user.decorator.js';
 export * from './user-update-notify.interceptor.js';
+export * from './dto/user-self-changeable.dto.js';
