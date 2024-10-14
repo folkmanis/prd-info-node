@@ -35,7 +35,7 @@ export class JobFilesController {
   constructor(
     private readonly fileService: FilesystemService,
     private readonly jobFilesService: JobFilesService,
-  ) { }
+  ) {}
 
   @UseInterceptors(new ResponseWrapperInterceptor('names'))
   @Put('user/upload')

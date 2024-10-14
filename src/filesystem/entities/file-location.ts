@@ -1,9 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { createWriteStream, CopyOptions } from 'fs';
+import { CopyOptions, createWriteStream } from 'fs';
 import { cp, mkdir, readdir, rename } from 'fs/promises';
-import { last } from 'lodash-es';
 import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions.js';
 import { FileElement, fromDirent } from './file-element.js';
@@ -20,15 +19,7 @@ export class FileLocation {
 
   private rootPath: string[] = [];
 
-  get fileElement(): FileElement {
-    return {
-      isFolder: true,
-      name: last(this.path) || '..',
-      parent: this.path.slice(0, -1),
-    };
-  }
-
-  constructor(params: { root: string; path: string[]; }) {
+  constructor(params: { root: string; path: string[] }) {
     this.rootPath = params.root.split(path.sep);
     this.path = params.path;
   }
@@ -61,13 +52,14 @@ export class FileLocation {
       ...options,
     };
     const src = this.resolve();
-    const dst = path.join(dest.resolve(), last(this.path) || '');
+    const dst = path.join(dest.resolve());
 
     console.log(src, dst, options);
 
     try {
       return cp(src, dst, options);
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(
         `Failed to copy directory ${src} to ${dst}. Error: ${error}`,
       );
