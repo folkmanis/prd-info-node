@@ -17,10 +17,6 @@ export class ReproProduction extends ProductionCategory {
 export class KastesProduction extends ProductionCategory {
   @Contains('perforated paper')
   category: JobCategories = 'perforated paper';
-
-  @Type(() => Boolean)
-  @IsBoolean()
-  isLocked = false; // ir izveidots pakošanas saraksts
 }
 
 export class PrintProduction extends ProductionCategory {

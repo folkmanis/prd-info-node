@@ -26,7 +26,7 @@ export class VeikaliController {
   constructor(
     private readonly veikaliDao: VeikaliDaoService,
     private readonly jobsService: JobsService,
-  ) { }
+  ) {}
 
   @Put()
   @UseInterceptors(new ResponseWrapperInterceptor('modifiedCount'))
@@ -34,9 +34,7 @@ export class VeikaliController {
     const jobIds = [
       ...new Set(veikali.map((veikals) => veikals.pasutijums)).values(),
     ];
-    const resp = await this.veikaliDao.insertMany(veikali, jobIds);
-    await this.jobsService.setProduction(jobIds, { isLocked: true });
-    return resp;
+    return this.veikaliDao.insertMany(veikali, jobIds);
   }
 
   @Get('veikali/:jobId')

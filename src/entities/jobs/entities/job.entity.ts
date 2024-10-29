@@ -18,7 +18,7 @@ import {
 import { JobProduct } from './job-product.entity.js';
 import { JobProductionStage } from './job-production-stage.entity.js';
 
-export const CURRENT_VERSION = 3;
+export const CURRENT_VERSION = 4;
 
 export class JobStatus {
   @IsNumber()

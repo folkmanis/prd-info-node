@@ -53,7 +53,7 @@
     "firebase-admin": "^12.2.0",
     "flat": "^6.0.1",
     "google-auth-library": "^9.11.0",
-    "googleapis": "^140.0.1",
+    "googleapis": "^144.0.0",
     "googleapis-common": "^7.0.1",
     "joi": "^17.13.3",
     "lodash-es": "^4.17.21",

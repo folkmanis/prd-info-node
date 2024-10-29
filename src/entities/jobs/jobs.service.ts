@@ -4,7 +4,6 @@ import { JobsCounterService } from './dao/counters.service.js';
 import { JobsDao } from './dao/jobs-dao.service.js';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
 import { UpdateJobDto } from './dto/update-job.dto.js';
-import { Production } from './entities/job-categories.js';
 import { Job } from './entities/job.entity.js';
 import { assertCondition } from '../../lib/assertions.js';
 
@@ -14,7 +13,7 @@ export class JobsService {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly counters: JobsCounterService,
-  ) { }
+  ) {}
 
   async getAll(
     filter: FilterType<Job>,
@@ -53,19 +52,5 @@ export class JobsService {
 
   async getJobsTotals(jobIds: number[]) {
     return this.jobsInvoicesDao.getJobsTotals(jobIds);
-  }
-
-  async setProduction(jobsId: number[], production: Partial<Production>) {
-    const update = Object.assign(
-      {},
-      ...Object.keys(production).map((key) => ({
-        ['production.' + key]: production[key as keyof Production],
-      })),
-    );
-    const jobsUpdate: UpdateJobDto[] = jobsId.map((jobId) => ({
-      ...update,
-      jobId,
-    }));
-    return this.jobsDao.updateJobs(jobsUpdate);
   }
 }

@@ -23,7 +23,6 @@ const googleConfig: ConfigFactory = async () => {
       oAuthRedirect,
       scopes: ['https://mail.google.com/', 'profile'],
       web: oAuth2.web,
-      mapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
     },
   };
 };

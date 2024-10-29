@@ -2,7 +2,6 @@ export interface GoogleConfig {
   oAuthLocation: string;
   oAuthRedirect: string;
   scopes: string[];
-  mapsApiKey: string;
 
   web: {
     client_id: string;

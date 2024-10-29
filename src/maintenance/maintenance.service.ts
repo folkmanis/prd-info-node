@@ -47,7 +47,7 @@ export class MaintenanceService {
     private dbService: DatabaseService,
     @Inject(JOBS_COLLECTION) private jobsCollection: Collection<Job>,
     private config: ConfigService,
-  ) { }
+  ) {}
 
   async performTasks() {
     await this.createCollection();
@@ -139,6 +139,18 @@ export class MaintenanceService {
       {
         $set: {
           _v: 3,
+        },
+      },
+    );
+    await this.jobsCollection.updateMany(
+      {
+        _v: { $lt: 4 },
+        'production.isLocked': { $exists: true },
+      },
+      {
+        $set: {
+          _v: 4,
+          $unset: ['production.isLocked'],
         },
       },
     );
