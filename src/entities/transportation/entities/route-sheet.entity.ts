@@ -14,6 +14,7 @@ import {
 import { ObjectId } from 'mongodb';
 import { TransportationVehicle } from './vehicle.entity.js';
 import { TransportationDriver } from './driver.entity.js';
+import { round } from 'lodash';
 
 export class TransportationRouteSheet {
   @Type(() => ObjectId)
@@ -59,7 +60,10 @@ export class TransportationRouteSheet {
   fuelPurchases: FuelPurchase[];
 
   totalFuelPurchased = () =>
-    this.fuelPurchases?.reduce((prev, curr) => prev + curr.amount, 0) ?? 0;
+    round(
+      this.fuelPurchases?.reduce((prev, curr) => prev + curr.amount, 0) ?? 0,
+      2,
+    );
 
   fuelUnits = () => {
     if (!this.fuelPurchases) return '';
@@ -69,7 +73,10 @@ export class TransportationRouteSheet {
   };
 
   totalFuelConsumed = () =>
-    this.trips?.reduce((prev, curr) => prev + curr.fuelConsumed, 0) ?? 0;
+    round(
+      this.trips?.reduce((prev, curr) => prev + curr.fuelConsumed, 0) ?? 0,
+      2,
+    );
 
   fuelRemaining = () =>
     this.fuelRemainingStartLitres +
