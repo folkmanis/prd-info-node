@@ -56,7 +56,7 @@ export function transportationReport(
     ]).end,
     new Txt([
       'Degvielas atlikums beigās: ',
-      new Txt(routeSheet.fuelRemaining() + ' ').bold().end,
+      new Txt(routeSheet.fuelRemaining().toFixed(2) + ' ').bold().end,
       fuelUnits().bold().end,
     ]).end,
   ];
