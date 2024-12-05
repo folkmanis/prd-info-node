@@ -1,6 +1,5 @@
-import { ObjectId } from 'mongodb';
-import { IsString, IsObject, IsArray } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
+import { IsArray, IsString } from 'class-validator';
 import { sanitizeFileName } from '../../../lib/filename-functions.js';
 
 export class DropFolder {
@@ -10,9 +9,6 @@ export class DropFolder {
   })
   path: string[];
 
-  @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
-  @IsObject()
   @IsArray()
-  customer: ObjectId[];
+  customers: string[];
 }

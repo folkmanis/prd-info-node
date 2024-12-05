@@ -14,7 +14,7 @@ export class ObjectIdPipe implements PipeTransform {
     }
 
     try {
-      return new ObjectId(value);
+      return ObjectId.createFromHexString(value);
     } catch (error) {
       throw new BadRequestException(
         `id must be a single String of 12 bytes or a string of 24 hex characters`,

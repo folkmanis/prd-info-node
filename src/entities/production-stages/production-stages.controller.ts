@@ -26,7 +26,7 @@ import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Modules('jobs')
 export class ProductionStagesController {
-  constructor(private readonly daoService: ProductionStagesDaoService) { }
+  constructor(private readonly daoService: ProductionStagesDaoService) {}
 
   @Put()
   @Modules('jobs-admin')

@@ -5,7 +5,14 @@ import { DropFolder } from './drop-folder.entity.js';
 
 export class ProductionStage {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   _id: ObjectId;
 
@@ -17,14 +24,27 @@ export class ProductionStage {
   description?: string;
 
   @Type(() => ObjectId)
-  @Transform(({ value }) => [...value].map((id) => new ObjectId(id)), {
-    toClassOnly: true,
-  })
+  @Transform(
+    ({ value }) =>
+      [...value].map((id) =>
+        typeof id === 'string' ? ObjectId.createFromHexString(id) : id,
+      ),
+    {
+      toClassOnly: true,
+    },
+  )
   @IsObject({ each: true })
   equipmentIds: ObjectId[];
 
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   @IsOptional()
   defaultEquipmentId?: ObjectId;
@@ -32,5 +52,5 @@ export class ProductionStage {
   @Type(() => DropFolder)
   @IsOptional()
   @IsObject({ each: true })
-  dropFolders: DropFolder[] = [];
+  dropFolders: DropFolder[];
 }
