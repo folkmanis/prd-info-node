@@ -37,10 +37,10 @@ export class JobFile {
   }
 
   async move(newLocation: FileLocation, newName?: string) {
-    newName = sanitizeFileName(newName || this.name);
+    const sanitizedName = sanitizeFileName(newName || this.name);
 
     try {
-      return rename(this.resolve(), newLocation.resolve(newName));
+      await rename(this.resolve(), newLocation.resolve(sanitizedName));
     } catch (error) {
       throw new NotFoundException(error);
     }
