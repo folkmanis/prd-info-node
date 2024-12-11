@@ -57,7 +57,7 @@ export class FileLocation {
     console.log(src, dst, options);
 
     try {
-      return cp(src, dst, options);
+      await cp(src, dst, options);
     } catch (error) {
       console.log(error);
       throw new BadRequestException(
@@ -70,10 +70,9 @@ export class FileLocation {
     const src = this.resolve();
     const dst = dest.resolve();
 
-    await dest.createFolder();
-
     try {
-      return rename(src, dst);
+      await dest.createFolder();
+      await rename(src, dst);
     } catch (error) {
       throw new BadRequestException(
         `Failed to move directory ${src} to ${dst}. Error: ${error}`,
