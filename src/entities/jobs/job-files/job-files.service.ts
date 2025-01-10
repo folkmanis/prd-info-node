@@ -23,26 +23,25 @@ export class JobFilesService {
 
   async addFolderPathToJob(jobId: number): Promise<FileLocation> {
     const job = await this.jobsService.getOne(jobId);
-    if (job.files?.path) {
+    if (job.files) {
       const loc = this.filesystemService.location(
         FileLocationTypes.JOB,
         job.files.path,
       );
       return loc.createFolder();
+    } else {
+      const loc = await this.jobLocationResolver(job);
+
+      await loc.createFolder();
+
+      await this.jobsService.updateJob({
+        jobId: job.jobId,
+        files: {
+          path: loc.path,
+        },
+      });
+      return loc;
     }
-
-    const loc = await this.jobLocationResolver(job);
-
-    await loc.createFolder();
-
-    await this.jobsService.updateJob({
-      jobId: job.jobId,
-      files: {
-        ...job.files,
-        path: loc.path,
-      },
-    });
-    return loc;
   }
 
   async writeJobFiles(jobId: number, req: Request): Promise<Job> {
@@ -50,14 +49,7 @@ export class JobFilesService {
 
     await loc.writeFormFiles(req);
 
-    const fileNames = await loc.readDir();
-    return this.jobsService.updateJob({
-      jobId,
-      files: {
-        path: loc.path,
-        fileNames: [...fileNames.map((dir) => dir.name)],
-      },
-    });
+    return this.writeDirToJob(jobId, loc);
   }
 
   async moveUserFilesToJob(
@@ -75,14 +67,7 @@ export class JobFilesService {
       names.map((name) => new JobFile(source, name).move(dest)),
     );
 
-    const fileNames = await dest.readDir();
-    return this.jobsService.updateJob({
-      jobId,
-      files: {
-        path: dest.path,
-        fileNames: [...fileNames.map((dir) => dir.name)],
-      },
-    });
+    return this.writeDirToJob(jobId, dest);
   }
 
   async copyFtpFilesToJob(jobId: number, names: string[][]): Promise<Job> {
@@ -100,26 +85,29 @@ export class JobFilesService {
       }),
     );
 
-    const fileNames = await dest.readDir();
-    return this.jobsService.updateJob({
-      jobId,
-      files: {
-        path: dest.path,
-        fileNames: [...fileNames.map((dir) => dir.name)],
-      },
-    });
+    return this.writeDirToJob(jobId, dest);
   }
 
-  async updateJobFolderPath(jobId: number): Promise<FileLocation> {
+  async updateJobFolderPath(jobId: number): Promise<Job> {
     const job = await this.jobsService.getOne(jobId);
 
-    if (!job.files) return this.addFolderPathToJob(jobId);
+    if (!job.files) {
+      this.addFolderPathToJob(jobId);
+      return this.jobsService.getOne(jobId);
+    }
 
     const oldLoc = this.filesystemService.location(
       FileLocationTypes.JOB,
       job.files.path,
     );
-    const newLoc = await this.jobLocationResolver(job);
+
+    const { code: custCode } = await this.customersService.getCustomerByName(
+      job.customer,
+    );
+    const newLoc = this.filesystemService.location(FileLocationTypes.NEWJOB, {
+      ...job,
+      custCode,
+    });
 
     if (oldLoc.resolve() === newLoc.resolve()) {
       throw new BadRequestException(`Nothing to change!`);
@@ -137,25 +125,63 @@ export class JobFilesService {
       `Job ${jobId} folder renamed. "${oldLoc.resolve()}" -> "${newLoc.resolve()}"`,
     );
 
-    await this.jobsService.updateJob({
-      jobId,
-      files: {
-        ...job.files,
-        path: newLoc.path,
-      },
-    });
+    return this.writeDirToJob(jobId, newLoc);
+  }
 
-    return newLoc;
+  async copyJobFilesToNewJob(jobId: number, newJobId: number): Promise<Job> {
+    const { files } = await this.jobsService.getOne(jobId);
+    assertPath(files?.path);
+
+    const oldLoc = this.filesystemService.location(
+      FileLocationTypes.JOB,
+      files.path,
+    );
+
+    console.log('oldLoc', oldLoc);
+    console.log('newJobId', newJobId);
+    const newLoc = await this.addFolderPathToJob(newJobId);
+    console.log('newLoc', newLoc);
+
+    const count = await oldLoc.copyContents(newLoc);
+
+    this.logger.log(
+      `Copied ${count} files from job ${jobId} to job ${newJobId}`,
+    );
+
+    return this.writeDirToJob(newJobId, newLoc);
   }
 
   private async jobLocationResolver(job: Job): Promise<FileLocation> {
-    const { code: custCode } = await this.customersService.getCustomerByName(
-      job.customer,
-    );
+    if (job.files) {
+      return this.filesystemService.location(
+        FileLocationTypes.JOB,
+        job.files.path,
+      );
+    } else {
+      const { code: custCode } = await this.customersService.getCustomerByName(
+        job.customer,
+      );
+      return this.filesystemService.location(FileLocationTypes.NEWJOB, {
+        ...job,
+        custCode,
+      });
+    }
+  }
 
-    return this.filesystemService.location(FileLocationTypes.NEWJOB, {
-      ...job,
-      custCode,
+  private async writeDirToJob(jobId: number, dest: FileLocation): Promise<Job> {
+    const fileNames = await dest.readDir();
+    return this.jobsService.updateJob({
+      jobId,
+      files: {
+        path: dest.path,
+        fileNames: [...fileNames.map((dir) => dir.name)],
+      },
     });
+  }
+}
+
+function assertPath(path: unknown): asserts path is string[] {
+  if (!Array.isArray(path)) {
+    throw new BadRequestException(`Invalid path: ${path}`);
   }
 }

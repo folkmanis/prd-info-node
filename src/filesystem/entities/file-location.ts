@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
 import Busboy from 'busboy';
 import { Request } from 'express';
 import { CopyOptions, createWriteStream } from 'fs';
@@ -16,6 +16,8 @@ export interface JobPathComponents {
 
 export class FileLocation {
   path: string[];
+
+  log = new Logger(FileLocation.name);
 
   private rootPath: string[] = [];
 
@@ -64,6 +66,39 @@ export class FileLocation {
         `Failed to copy directory ${src} to ${dst}. Error: ${error}`,
       );
     }
+  }
+
+  async copyContents(
+    dest: FileLocation,
+    options: CopyOptions = {},
+  ): Promise<number> {
+    options = {
+      preserveTimestamps: true,
+      recursive: true,
+      ...options,
+    };
+    const content = await this.readDir();
+
+    if (!content.length) {
+      return 0;
+    }
+
+    const result = await Promise.all(
+      content.map(async (element) => {
+        const src = this.resolve(element.name);
+        const dst = dest.resolve(element.name);
+        try {
+          await cp(src, dst, options);
+          return 1;
+        } catch (error) {
+          this.log.error(
+            `Failed to copy file ${src} to ${dst}. Error: ${error}`,
+          );
+          return 0;
+        }
+      }),
+    );
+    return result.reduce((acc, res) => acc + res, 0 as number);
   }
 
   async rename(dest: FileLocation) {

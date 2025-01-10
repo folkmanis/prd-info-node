@@ -72,23 +72,32 @@ export class JobFilesController {
     return this.jobFilesService.copyFtpFilesToJob(jobId, commands.files);
   }
 
+  @UseInterceptors(JobNotifyInterceptor)
   @Patch(':jobId/update-files-location')
-  @UseInterceptors(new ResponseWrapperInterceptor('path'))
-  async updateJobFolderLocation(@JobId() jobId: number): Promise<string[]> {
-    const { path } = await this.jobFilesService.updateJobFolderPath(jobId);
-    return path;
+  async updateJobFolderLocation(@JobId() jobId: number) {
+    return this.jobFilesService.updateJobFolderPath(jobId);
+  }
+
+  @UseInterceptors(JobNotifyInterceptor)
+  @Put(':jobId/copy/:newJobId')
+  async copyJobFilesToNewJob(
+    @JobId() jobId: number,
+    @JobId('newJobId') newJobId: number,
+  ) {
+    console.log('copyJobFilesToNewJob', jobId, newJobId);
+    return this.jobFilesService.copyJobFilesToNewJob(jobId, newJobId);
   }
 
   @Patch('copy/:src/:dst')
   @UseInterceptors(new ResponseWrapperInterceptor('copied'))
-  async copyJobFilesToDropFolder(
+  async copyGeneric(
     @Param('src', ParseIntPipe) srcType: FileLocationTypes,
     @Param('dst', ParseIntPipe) dstType: FileLocationTypes,
     @Body('source-path', ValidPathPipe) srcPath: string[],
     @Body('destination-path', ValidPathPipe) dstPath: string[],
   ): Promise<number> {
     return this.fileService.copy(srcType, dstType, srcPath, dstPath, {
-      preserveTimestamps: false,
+      preserveTimestamps: true,
     });
   }
 
