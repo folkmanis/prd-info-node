@@ -123,7 +123,6 @@ describe('should convert xml to js object', () => {
     const js = xmlToJs(
       '<client><RegNumber>456</RegNumber><RegNumber>457</RegNumber></client>',
     );
-    // console.log(js);
     expect(js).toStrictEqual({ client: { regNumber: [456, 457] } });
   });
 

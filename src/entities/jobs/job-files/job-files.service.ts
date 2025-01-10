@@ -137,10 +137,7 @@ export class JobFilesService {
       files.path,
     );
 
-    console.log('oldLoc', oldLoc);
-    console.log('newJobId', newJobId);
     const newLoc = await this.addFolderPathToJob(newJobId);
-    console.log('newLoc', newLoc);
 
     const count = await oldLoc.copyContents(newLoc);
 

@@ -17,7 +17,7 @@ export interface JobPathComponents {
 export class FileLocation {
   path: string[];
 
-  log = new Logger(FileLocation.name);
+  logger = new Logger(FileLocation.name);
 
   private rootPath: string[] = [];
 
@@ -56,12 +56,9 @@ export class FileLocation {
     const src = this.resolve();
     const dst = path.join(dest.resolve());
 
-    console.log(src, dst, options);
-
     try {
       await cp(src, dst, options);
     } catch (error) {
-      console.log(error);
       throw new BadRequestException(
         `Failed to copy directory ${src} to ${dst}. Error: ${error}`,
       );
@@ -91,7 +88,7 @@ export class FileLocation {
           await cp(src, dst, options);
           return 1;
         } catch (error) {
-          this.log.error(
+          this.logger.error(
             `Failed to copy file ${src} to ${dst}. Error: ${error}`,
           );
           return 0;

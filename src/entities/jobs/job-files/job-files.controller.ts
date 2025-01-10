@@ -84,7 +84,6 @@ export class JobFilesController {
     @JobId() jobId: number,
     @JobId('newJobId') newJobId: number,
   ) {
-    console.log('copyJobFilesToNewJob', jobId, newJobId);
     return this.jobFilesService.copyJobFilesToNewJob(jobId, newJobId);
   }
 
