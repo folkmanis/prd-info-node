@@ -7,7 +7,7 @@ import { ProductFilter, ProductQuery } from '../dto/product-query.dto.js';
 import { UpdateProductDto } from '../dto/update-product.dto.js';
 import { CustomerProduct } from '../entities/customer-product.interface.js';
 import { Product } from '../entities/product.entity.js';
-import { ProductProductionStage } from '../entities/production-stage.js';
+import { ProductProductionStage } from '../entities/product-production-stage.entity.js';
 import { PRODUCTS_COLLECTION } from './products-collection.provider.js';
 import { flatten } from 'flat';
 
@@ -16,7 +16,7 @@ export class ProductsDaoService {
   constructor(
     @Inject(PRODUCTS_COLLECTION)
     private readonly collection: Collection<Product>,
-  ) { }
+  ) {}
 
   async insertOne(product: CreateProductDto): Promise<Product | null> {
     return this.collection.findOneAndReplace({ name: product.name }, product, {

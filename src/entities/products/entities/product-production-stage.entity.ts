@@ -4,7 +4,14 @@ import { ObjectId } from 'mongodb';
 
 export class ProductProductionStageMaterial {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   materialId: ObjectId;
 
@@ -17,7 +24,14 @@ export class ProductProductionStageMaterial {
 
 export class ProductProductionStage {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   productionStageId: ObjectId;
 

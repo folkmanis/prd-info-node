@@ -10,30 +10,39 @@ import { ObjectId } from 'mongodb';
 
 export class JobProductionStageMaterial {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   materialId: ObjectId;
-
-  @IsString()
-  @IsOptional()
-  name?: string;
 
   @IsNumber()
   amount: number;
 
   @IsNumber()
   fixedAmount: number;
+
+  @IsNumber()
+  cost: number;
 }
 
 export class JobProductionStage {
   @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
+  @Transform(
+    ({ value }) =>
+      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
+    { toClassOnly: true },
+  )
+  @Transform(({ value }) => value.toString(), {
+    toPlainOnly: true,
+  })
   @IsObject()
   productionStageId: ObjectId;
-
-  @IsString()
-  @IsOptional()
-  name?: string;
 
   @Type(() => JobProductionStageMaterial)
   @ValidateNested({ each: true })
