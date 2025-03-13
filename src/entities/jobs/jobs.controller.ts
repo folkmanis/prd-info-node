@@ -22,6 +22,7 @@ import { JobId } from './job-id.decorator.js';
 import { JobNotifyInterceptor } from './job-notify.interceptor.js';
 import { JobsService } from './jobs.service.js';
 import { JobFilesService } from './job-files/job-files.service.js';
+import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -33,7 +34,7 @@ export class JobsController {
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly jobFilesService: JobFilesService,
-  ) { }
+  ) {}
 
   @Patch(':jobId/createFolder')
   async createFolder(@JobId() jobId: number) {
@@ -62,6 +63,11 @@ export class JobsController {
       jobId: await this.jobsService.nexJobId(),
     };
     return this.jobsDao.insertOne(document);
+  }
+
+  @Get('materials-summary')
+  async getMaterialsSummary(@Query() query: JobMaterialsSummaryQuery) {
+    return this.jobsService.getMaterialsTotals(query);
   }
 
   @Get('jobs-without-invoices-totals')

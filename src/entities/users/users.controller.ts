@@ -25,6 +25,7 @@ import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.intercept
 import { UsersService } from './users.service.js';
 import { UserUpdateNotifyInterceptor } from './user-update-notify.interceptor.js';
 import { UsersFirestoreService } from './users-firestore.service.js';
+import { UserFilterQuery } from './dto/user-filter-query.js';
 
 @Controller('users')
 @Modules('admin')
@@ -39,7 +40,7 @@ export class UsersController {
     private sessionsDao: SessionsDaoService,
     private usersService: UsersService,
     private usersFirestore: UsersFirestoreService,
-  ) { }
+  ) {}
 
   @Get('validate/:property')
   async getProperty(
@@ -55,8 +56,8 @@ export class UsersController {
   }
 
   @Get()
-  async getAll() {
-    return this.usersDao.findAllUsers();
+  async getAll(@Query() query: UserFilterQuery) {
+    return this.usersDao.findAllUsers(query.toFilter());
   }
 
   @Put()

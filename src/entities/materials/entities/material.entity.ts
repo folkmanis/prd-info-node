@@ -52,6 +52,3 @@ export class Material {
   @ValidateNested({ each: true })
   prices: MaterialPrices[];
 }
-
-{
-}

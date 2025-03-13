@@ -6,12 +6,15 @@ import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
 import { UpdateJobDto } from './dto/update-job.dto.js';
 import { Job } from './entities/job.entity.js';
 import { assertCondition } from '../../lib/assertions.js';
+import { JobsMaterialsDaoService } from './dao/jobs-materials-dao.service.js';
+import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
 
 @Injectable()
 export class JobsService {
   constructor(
     private readonly jobsDao: JobsDao,
     private readonly jobsInvoicesDao: JobsInvoicesDao,
+    private readonly jobsMaterialsDao: JobsMaterialsDaoService,
     private readonly counters: JobsCounterService,
   ) {}
 
@@ -52,5 +55,9 @@ export class JobsService {
 
   async getJobsTotals(jobIds: number[]) {
     return this.jobsInvoicesDao.getJobsTotals(jobIds);
+  }
+
+  async getMaterialsTotals(query: JobMaterialsSummaryQuery) {
+    return this.jobsMaterialsDao.getMaterialsTotals(query.toFilter());
   }
 }

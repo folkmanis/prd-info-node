@@ -5,6 +5,7 @@ import { SystemModules } from '../../../preferences/index.js';
 import { ModuleUserPreferences, User } from '../entities/user.interface.js';
 import { SessionsDaoService } from './sessions-dao.service.js';
 import { USERS } from './users.provider.js';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 
 export type LoginCredentials = Partial<
   Record<'username' | 'password' | 'googleId', string>
@@ -16,9 +17,13 @@ export class UsersDaoService {
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
     @Inject('MONGO_CLIENT') private connection: MongoClient,
-  ) { }
+  ) {}
 
-  async findAllUsers(): Promise<Partial<User>[]> {
+  async findAllUsers({
+    start,
+    limit,
+    filter,
+  }: FilterType<User>): Promise<Partial<User>[]> {
     const projection = {
       _id: 0,
       username: 1,
@@ -28,7 +33,14 @@ export class UsersDaoService {
       preferences: 1,
       userDisabled: 1,
     };
-    return this.collection.find({}).project(projection).toArray();
+    return this.collection
+      .find(filter, {
+        projection,
+        skip: start,
+        limit,
+        sort: { username: 1 },
+      })
+      .toArray();
   }
 
   async validationData<K extends keyof User>(key: K): Promise<User[K][]> {
@@ -179,7 +191,7 @@ export class UsersDaoService {
   async updateModuleUserPreferences(
     username: string,
     module: SystemModules,
-    val: { [key: string]: any; },
+    val: { [key: string]: any },
   ): Promise<number> {
     const user = await this.collection.findOne({ username });
     if (!user) {

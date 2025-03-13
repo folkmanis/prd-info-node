@@ -17,6 +17,7 @@ import { UsersModule } from '../users/index.js';
 import { JobFilesController } from './job-files/job-files.controller.js';
 import { JobFilesService } from './job-files/job-files.service.js';
 import { JOBS_COLLECTION } from './dao/jobs-collection.provider.js';
+import { JobsMaterialsDaoService } from './dao/jobs-materials-dao.service.js';
 
 @Module({
   imports: [
@@ -41,7 +42,8 @@ import { JOBS_COLLECTION } from './dao/jobs-collection.provider.js';
     KastesJobsDao,
     JobsCounterService,
     JobsProductsDaoService,
+    JobsMaterialsDaoService,
   ],
   exports: [JOBS_COLLECTION, JobsService, JobsDao],
 })
-export class JobsModule { }
+export class JobsModule {}
