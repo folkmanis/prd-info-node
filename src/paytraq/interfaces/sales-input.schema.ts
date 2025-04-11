@@ -12,6 +12,16 @@ export const SalesInputSchema = Joi.object<SalesInput>({
         }).required(),
         saleType: Joi.string().allow('sales_invoice').required(),
         operation: Joi.string().allow('sell_goods').required(),
+        shippingData: Joi.object({
+          shippingType: Joi.number().default(1),
+          warehouse: Joi.object({
+            warehouseID: Joi.number().integer().positive(),
+          }).optional(),
+          loadingArea: Joi.object({
+            loadingAreaID: Joi.number().integer().positive(),
+            loadingAreaName: Joi.string(),
+          }).optional(),
+        }),
       }),
       lineItems: Joi.object({
         lineItem: Joi.array().items(
