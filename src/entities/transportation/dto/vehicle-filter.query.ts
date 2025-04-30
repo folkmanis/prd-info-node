@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { pickNotNull } from '../../../lib/pick-not-null.js';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
@@ -9,6 +9,11 @@ export class VehicleFilterQuery extends StartLimitFilter<TransportationVehicle> 
   @IsString()
   @IsOptional()
   name?: string;
+
+  @IsOptional()
+  @Transform(({ value }) => !!JSON.parse(value))
+  @IsBoolean()
+  disabled?: boolean;
 
   @Transform(({ value }) =>
     typeof value === 'string' ? value.split(',') : undefined,
@@ -27,6 +32,7 @@ export class VehicleFilterQuery extends StartLimitFilter<TransportationVehicle> 
         'fuelType.type': this.fuelTypes?.length
           ? { $in: this.fuelTypes }
           : undefined,
+        disabled: this.disabled ? undefined : false,
       }),
     };
   }
