@@ -10,7 +10,7 @@ import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 export class JobsDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) { }
+  ) {}
 
   async getAll(
     query: FilterType<Job>,
@@ -135,7 +135,7 @@ function findAllPipeline(
       $unwind: {
         path: '$products',
         includeArrayIndex: 'productsIdx',
-        preserveNullAndEmptyArrays: true,
+        preserveNullAndEmptyArrays: false,
       },
     });
   }
