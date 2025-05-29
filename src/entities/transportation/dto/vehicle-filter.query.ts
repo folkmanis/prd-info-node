@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional, IsString } from 'class-validator';
-import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { Filter } from 'mongodb/mongodb.js';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
 import { TransportationVehicle } from '../entities/vehicle.entity.js';
@@ -13,7 +13,7 @@ export class VehicleFilterQuery extends StartLimitFilter<TransportationVehicle> 
   @IsOptional()
   @Transform(({ value }) => !!JSON.parse(value))
   @IsBoolean()
-  disabled?: boolean;
+  disabled = true;
 
   @Transform(({ value }) =>
     typeof value === 'string' ? value.split(',') : undefined,
@@ -24,16 +24,21 @@ export class VehicleFilterQuery extends StartLimitFilter<TransportationVehicle> 
 
   toFilter(): FilterType<TransportationVehicle> {
     const { start, limit } = this;
+    const filter: Filter<any> = {};
+    if (this.name) {
+      filter.name = new RegExp(this.name, 'i');
+    }
+    if (this.fuelTypes?.length) {
+      filter['fuelType.type'] = { $in: this.fuelTypes };
+    }
+    if (!this.disabled) {
+      filter['$or'] = [{ disabled: null }, { disabled: false }];
+    }
+
     return {
       start,
       limit,
-      filter: pickNotNull({
-        name: this.name && { $regex: this.name, $options: 'i' },
-        'fuelType.type': this.fuelTypes?.length
-          ? { $in: this.fuelTypes }
-          : undefined,
-        disabled: this.disabled ? undefined : false,
-      }),
+      filter,
     };
   }
 }

@@ -1,15 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { classToPlain, plainToClass } from 'class-transformer';
-import { isUndefined, pickBy } from 'lodash-es';
+import { flatten } from 'flat';
 import { Collection, ObjectId } from 'mongodb';
+import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { CreateProductDto } from '../dto/create-product.dto.js';
-import { ProductFilter, ProductQuery } from '../dto/product-query.dto.js';
 import { UpdateProductDto } from '../dto/update-product.dto.js';
 import { CustomerProduct } from '../entities/customer-product.interface.js';
-import { Product } from '../entities/product.entity.js';
 import { ProductProductionStage } from '../entities/product-production-stage.entity.js';
+import { Product } from '../entities/product.entity.js';
 import { PRODUCTS_COLLECTION } from './products-collection.provider.js';
-import { flatten } from 'flat';
 
 @Injectable()
 export class ProductsDaoService {
@@ -44,10 +42,8 @@ export class ProductsDaoService {
   async getAll({
     limit,
     start,
-    ...query
-  }: ProductQuery): Promise<Partial<Product>[]> {
-    const filterClass = plainToClass(ProductFilter, query);
-
+    filter,
+  }: FilterType<Product>): Promise<Partial<Product>[]> {
     const projection = {
       _id: 1,
       category: 1,
@@ -55,7 +51,7 @@ export class ProductsDaoService {
       inactive: 1,
     };
     return this.collection
-      .find(pickBy(classToPlain(filterClass), (value) => !isUndefined(value)))
+      .find(filter)
       .project(projection)
       .sort({ name: 1 })
       .skip(start)

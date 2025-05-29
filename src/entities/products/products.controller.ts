@@ -26,7 +26,7 @@ import { Product } from './entities/product.entity.js';
 @Modules('jobs')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProductsController {
-  constructor(private readonly productsDao: ProductsDaoService) { }
+  constructor(private readonly productsDao: ProductsDaoService) {}
 
   @Get(':name/productionStages')
   async getProductionStages(@Param('name') name: string) {
@@ -58,7 +58,7 @@ export class ProductsController {
 
   @Get()
   async getAll(@Query() query: ProductQuery) {
-    return this.productsDao.getAll(query);
+    return this.productsDao.getAll(query.toFilter());
   }
 
   @Modules('jobs-admin')
