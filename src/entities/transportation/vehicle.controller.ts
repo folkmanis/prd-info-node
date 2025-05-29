@@ -61,7 +61,11 @@ export class VehicleController {
   async validate(
     @Param(
       'property',
-      new ValidateObjectKeyPipe<TransportationVehicle>('name', 'licencePlate'),
+      new ValidateObjectKeyPipe<TransportationVehicle>(
+        'name',
+        'licencePlate',
+        'passportNumber',
+      ),
     )
     property: keyof TransportationVehicle,
   ) {

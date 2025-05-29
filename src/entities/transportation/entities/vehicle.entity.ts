@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -44,6 +45,11 @@ export class TransportationVehicle {
   @IsString()
   @IsNotEmpty()
   licencePlate: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  passportNumber: string;
 
   @IsNumber()
   consumption: number; // units
