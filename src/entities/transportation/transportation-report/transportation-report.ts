@@ -1,14 +1,18 @@
 import { format, Locale } from 'date-fns';
 import { lv } from 'date-fns/locale';
 import {
-  DocumentDefinition,
-  Txt,
-  Columns,
-  Stack,
+  Column,
+  Content,
+  ContentStack,
   Table,
-} from 'pdfmake-wrapper/server/index.js';
+  TableCell,
+  TDocumentDefinitions,
+} from 'pdfmake/interfaces.js';
 import { pdfMakeConfigured } from '../../../lib/pdf-make-configured.js';
-import { TransportationRouteSheet } from '../entities/route-sheet.entity.js';
+import {
+  RouteTrip,
+  TransportationRouteSheet,
+} from '../entities/route-sheet.entity.js';
 
 function pluck<T extends object, K extends keyof T>(key: K) {
   return (obj: T) => obj[key];
@@ -20,124 +24,196 @@ export function transportationReport(
 ): PDFKit.PDFDocument {
   const title = `Maršruta lapa ${routeSheet._id}`;
 
-  const headerLeftColumn = [
-    new Txt([
-      new Txt(`${routeSheet.year}.`).bold().end,
-      ' gada ',
-      new Txt(
-        format(new Date().setMonth(routeSheet.month - 1), 'LLLL', { locale }),
-      ).bold().end,
-    ]).end,
-    new Txt(['Vadītājs: ', new Txt(routeSheet.driver.name).bold().end]).end,
-    new Txt([
-      'Auto: ',
-      `${routeSheet.vehicle.name} `,
-      new Txt(routeSheet.vehicle.licencePlate).bold().end,
-    ]).end,
+  const headerColumns: Column[] = [
+    {
+      stack: createHeaderLeftColumn(routeSheet, locale),
+      width: '*',
+    },
+    {
+      stack: createHeaderRightColumn(routeSheet),
+      width: 'auto',
+      alignment: 'right',
+    },
   ];
 
-  const fuelUnits = () => new Txt(routeSheet.vehicle.fuelType.units);
+  const routeTripsTable = createRouteTripsTable(routeSheet, locale);
 
-  const headerRightColumn = [
-    new Txt([
-      'Degvielas atlikums sākumā: ',
-      new Txt(routeSheet.fuelRemainingStartLitres + ' ').bold().end,
-      fuelUnits().bold().end,
-    ]).end,
-    new Txt([
-      'Saņemta degviela: ',
-      new Txt(routeSheet.totalFuelPurchased() + ' ').bold().end,
-      new Txt(routeSheet.fuelUnits()).bold().end,
-    ]).end,
-    new Txt([
-      'Iztērēta degviela: ',
-      new Txt(routeSheet.totalFuelConsumed() + ' ').bold().end,
-      fuelUnits().bold().end,
-    ]).end,
-    new Txt([
-      'Degvielas atlikums beigās: ',
-      new Txt(routeSheet.fuelRemaining().toFixed(2) + ' ').bold().end,
-      fuelUnits().bold().end,
-    ]).end,
-  ];
-
-  const routeTripsTable = () => {
-    const tableHeader = [
-      new Txt('Datums').bold().end,
-      new Txt('Maršruts').bold().end,
-      new Txt('Nobraukti (km)').alignment('right').bold().end,
-      new Txt(['Patērētā degviela ', '(', fuelUnits().end, ')'])
-        .alignment('right')
-        .bold().end,
-    ];
-
-    const tableRows = routeSheet.trips.map(
-      ({ date, stops, tripLengthKm, fuelConsumed, description }) => [
-        format(date, 'P', { locale }),
-        new Stack([
-          new Txt(stops.map(pluck('name')).join(' - ')).bold().end,
-          new Txt(description).italics().end,
-          new Txt(stops.map(pluck('address')).join(' - ')).fontSize(6).end,
-        ]).end,
-        new Txt(tripLengthKm.toFixed(0)).alignment('right').end,
-        new Txt([fuelConsumed.toFixed(1), ' ', fuelUnits().end]).alignment(
-          'right',
-        ).end,
-      ],
-    );
-
-    const totalsRow = [
-      '',
-      new Txt('Kopā/vidēji').bold().alignment('right').end,
-      new Txt(routeSheet.totalTripsLength().toFixed(0))
-        .bold()
-        .alignment('right').end,
-      new Txt([
-        (routeSheet.averageConsumption() * 100).toFixed(1),
-        ' ',
-        fuelUnits().end,
-        '/100km',
-      ])
-        .bold()
-        .alignment('right').end,
-    ];
-
-    return new Table([tableHeader, ...tableRows, totalsRow])
-      .layout({
-        paddingLeft: (i) => (i === 0 ? 0 : 4),
-        paddingRight: (i, node) => (i === node.table.widths.length - 1 ? 0 : 4),
-        paddingTop: () => 4,
-        paddingBottom: () => 4,
-        vLineWidth: () => 0,
-        hLineWidth: (i, node) =>
-          i === 0 || i === 1 || (i && i >= node.table.body.length - 1) ? 2 : 1,
-        hLineColor: (i, node) =>
-          i === 0 || i === 1 || (i && i >= node.table.body.length - 1)
-            ? '#000000'
-            : '#606060',
-      })
-      .widths(['auto', '*', 'auto', 'auto'])
-      .headerRows(1)
-      .margin([0, 16, 0, 0]);
+  const documentDefinition: TDocumentDefinitions = {
+    info: { title },
+    pageSize: 'A4',
+    pageMargins: [30, 30, 30, 30],
+    defaultStyle: {
+      fontSize: 10,
+    },
+    pageOrientation: 'landscape',
+    content: [
+      { text: title, fontSize: 14, bold: true, alignment: 'center' },
+      {
+        columns: headerColumns,
+      },
+      {
+        table: routeTripsTable,
+        layout: 'lightHorizontalLines',
+        margin: [0, 10, 0, 0],
+      },
+    ],
   };
 
-  const pdf = new DocumentDefinition();
-  pdf.pageSize('A4');
-  pdf.pageOrientation('landscape');
-  pdf.pageMargins([30, 30, 30, 30]);
-  pdf.info({ title });
-  pdf.defaultStyle({
-    fontSize: 10,
-  });
+  return pdfMakeConfigured().createPdfKitDocument(documentDefinition);
+}
 
-  pdf.add(new Txt(title).fontSize(14).bold().alignment('center').end);
-  pdf.add(
-    new Columns([
-      new Stack(headerLeftColumn).width('*').end,
-      new Stack(headerRightColumn).width('auto').alignment('right').end,
-    ]).end,
+function createHeaderLeftColumn(
+  { year, month, driver, vehicle }: TransportationRouteSheet,
+  locale: Locale,
+): Content[] {
+  const periodRow: Content = {
+    text: [
+      { text: `${year}.`, bold: true },
+      ' gada ',
+      {
+        text: format(new Date().setMonth(month - 1), 'LLLL', {
+          locale,
+        }),
+        bold: true,
+      },
+    ],
+  };
+  const driverRow: Content = {
+    text: ['Vadītājs: ', { text: driver.name, bold: true }],
+  };
+  const vehicleRow: Content = {
+    text: [
+      `Auto: ${vehicle.name} `,
+      { text: vehicle.licencePlate, bold: true },
+    ],
+  };
+
+  return [periodRow, driverRow, vehicleRow];
+}
+
+function createHeaderRightColumn(
+  routeSheet: TransportationRouteSheet,
+): Content[] {
+  const fuelUnits = routeSheet.vehicle.fuelType.units;
+
+  const fuelRemainingStartRow: Content = {
+    text: [
+      'Degvielas atlikums sākumā: ',
+      {
+        text: `${routeSheet.fuelRemainingStartLitres} ${fuelUnits}`,
+        bold: true,
+      },
+    ],
+  };
+  const fuelReceivedRow: Content = {
+    text: [
+      'Saņemta degviela: ',
+      { text: `${routeSheet.totalFuelPurchased()} ${fuelUnits}`, bold: true },
+    ],
+  };
+  const fuelConsumedRow: Content = {
+    text: [
+      'Iztērēta degviela: ',
+      { text: `${routeSheet.totalFuelConsumed()} ${fuelUnits}`, bold: true },
+    ],
+  };
+  const fuelRemainingRow: Content = {
+    text: [
+      'Degvielas atlikums beigās: ',
+      {
+        text: `${routeSheet.fuelRemaining().toFixed(2)} ${fuelUnits}`,
+        bold: true,
+      },
+    ],
+  };
+  return [
+    fuelRemainingStartRow,
+    fuelReceivedRow,
+    fuelConsumedRow,
+    fuelRemainingRow,
+  ];
+}
+
+function createRouteTripsTableRows(
+  routeSheet: TransportationRouteSheet,
+  locale: Locale,
+): TableCell[][] {
+  const fuelUnits = routeSheet.vehicle.fuelType.units;
+
+  const tableHeader: TableCell[] = [
+    { text: 'Datums', bold: true },
+    { text: 'Maršruts', bold: true },
+    { text: 'Nobraukti (km)', alignment: 'right', bold: true },
+    {
+      text: `Patērētā degviela: (${fuelUnits})`,
+      alignment: 'right',
+      bold: true,
+    },
+  ];
+
+  const tableRows: TableCell[][] = routeSheet.trips.map((trip) =>
+    createRouteTripRow(trip, fuelUnits, locale),
   );
-  pdf.add(routeTripsTable().end);
 
-  return pdfMakeConfigured().createPdfKitDocument(pdf.getDefinition());
+  const totalsRow: TableCell[] = [
+    { text: 'Kopā/vidēji', bold: true, alignment: 'right', colSpan: 2 },
+    {},
+    {
+      text: routeSheet.totalTripsLength().toFixed(0),
+      bold: true,
+      alignment: 'right',
+    },
+    {
+      text: `${(routeSheet.averageConsumption() * 100).toFixed(1)} ${fuelUnits}/100km`,
+      bold: true,
+      alignment: 'right',
+    },
+  ];
+  return [tableHeader, ...tableRows, totalsRow];
+}
+
+function createRouteTripRow(
+  { date, stops, tripLengthKm, fuelConsumed, description }: RouteTrip,
+  fuelUnits: string,
+  locale: Locale,
+): TableCell[] {
+  const route: ContentStack = {
+    stack: [
+      { text: stops.map(pluck('name')).join(' - '), bold: true },
+      { text: description, italics: true },
+      { text: stops.map(pluck('address')).join(' - '), fontSize: 6 },
+    ],
+  };
+
+  return [
+    format(date, 'P', { locale }),
+    route,
+    { text: tripLengthKm.toFixed(0), alignment: 'right' },
+    { text: `${fuelConsumed.toFixed(1)} ${fuelUnits}`, alignment: 'right' },
+  ];
+}
+
+function createRouteTripsTable(
+  routeSheet: TransportationRouteSheet,
+  locale: Locale,
+): Table {
+  return {
+    body: createRouteTripsTableRows(routeSheet, locale),
+    layout: {
+      paddingLeft: (i) => (i === 0 ? 0 : 4),
+      paddingRight: (i, node) =>
+        i === Number(node.table.widths?.length) - 1 ? 0 : 4,
+      paddingTop: () => 4,
+      paddingBottom: () => 4,
+      vLineWidth: () => 0,
+      hLineWidth: (i, node) =>
+        i === 0 || i === 1 || (i && i >= node.table.body.length - 1) ? 2 : 1,
+      hLineColor: (i, node) =>
+        i === 0 || i === 1 || (i && i >= node.table.body.length - 1)
+          ? '#000000'
+          : '#606060',
+    },
+    widths: ['auto', '*', 'auto', 'auto'],
+    headerRows: 1,
+  };
 }

@@ -1,11 +1,15 @@
 import { format, Locale } from 'date-fns';
 import { lv } from 'date-fns/locale';
 import {
-  Cell,
-  DocumentDefinition,
+  ContentText,
+  Margins,
+  PageSize,
+  Style,
   Table,
-  Txt,
-} from 'pdfmake-wrapper/server/index.js';
+  TableCell,
+  TDocumentDefinitions,
+  TDocumentInformation,
+} from 'pdfmake/interfaces.js';
 import { pdfMakeConfigured } from '../../../lib/pdf-make-configured.js';
 import {
   InvoiceForReport,
@@ -13,87 +17,126 @@ import {
 } from '../entities/invoice-for-report.interface.js';
 import { InvoiceProduct } from '../entities/invoice.entity.js';
 
+const SMALL: Style = { fontSize: 8 };
+const MEDIUM: Style = { fontSize: 10 };
+const TITLE: Style = { fontSize: 14, bold: true };
+
 export function invoicesReport(
   invoice: InvoiceForReport,
   locale: Locale = lv,
 ): PDFKit.PDFDocument {
-  const pdf = new DocumentDefinition();
-  pdf.pageSize('A4');
-  pdf.pageMargins([30, 30, 30, 30]);
-  pdf.info({ title: `Report ${invoice.invoiceId}` });
+  const pageSize: PageSize = 'A4';
+  const pageMargins: Margins = [30, 30, 30, 30];
+  const info: TDocumentInformation = { title: `Report ${invoice.invoiceId}` };
 
-  const title =
+  const titleStr =
     (invoice.customerInfo?.financial?.clientName || invoice.customer) +
     (invoice.invoiceId ? ` / ${invoice.invoiceId}` : '');
-  pdf.add(new Txt(title).fontSize(14).bold().end);
-  pdf.add(
-    new Table([
-      ...createProductsTable(invoice.products),
-      [
-        '',
-        '',
-        new Cell(new Txt('Kopā').bold().alignment('right').end).end,
-        new Cell(
-          new Txt(`${invoice.total?.toFixed(2) || 0} EUR`).bold().end,
-        ).alignment('right').end,
-      ],
-    ])
-      .layout('lightHorizontalLines')
-      .fontSize(10)
-      .headerRows(1).end,
-  );
-  pdf.add(
-    new Table(createJobsTable(invoice.jobs, locale))
-      .layout('lightHorizontalLines')
-      .fontSize(8)
-      .headerRows(1).end,
-  );
-  return pdfMakeConfigured().createPdfKitDocument(pdf.getDefinition());
+  const title: ContentText = { text: titleStr, style: TITLE };
+
+  const productsTable: Table = {
+    headerRows: 1,
+    body: createProductsTableContent(invoice.products),
+  };
+  const jobsTable: Table = {
+    headerRows: 1,
+    body: createJobsTableContent(invoice.jobs, locale),
+  };
+
+  const documentDefinition: TDocumentDefinitions = {
+    info,
+    pageSize,
+    pageMargins,
+    content: [
+      title,
+      {
+        table: productsTable,
+        style: MEDIUM,
+        layout: 'lightHorizontalLines',
+      },
+      {
+        table: jobsTable,
+        style: SMALL,
+        layout: 'lightHorizontalLines',
+      },
+    ],
+  };
+
+  return pdfMakeConfigured().createPdfKitDocument(documentDefinition);
 }
 
-function createProductsTable(products: InvoiceProduct[]): any[][] {
-  const tbl: any[][] = [];
-  tbl.push([
+function createProductsTableContent(
+  products: InvoiceProduct[],
+  invoiceTotal?: number,
+): TableCell[][] {
+  const tbl: TableCell[][] = [];
+  const header = [
     'Izstrādājums',
     'skaits',
-    new Txt('cena').alignment('right').end,
-    new Txt('kopā').alignment('right').end,
-  ]);
+    { text: 'kopā', alignment: 'right' },
+    { text: 'Kopā', alignment: 'right' },
+  ];
+  tbl.push(header);
+
   for (const prod of products) {
     tbl.push([
       prod._id,
       `${prod.count} gab.`,
-      new Txt(`${prod.price?.toFixed(2) || 0} EUR`).alignment('right').end,
-      new Txt(`${prod.total?.toFixed(2) || 0} EUR`).alignment('right').end,
+      {
+        text: `${prod.price?.toFixed(2) || 0} EUR`,
+        alignment: 'right',
+      },
+      {
+        text: `${prod.total?.toFixed(2) || 0} EUR`,
+        alignment: 'right',
+      },
     ]);
   }
+
+  const footer: TableCell[] = [
+    { text: 'Kopā', bold: true, alignment: 'right', colSpan: 3 },
+    '',
+    '',
+    {
+      text: `${invoiceTotal?.toFixed(2) || 0} EUR`,
+      bold: true,
+      alignment: 'right',
+    },
+  ];
+  tbl.push(footer);
   return tbl;
 }
 
-function createJobsTable(jobs: JobBase[] = [], locale: Locale): any[][] {
-  const tbl: any[][] = [];
+function createJobsTableContent(
+  jobs: JobBase[] = [],
+  locale: Locale,
+): TableCell[][] {
+  const tbl: TableCell[][] = [];
   tbl.push([
-    // 'nr.',
     'datums',
     'nosaukums',
     'izstrādājums',
-    new Txt('skaits').alignment('right').end,
-    new Txt('EUR').alignment('right').end,
+    { text: 'skaits', alignment: 'right' },
+    { text: 'EUR', alignment: 'right' },
   ]);
   for (const job of jobs) {
     const prod = job.products;
     if (!prod || prod.price * prod.count === 0) {
       continue;
     }
-    tbl.push([
-      format(new Date(job.receivedDate), 'P', { locale: locale }),
-      job.name,
-      prod ? new Txt(prod.name).noWrap().end : '',
-      prod ? new Txt(prod.count.toString()).alignment('right').end : '',
-      prod
-        ? new Txt((prod.price * prod.count).toFixed(2)).alignment('right').end
-        : '',
-    ]);
+    const date = format(new Date(job.receivedDate), 'P', { locale: locale });
+    const jobName = job.name;
+    const prodName = { text: prod.name, noWrap: true };
+    const count = {
+      text: prod.count.toString(),
+      alignment: 'right',
+    };
+    const price = {
+      text: prod.price.toFixed(2),
+      alignment: 'right',
+    };
+
+    tbl.push([date, jobName, prodName, count, price]);
   }
   return tbl;
 }
