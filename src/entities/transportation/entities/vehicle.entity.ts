@@ -1,6 +1,7 @@
 import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
+  IsDate,
   IsNotEmpty,
   IsNumber,
   IsObject,
@@ -21,6 +22,17 @@ export class FuelType {
   @IsString()
   @IsNotEmpty()
   units: string;
+}
+
+export class OdometerReading {
+  @IsNumber()
+  @IsNotEmpty()
+  value: number;
+
+  @Type(() => Date)
+  @IsDate()
+  @IsNotEmpty()
+  date: Date;
 }
 
 export class TransportationVehicle {
@@ -51,12 +63,21 @@ export class TransportationVehicle {
   @IsOptional()
   passportNumber: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @IsOptional()
+  vin: string;
+
   @IsNumber()
   consumption: number; // units
 
   @Type(() => FuelType)
   @ValidateNested()
   fuelType: FuelType;
+
+  @Type(() => OdometerReading)
+  @ValidateNested({ each: true })
+  odometerReadings: OdometerReading[];
 
   @IsBoolean()
   disabled = false;
