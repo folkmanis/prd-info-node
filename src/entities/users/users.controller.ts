@@ -50,6 +50,11 @@ export class UsersController {
     return this.usersDao.validationData(key);
   }
 
+  @Get(':id/sessions')
+  async getSessions(@Param('id') username: string) {
+    return this.sessionsDao.userSessions(username);
+  }
+
   @Get(':id')
   async getOne(@Param('id') username: string) {
     return this.usersService.getOneByUsername(username);

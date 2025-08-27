@@ -57,7 +57,6 @@ export class User {
 
   tokens?: Credentials;
   last_login?: Date;
-  sessions?: UserSession[];
   messages?: Message[];
 
   avatar?: {
