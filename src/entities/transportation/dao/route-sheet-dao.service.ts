@@ -52,8 +52,8 @@ export class TransportationRouteSheetDaoService {
     return this.collection
       .find(filter, {
         sort: {
-          year: 1,
-          month: 1,
+          year: -1,
+          month: -1,
         },
         skip: start,
         limit,
