@@ -67,7 +67,9 @@ export class TransportationVehicleDaoService
   ): Promise<TransportationVehicle[K][]> {
     return this.collection
       .find(
-        {},
+        {
+          [key]: { $ne: null },
+        },
         {
           projection: {
             [key]: 1,

@@ -65,6 +65,7 @@ export class VehicleController {
         'name',
         'licencePlate',
         'passportNumber',
+        'vin',
       ),
     )
     property: keyof TransportationVehicle,
