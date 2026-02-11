@@ -29,7 +29,7 @@ export class CustomerNotifyInterceptor implements NestInterceptor {
     private readonly notifications: NotificationsService,
     private readonly messages: MessagesService,
     private readonly dao: CustomersDaoService,
-  ) { }
+  ) {}
 
   intercept(
     context: ExecutionContext,
@@ -37,7 +37,7 @@ export class CustomerNotifyInterceptor implements NestInterceptor {
   ): Observable<Customer> {
     const { params, body } = context.switchToHttp().getRequest() as Request;
 
-    if (!this.isUpdate(body) || !params.id) {
+    if (!this.isUpdate(body) || typeof params.id !== 'string') {
       return next.handle();
     }
 
@@ -64,9 +64,9 @@ export class CustomerNotifyInterceptor implements NestInterceptor {
     return !folder
       ? of(false)
       : this.messages.ftpFolderUploads(folder).pipe(
-        map((msgs) => msgs.length > 0),
-        tap((upd) => upd && this.notify()),
-      );
+          map((msgs) => msgs.length > 0),
+          tap((upd) => upd && this.notify()),
+        );
   }
 
   private isUpdate(upd: UpdateCustomerDto): boolean {
