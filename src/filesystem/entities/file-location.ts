@@ -1,10 +1,11 @@
 import { BadRequestException, Logger } from '@nestjs/common';
 import Busboy from 'busboy';
 import { Request } from 'express';
-import { CopyOptions, createWriteStream } from 'fs';
-import { cp, mkdir, readdir, rename } from 'fs/promises';
+import { createWriteStream } from 'fs';
+import { mkdir, readdir, rename } from 'fs/promises';
 import path from 'path';
 import { sanitizeFileName } from '../../lib/filename-functions.js';
+import { safeCopy } from '../safe-copy.js';
 import { FileElement, fromDirent } from './file-element.js';
 
 export interface JobPathComponents {
@@ -47,17 +48,13 @@ export class FileLocation {
     return dirents.map(fromDirent(this.path));
   }
 
-  async copy(dest: FileLocation, options: CopyOptions = {}): Promise<void> {
-    options = {
-      preserveTimestamps: true,
-      recursive: true,
-      ...options,
-    };
+  async copy(dest: FileLocation): Promise<void> {
     const src = this.resolve();
     const dst = path.join(dest.resolve());
 
     try {
-      await cp(src, dst, options);
+      await dest.createFolder();
+      await this.copyContents(dest);
     } catch (error) {
       throw new BadRequestException(
         `Failed to copy directory ${src} to ${dst}. Error: ${error}`,
@@ -65,15 +62,7 @@ export class FileLocation {
     }
   }
 
-  async copyContents(
-    dest: FileLocation,
-    options: CopyOptions = {},
-  ): Promise<number> {
-    options = {
-      preserveTimestamps: true,
-      recursive: true,
-      ...options,
-    };
+  async copyContents(dest: FileLocation): Promise<number> {
     const content = await this.readDir();
 
     if (!content.length) {
@@ -85,7 +74,7 @@ export class FileLocation {
         const src = this.resolve(element.name);
         const dst = dest.resolve(element.name);
         try {
-          await cp(src, dst, options);
+          await safeCopy(src, dst);
           return 1;
         } catch (error) {
           this.logger.error(
@@ -95,7 +84,7 @@ export class FileLocation {
         }
       }),
     );
-    return result.reduce((acc, res) => acc + res, 0 as number);
+    return result.reduce((acc, res) => acc + res!, 0 as number);
   }
 
   async rename(dest: FileLocation) {

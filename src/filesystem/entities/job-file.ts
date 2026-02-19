@@ -1,8 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { copyFile, rename, rm, writeFile } from 'fs/promises';
+import { rename, rm, writeFile } from 'fs/promises';
 import { sanitizeFileName } from '../../lib/filename-functions.js';
-import { FileLocation } from './file-location.js';
+import { safeCopy } from '../safe-copy.js';
 import { FileElement } from './file-element.js';
+import { FileLocation } from './file-location.js';
 
 export class JobFile {
   location: FileLocation;
@@ -30,7 +31,7 @@ export class JobFile {
     newName = sanitizeFileName(newName || this.name);
 
     try {
-      return copyFile(this.resolve(), newLocation.resolve(newName));
+      await safeCopy(this.resolve(), newLocation.resolve(newName));
     } catch (error) {
       throw new NotFoundException(error);
     }

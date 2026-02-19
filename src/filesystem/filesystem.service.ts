@@ -1,16 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
+import { AppConfig } from '../dot-env.config.js';
 import {
   sanitizeFileName,
   toMonthNumberName,
 } from '../lib/filename-functions.js';
-import { FileLocation, JobPathComponents } from './entities/file-location.js';
-import { FileLocationTypes } from './entities/file-location-types.js';
-import { JobFile } from './entities/job-file.js';
 import { FileElement } from './entities/file-element.js';
-import { CopyOptions } from 'fs';
-import { AppConfig } from '../dot-env.config.js';
+import { FileLocationTypes } from './entities/file-location-types.js';
+import { FileLocation, JobPathComponents } from './entities/file-location.js';
+import { JobFile } from './entities/job-file.js';
 
 const HOMES_ROOT = 'UserFiles';
 
@@ -65,12 +64,8 @@ export class FilesystemService {
     dstType: FileLocationTypes,
     srcPath: string[],
     dstPath: string[],
-    options: CopyOptions = {},
   ) {
-    await this.location(srcType, srcPath).copy(
-      this.location(dstType, dstPath),
-      options,
-    );
+    await this.location(srcType, srcPath).copy(this.location(dstType, dstPath));
     return 1;
   }
 

@@ -95,9 +95,7 @@ export class JobFilesController {
     @Body('source-path', ValidPathPipe) srcPath: string[],
     @Body('destination-path', ValidPathPipe) dstPath: string[],
   ): Promise<number> {
-    return this.fileService.copy(srcType, dstType, srcPath, dstPath, {
-      preserveTimestamps: true,
-    });
+    return this.fileService.copy(srcType, dstType, srcPath, dstPath);
   }
 
   @Get('read/ftp')
