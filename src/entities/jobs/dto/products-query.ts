@@ -57,6 +57,9 @@ export class ProductsQuery extends StartLimitFilter<Job> {
   @ValidateNested()
   sort?: SortOrder;
 
+  @IsOptional()
+  customer?: string;
+
   toFilter(): FilterType<Job> {
     const { start, limit } = this;
     const filter: Filter<JobProduct> = {
@@ -67,6 +70,9 @@ export class ProductsQuery extends StartLimitFilter<Job> {
         $gte: this.fromDate,
         $lte: this.toDate,
       });
+    }
+    if (this.customer) {
+      filter.customer = this.customer;
     }
     return {
       start,
