@@ -10,7 +10,7 @@ import {
   TDocumentDefinitions,
   TDocumentInformation,
 } from 'pdfmake/interfaces.js';
-import { pdfMakeConfigured } from '../../../lib/pdf-make-configured.js';
+import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
 import {
   InvoiceForReport,
   JobBase,
@@ -21,10 +21,7 @@ const SMALL: Style = { fontSize: 8 };
 const MEDIUM: Style = { fontSize: 10 };
 const TITLE: Style = { fontSize: 14, bold: true };
 
-export function invoicesReport(
-  invoice: InvoiceForReport,
-  locale: Locale = lv,
-): PDFKit.PDFDocument {
+export function invoicesReport(invoice: InvoiceForReport, locale: Locale = lv) {
   const pageSize: PageSize = 'A4';
   const pageMargins: Margins = [30, 30, 30, 30];
   const info: TDocumentInformation = { title: `Report ${invoice.invoiceId}` };
@@ -62,7 +59,7 @@ export function invoicesReport(
     ],
   };
 
-  return pdfMakeConfigured().createPdfKitDocument(documentDefinition);
+  return pdfmakeConfigured().createPdf(documentDefinition);
 }
 
 function createProductsTableContent(
@@ -75,7 +72,7 @@ function createProductsTableContent(
     'skaits',
     { text: 'kopā', alignment: 'right' },
     { text: 'Kopā', alignment: 'right' },
-  ];
+  ] as TableCell[];
   tbl.push(header);
 
   for (const prod of products) {
@@ -130,11 +127,11 @@ function createJobsTableContent(
     const count = {
       text: prod.count.toString(),
       alignment: 'right',
-    };
+    } as TableCell;
     const price = {
       text: prod.price.toFixed(2),
       alignment: 'right',
-    };
+    } as TableCell;
 
     tbl.push([date, jobName, prodName, count, price]);
   }

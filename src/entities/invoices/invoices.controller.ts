@@ -37,7 +37,7 @@ export class InvoicesController {
 
   @Put('report')
   async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
-    const pdf = invoicesReport(invoice);
+    const pdf = await invoicesReport(invoice).getStream();
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
@@ -87,7 +87,7 @@ export class InvoicesController {
     @Res() res: Response,
   ) {
     const data = await this.invoicesService.invoiceForReport(invoiceId);
-    const pdf = invoicesReport(data);
+    const pdf = await invoicesReport(data).getStream();
 
     res.contentType('application/pdf');
     pdf.pipe(res);

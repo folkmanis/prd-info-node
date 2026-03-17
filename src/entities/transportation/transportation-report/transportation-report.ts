@@ -8,7 +8,7 @@ import {
   TableCell,
   TDocumentDefinitions,
 } from 'pdfmake/interfaces.js';
-import { pdfMakeConfigured } from '../../../lib/pdf-make-configured.js';
+import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
 import {
   RouteTrip,
   TransportationRouteSheet,
@@ -21,7 +21,7 @@ function pluck<T extends object, K extends keyof T>(key: K) {
 export function transportationReport(
   routeSheet: TransportationRouteSheet,
   locale: Locale = lv,
-): PDFKit.PDFDocument {
+) {
   const title = `Maršruta lapa ${routeSheet._id}`;
 
   const headerColumns: Column[] = [
@@ -53,13 +53,14 @@ export function transportationReport(
       },
       {
         table: routeTripsTable,
+        // layout: 'customLines',
         layout: 'lightHorizontalLines',
         margin: [0, 10, 0, 0],
       },
     ],
   };
 
-  return pdfMakeConfigured().createPdfKitDocument(documentDefinition);
+  return pdfmakeConfigured().createPdf(documentDefinition);
 }
 
 function createHeaderLeftColumn(
@@ -199,20 +200,6 @@ function createRouteTripsTable(
 ): Table {
   return {
     body: createRouteTripsTableRows(routeSheet, locale),
-    layout: {
-      paddingLeft: (i) => (i === 0 ? 0 : 4),
-      paddingRight: (i, node) =>
-        i === Number(node.table.widths?.length) - 1 ? 0 : 4,
-      paddingTop: () => 4,
-      paddingBottom: () => 4,
-      vLineWidth: () => 0,
-      hLineWidth: (i, node) =>
-        i === 0 || i === 1 || (i && i >= node.table.body.length - 1) ? 2 : 1,
-      hLineColor: (i, node) =>
-        i === 0 || i === 1 || (i && i >= node.table.body.length - 1)
-          ? '#000000'
-          : '#606060',
-    },
     widths: ['auto', '*', 'auto', 'auto'],
     headerRows: 1,
   };

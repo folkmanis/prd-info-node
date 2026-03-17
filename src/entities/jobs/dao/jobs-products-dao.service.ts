@@ -5,6 +5,7 @@ import { Job } from '../entities/job.entity.js';
 import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { SortOrder } from '../dto/products-query.js';
+import { JobsProductsTotals } from '../dto/jobs-products-totals.js';
 
 interface ProductsTotalsOptions {
   category?: string[];
@@ -15,12 +16,12 @@ interface ProductsTotalsOptions {
 export class JobsProductsDaoService {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) { }
+  ) {}
 
   async getProductsTotals(
-    { start, limit, filter }: FilterType<Job>,
+    { filter }: FilterType<Job>,
     options: ProductsTotalsOptions = {},
-  ) {
+  ): Promise<JobsProductsTotals[]> {
     const pipeline: Record<string, any>[] = [
       {
         $match: filter,
@@ -85,11 +86,8 @@ export class JobsProductsDaoService {
     }
     pipeline.push({ $sort });
 
-    if (start > 0) {
-      pipeline.push({ $skip: start });
-    }
-    pipeline.push({ $limit: limit });
-
-    return this.collection.aggregate(pipeline).toArray();
+    return this.collection.aggregate(pipeline).toArray() as Promise<
+      JobsProductsTotals[]
+    >;
   }
 }

@@ -47,7 +47,7 @@ export class TransportationController {
     @Res() res: Response,
   ) {
     const data = await this.transportationService.getOne(id);
-    const pdf = transportationReport(data);
+    const pdf = await transportationReport(data).getStream();
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
