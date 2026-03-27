@@ -33,7 +33,7 @@ export function invoicesReport(invoice: InvoiceForReport, locale: Locale = lv) {
 
   const productsTable: Table = {
     headerRows: 1,
-    body: createProductsTableContent(invoice.products),
+    body: createProductsTableContent(invoice.products, invoice.total),
   };
   const jobsTable: Table = {
     headerRows: 1,
