@@ -76,7 +76,7 @@ export class JobsController {
   }
 
   @Get('count')
-  @UseInterceptors(new ResponseWrapperInterceptor('count'))
+  @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
   async getJobsCount(@Query() query: JobQuery) {
     return this.jobsDao.getCount(query.toFilter());
   }
