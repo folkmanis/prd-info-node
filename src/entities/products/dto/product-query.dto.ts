@@ -29,7 +29,7 @@ export class ProductQuery extends StartLimitFilter<Product> {
       filter.$or = [{ inactive: null }, { inactive: false }];
     }
     if (this.name) {
-      filter.CustomerName = new RegExp(this.name, 'i');
+      filter.name = new RegExp(this.name, 'i');
     }
 
     return {
