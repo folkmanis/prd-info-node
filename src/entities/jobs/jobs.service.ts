@@ -29,6 +29,17 @@ export class JobsService {
     return this.jobsDao.getAll(filter, unwindProducts);
   }
 
+  async getCount(
+    filter: FilterType<Job>,
+    unwindProducts: boolean,
+  ): Promise<number> {
+    const result = await this.jobsDao.getCount(
+      { ...filter, start: 0, limit: 0 },
+      unwindProducts,
+    );
+    return result[0].count;
+  }
+
   async getOne(jobId: number): Promise<Job> {
     const job = await this.jobsDao.getOne(jobId);
     assertCondition(job, `Job ${jobId} not found`);

@@ -21,8 +21,17 @@ export class JobsDao {
     return this.collection.aggregate(aggr).toArray() as Promise<Job[]>;
   }
 
-  async getCount({ filter }: FilterType<Job>): Promise<number> {
-    return this.collection.countDocuments(filter);
+  async getCount(
+    filter: FilterType<Job>,
+    unwindProducts: boolean,
+  ): Promise<[{ count: number }]> {
+    const pipeline = findAllPipeline(filter, unwindProducts);
+    pipeline.push({
+      $count: 'count',
+    });
+    return this.collection.aggregate(pipeline).toArray() as Promise<
+      [{ count: number }]
+    >;
   }
 
   async getOne(jobId: number): Promise<Job | null> {
@@ -144,9 +153,11 @@ function findAllPipeline(
       $skip: start,
     });
   }
-  aggr.push({
-    $limit: limit,
-  });
+  if (limit > 0) {
+    aggr.push({
+      $limit: limit,
+    });
+  }
 
   return aggr;
 }
