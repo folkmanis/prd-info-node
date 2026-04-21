@@ -14,6 +14,7 @@ import { FilterType } from '../../../lib/start-limit-filter/filter-type.interfac
 import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
 import { JOB_CATEGORIES, JobCategories } from '../entities/job-categories.js';
 import { Job } from '../entities/job.entity.js';
+import { JobsSystemPreference } from '../../../preferences/interfaces/system-preferences.interface.js';
 
 export class JobQuery extends StartLimitFilter<Job> {
   @Type(() => Date)
@@ -58,14 +59,14 @@ export class JobQuery extends StartLimitFilter<Job> {
   @IsOptional()
   @IsArray()
   @IsNumber(undefined, { each: true })
-  jobsId: number[];
+  jobsId?: number[];
 
   @IsOptional()
   @IsIn(JOB_CATEGORIES)
   category?: JobCategories;
 
   @IsOptional()
-  productsName?: string[];
+  productsName?: string;
 
   toFilter(): FilterType<Job> {
     const { start, limit } = this;
@@ -99,5 +100,15 @@ export class JobQuery extends StartLimitFilter<Job> {
       limit,
       filter,
     };
+  }
+
+  statusDescriptions(states: JobsSystemPreference['jobStates']): string[] {
+    if (!this.jobStatus) {
+      return states.map((s) => s.description);
+    } else {
+      return this.jobStatus
+        .map((st) => states.find((s) => s.state === st)?.description)
+        .filter((s) => !!s) as string[];
+    }
   }
 }

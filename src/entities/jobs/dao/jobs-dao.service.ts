@@ -1,10 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AnyBulkWriteOperation, Collection, UpdateFilter } from 'mongodb';
+import {
+  AnyBulkWriteOperation,
+  Collection,
+  UpdateFilter,
+  Sort,
+  SortDirection,
+} from 'mongodb';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { UpdateJobDto } from '../dto/update-job.dto.js';
 import { JobProduct } from '../entities/job-product.entity.js';
 import { Job } from '../entities/job.entity.js';
 import { JOBS_COLLECTION } from './jobs-collection.provider.js';
+import { JobOneProduct } from '../entities/job-one-product.js';
 
 @Injectable()
 export class JobsDao {
@@ -12,13 +19,17 @@ export class JobsDao {
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
   ) {}
 
-  async getAll(
+  async getAll<
+    K extends boolean,
+    Result = K extends true ? JobOneProduct : Job,
+  >(
     query: FilterType<Job>,
-    unwindProducts: boolean,
-  ): Promise<Job[]> {
-    const aggr = findAllPipeline(query, unwindProducts);
+    unwindProducts: K,
+    sort: Record<string, SortDirection> = {},
+  ): Promise<Result[]> {
+    const aggr = findAllPipeline(query, unwindProducts, sort);
 
-    return this.collection.aggregate(aggr).toArray() as Promise<Job[]>;
+    return this.collection.aggregate(aggr).toArray() as any;
   }
 
   async getCount(
@@ -102,43 +113,10 @@ function jobUpdate({
 function findAllPipeline(
   query: FilterType<Job>,
   unwindProducts: boolean,
+  sort: Record<string, SortDirection> = {},
 ): any[] {
   const { start, limit, filter } = query;
-
-  const aggr: any[] = [
-    {
-      $match: filter,
-    },
-    {
-      $lookup: {
-        from: 'customers',
-        localField: 'customer',
-        foreignField: 'CustomerName',
-        as: 'custCode',
-      },
-    },
-    {
-      $project: {
-        _id: 0,
-        jobId: 1,
-        customer: 1,
-        name: 1,
-        customerJobId: 1,
-        receivedDate: 1,
-        dueDate: 1,
-        products: 1,
-        invoiceId: 1,
-        jobStatus: 1,
-        'production.category': 1,
-        custCode: { $arrayElemAt: ['$custCode.code', 0] },
-      },
-    },
-    {
-      $sort: {
-        jobId: -1,
-      },
-    },
-  ];
+  const aggr: any[] = [];
   if (unwindProducts) {
     aggr.push({
       $unwind: {
@@ -148,6 +126,41 @@ function findAllPipeline(
       },
     });
   }
+  aggr.push({
+    $match: filter,
+  });
+  aggr.push({
+    $lookup: {
+      from: 'customers',
+      localField: 'customer',
+      foreignField: 'CustomerName',
+      as: 'custCode',
+    },
+  });
+  aggr.push({
+    $project: {
+      _id: 0,
+      jobId: 1,
+      customer: 1,
+      name: 1,
+      customerJobId: 1,
+      receivedDate: 1,
+      dueDate: 1,
+      products: 1,
+      invoiceId: 1,
+      jobStatus: 1,
+      comment: 1,
+      productsIdx: 1,
+      'production.category': 1,
+      custCode: { $arrayElemAt: ['$custCode.code', 0] },
+    },
+  });
+  aggr.push({
+    $sort: {
+      jobId: -1,
+      ...sort,
+    },
+  });
   if (start > 0) {
     aggr.push({
       $skip: start,
@@ -158,6 +171,5 @@ function findAllPipeline(
       $limit: limit,
     });
   }
-
   return aggr;
 }

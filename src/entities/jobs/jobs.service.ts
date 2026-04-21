@@ -11,6 +11,12 @@ import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
 import { ProductsQuery } from './dto/products-query.js';
 import { JobsProductsDaoService } from './dao/jobs-products-dao.service.js';
 import { jobProductsReport } from './job-products-report/job-products-report.js';
+import { JobQuery } from './dto/job-query.js';
+import { TCreatedPdf } from 'pdfmake';
+import { jobsReport } from './jobs-report/jobs-report.js';
+import { PreferencesService } from '../../preferences/preferences.service.js';
+import { JobsSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
+import { JobOneProduct } from './entities/job-one-product.js';
 
 @Injectable()
 export class JobsService {
@@ -20,13 +26,27 @@ export class JobsService {
     private readonly jobsInvoicesDao: JobsInvoicesDao,
     private readonly jobsMaterialsDao: JobsMaterialsDaoService,
     private readonly counters: JobsCounterService,
+    private readonly preferencesService: PreferencesService,
   ) {}
 
-  async getAll(
-    filter: FilterType<Job>,
-    unwindProducts: boolean,
-  ): Promise<Job[]> {
+  async getAll<
+    K extends boolean,
+    Result = K extends true ? JobOneProduct : Job,
+  >(filter: FilterType<Job>, unwindProducts: K): Promise<Result[]> {
     return this.jobsDao.getAll(filter, unwindProducts);
+  }
+
+  async getJobsReport(query: JobQuery): Promise<TCreatedPdf> {
+    const totals = await this.jobsProductsDao.getProductsTotals(
+      query.toFilter(),
+    );
+    const jobs = await this.jobsDao.getAll(query.toFilter(), true, {
+      jobId: 1,
+    });
+
+    const preferences = await this.getPreferences();
+
+    return jobsReport(query, jobs as JobOneProduct[], totals, preferences);
   }
 
   async getCount(
@@ -37,7 +57,7 @@ export class JobsService {
       { ...filter, start: 0, limit: 0 },
       unwindProducts,
     );
-    return result[0].count;
+    return result[0]?.count ?? 0;
   }
 
   async getOne(jobId: number): Promise<Job> {
@@ -86,5 +106,11 @@ export class JobsService {
       query,
     );
     return jobProductsReport(query, data);
+  }
+
+  private async getPreferences(): Promise<JobsSystemPreference> {
+    return this.preferencesService.getModuleSystemPreferences(
+      'jobs',
+    ) as Promise<JobsSystemPreference>;
   }
 }

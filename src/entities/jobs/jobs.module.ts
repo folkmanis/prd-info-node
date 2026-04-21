@@ -18,6 +18,7 @@ import { JobFilesController } from './job-files/job-files.controller.js';
 import { JobFilesService } from './job-files/job-files.service.js';
 import { JOBS_COLLECTION } from './dao/jobs-collection.provider.js';
 import { JobsMaterialsDaoService } from './dao/jobs-materials-dao.service.js';
+import { PreferencesModule } from '../../preferences/preferences.module.js';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { JobsMaterialsDaoService } from './dao/jobs-materials-dao.service.js';
     ProductsModule,
     NotificationsModule,
     UsersModule,
+    PreferencesModule,
   ],
   controllers: [
     JobFilesController,

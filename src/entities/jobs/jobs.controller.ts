@@ -1,3 +1,4 @@
+import { Response } from 'express';
 import {
   Body,
   Controller,
@@ -5,6 +6,7 @@ import {
   Patch,
   Put,
   Query,
+  Res,
   UseInterceptors,
   UsePipes,
   ValidationPipe,
@@ -23,6 +25,7 @@ import { JobNotifyInterceptor } from './job-notify.interceptor.js';
 import { JobsService } from './jobs.service.js';
 import { JobFilesService } from './job-files/job-files.service.js';
 import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
+import { AllowNullResponse } from '../../lib/null-response.interceptor.js';
 
 @Controller('jobs')
 @Modules('jobs')
@@ -82,6 +85,16 @@ export class JobsController {
       query.toFilter(),
       Boolean(query.unwindProducts),
     );
+  }
+
+  @Get('report')
+  @AllowNullResponse()
+  async jobProductsReport(@Query() query: JobQuery, @Res() res: Response) {
+    const pdf = await this.jobsService.getJobsReport(query);
+    const stream = await pdf.getStream();
+    res.contentType('application/pdf');
+    stream.pipe(res);
+    stream.end();
   }
 
   @Get(':jobId')
