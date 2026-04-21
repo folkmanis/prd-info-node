@@ -19,7 +19,7 @@ export class JobsProductsDaoService {
   ) {}
 
   async getProductsTotals(
-    { filter }: FilterType<Job>,
+    { filter }: Pick<FilterType<Job>, 'filter'>,
     options: ProductsTotalsOptions = {},
   ): Promise<JobsProductsTotals[]> {
     const pipeline: Record<string, any>[] = [

@@ -37,12 +37,16 @@ export class JobsService {
   }
 
   async getJobsReport(query: JobQuery): Promise<TCreatedPdf> {
-    const totals = await this.jobsProductsDao.getProductsTotals(
-      query.toFilter(),
+    const { filter } = query.toFilter();
+
+    const totals = await this.jobsProductsDao.getProductsTotals({ filter });
+    const jobs = await this.jobsDao.getAll(
+      { filter, limit: 0, start: 0 },
+      true,
+      {
+        jobId: 1,
+      },
     );
-    const jobs = await this.jobsDao.getAll(query.toFilter(), true, {
-      jobId: 1,
-    });
 
     const preferences = await this.getPreferences();
 
