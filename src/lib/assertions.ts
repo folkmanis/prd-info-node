@@ -21,3 +21,10 @@ export function assertUser(
     throw new NotFoundException(message);
   }
 }
+
+export function assertNotNull<T>(
+  value: T | null | undefined,
+  msg?: string,
+): asserts value is T {
+  assertCondition(value !== null && value !== undefined, msg);
+}
