@@ -15,7 +15,7 @@ import {
   ParseIntPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { Modules } from '../../login/index.js';
 import { CustomersService } from '../customers/customers.service.js';
@@ -36,16 +36,13 @@ export class TransportationController {
   ) {}
 
   @Put()
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   insertOne(@Body() createTransportationDto: CreateRouteSheetDto) {
     return this.transportationService.create(createTransportationDto);
   }
 
   @Get('report_:id.pdf')
-  async getReport(
-    @Param('id', ObjectIdPipe) id: ObjectId,
-    @Res() res: Response,
-  ) {
+  async getReport(@Param('id') id: ObjectId, @Res() res: Response) {
     const data = await this.transportationService.getOne(id);
     const pdf = await transportationReport(data).getStream();
     res.contentType('application/pdf');
@@ -73,20 +70,20 @@ export class TransportationController {
   }
 
   @Get(':id')
-  findOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  findOne(@Param('id') id: ObjectId) {
     return this.transportationService.getOne(id);
   }
 
   @Get()
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   findAll(@Query() query: RouteSheetFilterQuery) {
     return this.transportationService.getAll(query);
   }
 
   @Patch(':id')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   update(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Body() updateTransportationDto: UpdateRouteSheetDto,
   ) {
     return this.transportationService.update(id, updateTransportationDto);
@@ -94,12 +91,12 @@ export class TransportationController {
 
   @Delete(':id')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  remove(@Param('id', ObjectIdPipe) id: ObjectId) {
+  remove(@Param('id') id: ObjectId) {
     return this.transportationService.delete(id);
   }
 
   @Post('distance-request')
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   @UseInterceptors(new ResponseWrapperInterceptor('distance'))
   distanceRequest(@Body() request: DistanceRequestQuery) {
     return this.transportationService.calculateDistance(request);

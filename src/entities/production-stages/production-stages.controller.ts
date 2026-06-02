@@ -20,7 +20,6 @@ import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.intercept
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { ProductionStage } from './entities/production-stage.entity.js';
 import { ProductionStageQueryFilter } from './dto/production-stage-query-filter.js';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
 
 @Controller('production-stages')
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -37,7 +36,7 @@ export class ProductionStagesController {
   @Patch(':id')
   @Modules('jobs-admin')
   async updateOne(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Body() update: UpdateProductionStageDto,
   ) {
     return this.daoService.updateOne(id, update);
@@ -46,7 +45,7 @@ export class ProductionStagesController {
   @Delete(':id')
   @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async deleteOne(@Param('id') id: ObjectId) {
     return this.daoService.deleteOneById(id);
   }
 
@@ -59,7 +58,7 @@ export class ProductionStagesController {
   }
 
   @Get(':id')
-  async getOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async getOne(@Param('id') id: ObjectId) {
     return this.daoService.getOneById(id);
   }
 

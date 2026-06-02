@@ -7,6 +7,9 @@ import { AppModule } from './app.module.js';
 import { APP_LOGGER } from './logging/logger.factory.js';
 import { versionMiddleware } from './preferences/index.js';
 import { parseInstanceId } from './preferences/instance-id-parser.js';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { VERSION } from './version.js';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(AppModule, {
@@ -26,7 +29,21 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(new WsAdapter(app));
 
+  swaggerInit(app);
+
   const port = app.get(ConfigService).get('PORT');
   await app.listen(port);
 }
 bootstrap();
+
+function swaggerInit(app: NestExpressApplication) {
+  const config = new DocumentBuilder()
+    .setTitle('prd-api')
+    .setDescription('PRD app API')
+    .setVersion(VERSION.apiBuild.toString())
+    .addTag('prd')
+    .build();
+  const documentFactory = () =>
+    cleanupOpenApiDoc(SwaggerModule.createDocument(app, config));
+  SwaggerModule.setup('api', app, documentFactory);
+}

@@ -14,9 +14,9 @@ import { JobsService } from '../jobs/jobs.service.js';
 
 @Controller('kastes/jobs')
 @Modules('kastes')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class KastesJobsController {
-  constructor(private readonly jobsService: JobsService) { }
+  constructor(private readonly jobsService: JobsService) {}
 
   @Get()
   async getKastesJobs(@Query() query: JobQuery): Promise<KastesJob[]> {

@@ -17,12 +17,12 @@ import { UploadMessageInterceptor } from './upload-message.interceptor.js';
 
 @Controller('xmf-upload')
 @Modules('xmf-upload')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class XmfUploadController {
   constructor(
     private readonly xmfParser: XmfParserService,
     private readonly uploadProgressDao: XmfUploadProgressDao,
-  ) { }
+  ) {}
 
   @Post()
   @UseInterceptors(UploadMessageInterceptor)

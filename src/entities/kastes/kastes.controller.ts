@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { Modules } from '../../login/index.js';
 import { KastesDaoService } from './dao/kastes-dao.service.js';
 import { VeikalsKaste } from './dto/veikals-kaste.dto.js';
@@ -20,11 +20,11 @@ export class KastesController {
   constructor(
     private readonly kastesDao: KastesDaoService,
     private readonly kastesService: KastesService,
-  ) { }
+  ) {}
 
   @Patch(':id/:kaste/gatavs/:action')
   async setGatavs(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Param('kaste', ParseIntPipe) kaste: number,
     @Param('action', ParseBoolPipe) action: boolean,
   ): Promise<VeikalsKaste | null | undefined> {
@@ -42,7 +42,7 @@ export class KastesController {
 
   @Get('id/:id/:kaste')
   async getKasteById(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Param('kaste', ParseIntPipe) kaste: number,
   ): Promise<VeikalsKaste | undefined> {
     return this.kastesDao.findOneById(id, kaste);

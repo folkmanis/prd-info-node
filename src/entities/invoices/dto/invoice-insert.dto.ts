@@ -1,9 +1,12 @@
-import { IsString, IsNumber } from 'class-validator';
+import { z } from 'zod';
+import { createZodDto } from 'nestjs-zod';
 
-export class InvoiceInsert {
-  @IsNumber(undefined, { each: true })
-  jobIds: number[];
+export const InvoiceInsertSchema = z.strictObject({
+  jobIds: z.array(z.number()),
+  customerId: z.string(),
+  detailedJobs: z.boolean().default(false),
+});
 
-  @IsString()
-  customerId: string;
-}
+export type InvoiceInsert = z.infer<typeof InvoiceInsertSchema>;
+
+export class InvoiceInsertDto extends createZodDto(InvoiceInsertSchema) {}

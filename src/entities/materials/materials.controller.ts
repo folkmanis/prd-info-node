@@ -12,7 +12,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { Modules } from '../../login/index.js';
@@ -24,9 +24,9 @@ import { Material } from './entities/material.entity.js';
 
 @Controller('materials')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class MaterialsController {
-  constructor(private readonly materialsDao: MaterialsDaoService) { }
+  constructor(private readonly materialsDao: MaterialsDaoService) {}
 
   @Put()
   @Modules('jobs-admin')
@@ -37,7 +37,7 @@ export class MaterialsController {
   @Patch(':id')
   @Modules('jobs-admin')
   async updateOne(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Body() material: UpdateMaterialDto,
   ) {
     return this.materialsDao.updateOne(id, material);
@@ -46,7 +46,7 @@ export class MaterialsController {
   @Delete(':id')
   @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async deleteOne(@Param('id') id: ObjectId) {
     return this.materialsDao.deleteOneById(id);
   }
 
@@ -58,7 +58,7 @@ export class MaterialsController {
   }
 
   @Get(':id')
-  async getOneById(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async getOneById(@Param('id') id: ObjectId) {
     return this.materialsDao.getOneById(id);
   }
 

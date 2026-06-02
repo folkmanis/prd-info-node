@@ -30,7 +30,7 @@ import { JobFilesService } from './job-files.service.js';
 
 @Controller('jobs/files')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class JobFilesController {
   constructor(
     private readonly fileService: FilesystemService,

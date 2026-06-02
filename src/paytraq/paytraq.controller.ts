@@ -8,11 +8,9 @@ import {
   Query,
 } from '@nestjs/common';
 import { Modules } from '../login/index.js';
-import { RequestParameters } from './interfaces/request-parameters.js';
-import { SalesInput } from './interfaces/sales-input.js';
+import { RequestParametersDto } from './interfaces/request-parameters.schema.js';
+import { SalesInputDto } from './interfaces/sales-input.schema.js';
 import { PaytraqDaoService } from './paytraq-dao/paytraq-dao.service.js';
-import { RequestParametersPipe } from './request-parameters.pipe.js';
-import { SaleValidatorPipe } from './sale-validator.pipe.js';
 
 @Controller('paytraq')
 @Modules('jobs')
@@ -25,7 +23,7 @@ export class PaytraqController {
   }
 
   @Get('clients')
-  async getClients(@Query(RequestParametersPipe) query: RequestParameters) {
+  async getClients(@Query() query: RequestParametersDto) {
     return this.paytraqDao.getClients(query);
   }
 
@@ -35,7 +33,7 @@ export class PaytraqController {
   }
 
   @Get('products')
-  async getProducts(@Query(RequestParametersPipe) query: RequestParameters) {
+  async getProducts(@Query() query: RequestParametersDto) {
     return this.paytraqDao.getProducts(query);
   }
 
@@ -45,7 +43,7 @@ export class PaytraqController {
   }
 
   @Get('sales')
-  async getSales(@Query(RequestParametersPipe) query: RequestParameters) {
+  async getSales(@Query() query: RequestParametersDto) {
     return this.paytraqDao.getSales(query);
   }
 
@@ -55,7 +53,7 @@ export class PaytraqController {
   }
 
   @Put('sale')
-  async postSale(@Body(SaleValidatorPipe) data: SalesInput) {
+  async postSale(@Body() data: SalesInputDto) {
     const resp = await this.paytraqDao.postSale(data);
     if (!resp.response?.documentID) {
       throw new Error(JSON.stringify(resp));

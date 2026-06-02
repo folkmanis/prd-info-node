@@ -40,10 +40,10 @@ const MESSAGE_HEADERS = ['From', 'To', 'Subject', 'Date'];
 @Controller('google/gmail')
 @Modules('jobs')
 @UseGuards(GoogleClientGuard, GmailGuard)
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 @UseFilters(InvalidGrantFilter)
 export class GmailController {
-  constructor(private readonly fileSystem: FilesystemService) { }
+  constructor(private readonly fileSystem: FilesystemService) {}
 
   @Put('message/attachment')
   @UseInterceptors(new ResponseWrapperInterceptor('names'))

@@ -12,7 +12,7 @@ import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 export class JobsInvoicesDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<Job>,
-  ) { }
+  ) {}
 
   async setInvoice(jobIds: number[], invoiceId: string): Promise<number[]> {
     const filter: Filter<Job> = {
@@ -79,6 +79,37 @@ export class JobsInvoicesDao {
         $addFields: {
           price: { $divide: ['$total', '$count'] },
         },
+      },
+    ];
+    return this.collection.aggregate<InvoiceProduct>(aggr).toArray();
+  }
+
+  async getInvoiceTotalsForEachJob(
+    invoiceId: string,
+  ): Promise<InvoiceProduct[]> {
+    const aggr = [
+      {
+        $match: { invoiceId: invoiceId },
+      },
+      {
+        $unwind: { path: '$products' },
+      },
+      {
+        $replaceWith: {
+          _id: '$products.name',
+          jobsCount: 1,
+          count: '$products.count',
+          price: '$products.price',
+          total: {
+            $multiply: ['$products.price', '$products.count'],
+          },
+          comment: {
+            $concat: [{ $toString: '$jobId' }, '-', '$name'],
+          },
+        },
+      },
+      {
+        $sort: { _id: 1 },
       },
     ];
     return this.collection.aggregate<InvoiceProduct>(aggr).toArray();

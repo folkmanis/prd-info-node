@@ -1,4 +1,4 @@
-import { RequestParameters } from '../interfaces/request-parameters.js';
+import { RequestParameters } from '../interfaces/request-parameters.schema.js';
 import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 import { ApiURL } from './api-url.class.js';
 

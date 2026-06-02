@@ -8,23 +8,20 @@ import {
   Put,
   Query,
   UseInterceptors,
-  UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { ObjectIdDto } from '../../lib/zod-validators.js';
 import { Modules } from '../../login/index.js';
 import { ProductsDaoService } from './dao/products-dao.service.js';
 import { CreateProductDto } from './dto/create-product.dto.js';
-import { ProductQuery } from './dto/product-query.dto.js';
+import { ProductQueryDto } from './dto/product-query.dto.js';
 import { UpdateProductDto } from './dto/update-product.dto.js';
 import { Product } from './entities/product.entity.js';
 
 @Controller('products')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 export class ProductsController {
   constructor(private readonly productsDao: ProductsDaoService) {}
 
@@ -52,26 +49,30 @@ export class ProductsController {
   }
 
   @Get(':id')
-  async getone(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async getone(@Param('id') id: ObjectIdDto) {
     return this.productsDao.getOne(id);
   }
 
   @Get()
-  async getAll(@Query() query: ProductQuery) {
-    return this.productsDao.getAll(query.toFilter());
+  async getAll(@Query() query: ProductQueryDto) {
+    return this.productsDao.getAll(query);
   }
 
   @Modules('jobs-admin')
   @Put()
-  async insertOne(@Body() product: CreateProductDto) {
+  async insertOne(
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    product: CreateProductDto,
+  ) {
     return this.productsDao.insertOne(product);
   }
 
   @Modules('jobs-admin')
   @Patch(':id')
   async updateOne(
-    @Param('id', ObjectIdPipe) id: ObjectId,
-    @Body() product: UpdateProductDto,
+    @Param('id') id: ObjectIdDto,
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    product: UpdateProductDto,
   ) {
     return this.productsDao.updateOne(id, product);
   }
@@ -79,7 +80,7 @@ export class ProductsController {
   @Modules('jobs-admin')
   @Delete(':id')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteProducts(@Param('id', ObjectIdPipe) name: ObjectId) {
+  async deleteProducts(@Param('id') name: ObjectIdDto) {
     return this.productsDao.deleteOne(name);
   }
 }

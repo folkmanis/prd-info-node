@@ -1,6 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { getFirestore } from 'firebase-admin/firestore';
-import { assertUser } from '../../lib/assertions.js';
 import {
   SystemModules,
   SYSTEM_MODULES_KEYS,
@@ -8,6 +7,7 @@ import {
 import { UsersDaoService } from './dao/users-dao.service.js';
 import { FirebaseUser } from './entities/firebase-user.interface.js';
 import { User } from './entities/user.interface.js';
+import { assertUser } from './assert-user.js';
 
 export class InvalidFirebaseUserException extends HttpException {
   constructor() {
@@ -31,7 +31,7 @@ export class UsersFirestoreService {
   }
 
   // eslint-disable-next-line prettier/prettier
-  constructor(private usersDao: UsersDaoService) { }
+  constructor(private usersDao: UsersDaoService) {}
 
   async setUser(username: string): Promise<number | null | undefined> {
     const user = await this.usersDao.getOne({ username });

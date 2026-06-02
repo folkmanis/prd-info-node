@@ -11,10 +11,7 @@ import {
   TDocumentInformation,
 } from 'pdfmake/interfaces.js';
 import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
-import {
-  InvoiceForReport,
-  JobBase,
-} from '../entities/invoice-for-report.interface.js';
+import { InvoiceForReport, InvoiceJob } from '../dto/invoice-for-report.dto.js';
 import { InvoiceProduct } from '../entities/invoice.entity.js';
 
 const SMALL: Style = { fontSize: 8 };
@@ -105,7 +102,7 @@ function createProductsTableContent(
 }
 
 function createJobsTableContent(
-  jobs: JobBase[] = [],
+  jobs: InvoiceJob[] = [],
   locale: Locale,
 ): TableCell[][] {
   const tbl: TableCell[][] = [];

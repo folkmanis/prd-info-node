@@ -2,7 +2,6 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../entities/users/index.js';
 
 export function assertCondition(
   condition: any,
@@ -13,18 +12,18 @@ export function assertCondition(
   }
 }
 
-export function assertUser(
-  user: User | undefined | null,
-  message = 'Invalid username',
-): asserts user is User {
-  if (!user) {
-    throw new NotFoundException(message);
-  }
-}
-
 export function assertNotNull<T>(
   value: T | null | undefined,
   msg?: string,
 ): asserts value is T {
   assertCondition(value !== null && value !== undefined, msg);
+}
+
+export function assertIsFound<T>(
+  data: T | null | undefined,
+  message: string = 'Not found',
+): asserts data is T {
+  if (data === null || data === undefined) {
+    throw new NotFoundException(message);
+  }
 }

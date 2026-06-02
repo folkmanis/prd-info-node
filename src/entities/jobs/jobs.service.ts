@@ -17,6 +17,7 @@ import { jobsReport } from './jobs-report/jobs-report.js';
 import { PreferencesService } from '../../preferences/preferences.service.js';
 import { JobsSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 import { JobOneProduct } from './entities/job-one-product.js';
+import { InvoiceProduct } from '../invoices/entities/invoice.entity.js';
 
 @Injectable()
 export class JobsService {
@@ -84,8 +85,15 @@ export class JobsService {
     return this.jobsInvoicesDao.setInvoice(jobIds, invoiceId);
   }
 
-  async getInvoiceTotals(invoiceId: string) {
-    return this.jobsInvoicesDao.getInvoiceTotals(invoiceId);
+  async getInvoiceTotals(
+    invoiceId: string,
+    params: { detailedJobs?: boolean } = {},
+  ): Promise<InvoiceProduct[]> {
+    if (params.detailedJobs) {
+      return this.jobsInvoicesDao.getInvoiceTotalsForEachJob(invoiceId);
+    } else {
+      return this.jobsInvoicesDao.getInvoiceTotals(invoiceId);
+    }
   }
 
   async unsetInvoices(invoiceId: string): Promise<number> {

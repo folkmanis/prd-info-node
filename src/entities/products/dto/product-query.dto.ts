@@ -1,35 +1,21 @@
-import { Exclude, Expose, Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
 import { Filter } from 'mongodb';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
-import { Product } from '../entities/product.entity.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class ProductQuery extends StartLimitFilter<Product> {
-  @Transform(({ value }) => !!JSON.parse(value))
-  @IsOptional()
-  @IsBoolean()
-  disabled = true;
-
-  @Type(() => Number)
-  @IsInt()
-  start = 0;
-
-  @Type(() => Number)
-  @IsInt()
-  limit = 100;
-
-  @IsOptional()
-  @IsString()
-  name?: string;
-
-  toFilter() {
-    const { start, limit } = this;
+export const ProductQuerySchema = z
+  .object({
+    disabled: z.stringbool().default(true),
+    start: z.coerce.number().default(0),
+    limit: z.coerce.number().default(1000),
+    name: z.string().optional(),
+  })
+  .transform(({ start, limit, ...query }) => {
     const filter: Filter<any> = {};
-    if (!this.disabled) {
+    if (!query.disabled) {
       filter.$or = [{ inactive: null }, { inactive: false }];
     }
-    if (this.name) {
-      filter.name = new RegExp(this.name, 'i');
+    if (query.name) {
+      filter.name = new RegExp(query.name, 'i');
     }
 
     return {
@@ -37,17 +23,6 @@ export class ProductQuery extends StartLimitFilter<Product> {
       limit,
       filter,
     };
-  }
-}
+  });
 
-export class ProductFilter {
-  @Exclude()
-  _name: any;
-  @Expose()
-  set name(value: string) {
-    this._name = value;
-  }
-  get name() {
-    return this._name && { $regex: this._name, $options: 'i' };
-  }
-}
+export class ProductQueryDto extends createZodDto(ProductQuerySchema) {}

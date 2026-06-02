@@ -29,10 +29,7 @@ import { UserFilterQuery } from './dto/user-filter-query.js';
 
 @Controller('users')
 @Modules('admin')
-@UsePipes(
-  new ValidationPipe({ transform: true, whitelist: true }),
-  PasswordPipe,
-)
+@UsePipes(new ValidationPipe({ transform: true }), PasswordPipe)
 @UseInterceptors(UserUpdateNotifyInterceptor)
 export class UsersController {
   constructor(

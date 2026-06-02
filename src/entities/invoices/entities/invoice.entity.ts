@@ -1,95 +1,44 @@
-import { ObjectId } from 'mongodb';
-import { Type } from 'class-transformer';
-import {
-  IsString,
-  IsDate,
-  IsInt,
-  IsOptional,
-  ValidateNested,
-  IsNumber,
-} from 'class-validator';
-import { Customer } from '../../customers/entities/customer.entity.js';
+import { z } from 'zod';
+import { isoDateToDate } from '../../../lib/zod-validators.js';
 
-export class PaytraqInvoice {
-  @Type(() => Number)
-  @IsInt()
-  paytraqId: number;
+export const PaytraqInvoiceSchema = z.object({
+  paytraqId: z.coerce.number().int(),
+  documentRef: z.string(),
+});
+export type PaytraqInvoice = z.infer<typeof PaytraqInvoiceSchema>;
 
-  @IsString()
-  documentRef: string;
-}
+export const InvoiceProductSchema = z.object({
+  _id: z.string(),
+  total: z.number(),
+  jobsCount: z.number(),
+  count: z.number(),
+  price: z.number(),
+  comment: z.string().nullish(),
+  paytraqId: z.number().nullish(),
+});
 
-export class InvoiceProduct {
-  @IsString()
-  _id: string;
+export type InvoiceProduct = z.infer<typeof InvoiceProductSchema>;
 
-  @IsNumber()
-  total: number;
+export const InvoiceSchema = z.object({
+  invoiceId: z.string(),
+  customer: z.string(),
+  createdDate: isoDateToDate,
+  jobsId: z.array(z.coerce.number().int()),
+  products: z.array(InvoiceProductSchema),
+  comment: z.string().nullish(),
+  paytraq: PaytraqInvoiceSchema.nullish(),
+});
 
-  @IsNumber()
-  jobsCount: number;
+export type Invoice = z.infer<typeof InvoiceSchema>;
 
-  @IsNumber()
-  count: number;
+export const ProductTotalsSchema = z.object({
+  _id: z.string(),
+  count: z.number(),
+  total: z.number(),
+});
+export type ProductTotals = z.infer<typeof ProductTotalsSchema>;
 
-  @IsNumber()
-  price: number;
-
-  @IsString()
-  @IsOptional()
-  comment?: string;
-
-  @IsString()
-  @IsOptional()
-  paytraqId?: string;
-}
-
-export class Invoice {
-  @Type(() => ObjectId)
-  _id: ObjectId;
-
-  @IsString()
-  invoiceId: string;
-
-  @IsString()
-  customer: string;
-
-  @Type(() => Date)
-  @IsDate()
-  createdDate: Date;
-
-  @Type(() => Number)
-  @IsInt({ each: true })
-  jobsId: number[];
-
-  @Type(() => InvoiceProduct)
-  @ValidateNested({ each: true })
-  products: InvoiceProduct[];
-
-  @IsOptional()
-  comment?: string;
-
-  @Type(() => PaytraqInvoice)
-  @IsOptional()
-  paytraq?: PaytraqInvoice;
-}
-
-export type InvoiceResponse = Invoice & {
-  customerInfo?: Customer;
-  total?: number;
-};
-
-export interface InvoicesFilter {
-  customer?: string;
-}
-
-export interface ProductTotals {
-  _id: string;
-  count: number;
-  total: number;
-}
-
-export const INVOICE_SCHEMA: { [key: string]: any; } = {
+export const INVOICE_SCHEMA: { [key: string]: any } = {
   bsonType: 'object',
   required: ['invoiceId', 'customer'],
   properties: {

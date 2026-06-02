@@ -17,19 +17,19 @@ import { TransportationVehicle } from './entities/vehicle.entity.js';
 import { VehicleService } from './vehicle.service.js';
 import { Modules } from '../../login/index.js';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { VehicleFilterQuery } from './dto/vehicle-filter.query.js';
 
 @Controller('transportation/vehicle')
 @Modules('transportation')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class VehicleController {
   constructor(private vehicleService: VehicleService) {}
 
   @Get(':id')
-  findOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  findOne(@Param('id') id: ObjectId) {
     return this.vehicleService.findOne(id);
   }
 
@@ -45,7 +45,7 @@ export class VehicleController {
 
   @Patch(':id')
   update(
-    @Param('id', ObjectIdPipe) id: ObjectId,
+    @Param('id') id: ObjectId,
     @Body() updateVehicleDto: UpdateVehicleDto,
   ) {
     return this.vehicleService.updateOne(id, updateVehicleDto);
@@ -53,7 +53,7 @@ export class VehicleController {
 
   @Delete(':id')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  remove(@Param('id', ObjectIdPipe) id: ObjectId) {
+  remove(@Param('id') id: ObjectId) {
     return this.vehicleService.deleteOne(id);
   }
 

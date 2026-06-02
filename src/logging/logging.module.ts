@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
-import { LoggingController } from './logging.controller.js';
-import { loggerFactory, APP_LOGGER } from './logger.factory.js';
-import { LoggingService } from './logging.service.js';
 import { PreferencesModule } from '../preferences/index.js';
 import { logLevelsFactory } from './log-levels.factory.js';
-import { APP_FILTER } from '@nestjs/core';
-import { ErrorLoggerFilter } from './error-logger.filter.js';
+import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
+import { APP_LOGGER, loggerFactory } from './logger.factory.js';
+import { LoggingController } from './logging.controller.js';
+import { LoggingService } from './logging.service.js';
 
 @Module({
   providers: [
@@ -14,13 +12,9 @@ import { ErrorLoggerFilter } from './error-logger.filter.js';
     logLevelsFactory,
     loggerFactory,
     LoggingService,
-    {
-      provide: APP_FILTER,
-      useClass: ErrorLoggerFilter,
-    },
   ],
   imports: [PreferencesModule],
   controllers: [LoggingController],
   exports: [APP_LOGGER],
 })
-export class LoggingModule { }
+export class LoggingModule {}

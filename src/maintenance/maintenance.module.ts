@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { dotEnvConfig } from '../dot-env.config.js';
+import { validate } from '../dot-env.config.js';
 import { DatabaseModule } from '../database/database.module.js';
 import { LoggingModule } from '../logging/logging.module.js';
 import { MaintenanceService } from './maintenance.service.js';
@@ -11,8 +11,8 @@ import { JobsModule } from '../entities/jobs/jobs.module.js';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: dotEnvConfig,
       cache: true,
+      validate,
     }),
     DatabaseModule,
     JobsModule,
@@ -20,4 +20,4 @@ import { JobsModule } from '../entities/jobs/jobs.module.js';
   ],
   exports: [MaintenanceService],
 })
-export class MaintenanceModule { }
+export class MaintenanceModule {}

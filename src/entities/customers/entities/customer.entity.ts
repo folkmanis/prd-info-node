@@ -11,6 +11,8 @@ import {
   IsEmail,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { z } from 'zod';
+import { isoDateToDate } from '../../../lib/zod-validators.js';
 
 class Financial {
   @IsString()
@@ -106,3 +108,42 @@ export class Customer {
   @IsOptional()
   shippingAddress?: ShippingAddress;
 }
+
+// Zod schemas corresponding to the above classes
+export const FinancialSchema = z.object({
+  clientName: z.string(),
+  paytraqId: z.coerce.number(),
+});
+
+export const FtpUserDataSchema = z.object({
+  folder: z.string(),
+  username: z.string().nullish(),
+  password: z.string().nullish(),
+});
+
+export const CustomerContactSchema = z.object({
+  email: z.email().nullish(),
+});
+
+export const ShippingAddressSchema = z.object({
+  address: z.string(),
+  zip: z.string(),
+  country: z.string(),
+  paytraqId: z.number().nullish(),
+  googleId: z.string().nullish(),
+});
+
+export const CustomerSchema = z
+  .object({
+    code: z.string(),
+    CustomerName: z.string(),
+    disabled: z.boolean().nullish(),
+    description: z.string().nullish(),
+    insertedFromXmf: isoDateToDate.nullish(),
+    financial: FinancialSchema.nullish(),
+    ftpUser: z.boolean(),
+    ftpUserData: FtpUserDataSchema.nullish(),
+    contacts: z.array(CustomerContactSchema).nullish(),
+    shippingAddress: ShippingAddressSchema.nullish(),
+  })
+  .meta({ id: 'CustomerSchema' });

@@ -4,83 +4,72 @@ import {
   Delete,
   Get,
   Param,
-  ParseArrayPipe,
   Patch,
   Put,
   Query,
   Res,
   UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AllowNullResponse } from '../../lib/null-response.interceptor.js';
+import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { Modules } from '../../login/index.js';
-import { JobsService } from '../jobs/jobs.service.js';
-import { InvoicesDao } from './dao/invoices-dao.service.js';
-import { InvoiceInsert } from './dto/invoice-insert.dto.js';
-import { InvoiceUpdate } from './dto/invoice-update.dto.js';
-import { InvoiceForReport } from './entities/invoice-for-report.interface.js';
-import { InvoicesFilter } from './entities/invoice.entity.js';
+import { InvoiceInsertDto } from './dto/invoice-insert.dto.js';
+import { InvoiceUpdateDto } from './dto/invoice-update.dto.js';
+import {
+  InvoiceForReport,
+  InvoiceForReportDto,
+} from './dto/invoice-for-report.dto.js';
 import { invoicesReport } from './invoices-report/invoices-report.js';
 import { InvoicesService } from './invoices.service.js';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import {
+  InvoiceForList,
+  InvoiceForListDto,
+} from './dto/invoice-for-list.dto.js';
+import { InvoicesFilterDto } from './dto/invoices-filter.dto.js';
+import { ZodResponse } from 'nestjs-zod';
 
 @Controller('invoices')
 @Modules('jobs', 'calculations')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
 export class InvoicesController {
-  constructor(
-    private readonly invoicesDao: InvoicesDao,
-    private readonly jobsService: JobsService,
-    private readonly invoicesService: InvoicesService,
-  ) {}
+  constructor(private readonly invoicesService: InvoicesService) {}
 
+  @AllowNullResponse()
   @Put('report')
-  async prepareReport(@Body() invoice: InvoiceForReport, @Res() res: Response) {
+  async prepareReport(
+    @Body() invoice: InvoiceForReportDto,
+    @Res() res: Response,
+  ) {
     const pdf = await invoicesReport(invoice).getStream();
     res.contentType('application/pdf');
     pdf.pipe(res);
     pdf.end();
-
-    return {}; // not null response for interceptor
   }
 
+  @ZodResponse({ type: InvoiceForReportDto })
   @Put('')
   async newInvoice(
-    @Body() { jobIds, customerId }: InvoiceInsert,
+    @Body() params: InvoiceInsertDto,
   ): Promise<InvoiceForReport> {
-    const invoiceId = await this.invoicesService.createInvoice({
-      jobIds,
-      customerId,
-    });
-
-    return this.invoicesService.invoiceForReport(invoiceId);
+    return this.invoicesService.createInvoice(params);
   }
 
+  @ZodResponse({ type: InvoiceForReportDto })
   @Patch(':id')
   async updateInvoice(
     @Param('id') invoiceId: string,
-    @Body() update: InvoiceUpdate,
-  ) {
-    return this.invoicesDao.updateInvoice(invoiceId, update);
+    @Body() update: InvoiceUpdateDto,
+  ): Promise<InvoiceForReport> {
+    return this.invoicesService.updateInvoice(invoiceId, update);
   }
 
   @Delete(':id')
-  @UseInterceptors(
-    new ResponseWrapperInterceptor('deletedCount', { wrapZero: true }),
-  )
+  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
   async deleteInvoice(@Param('id') invoiceId: string) {
-    await this.jobsService.unsetInvoices(invoiceId);
-    return this.invoicesDao.deleteInvoice(invoiceId);
+    return this.invoicesService.deleteInvoice(invoiceId);
   }
 
-  @Get('totals')
-  async getTotals(
-    @Query('jobsId', new ParseArrayPipe({ items: Number })) jobsId: number[],
-  ) {
-    return this.jobsService.getJobsTotals(jobsId);
-  }
-
+  @AllowNullResponse()
   @Get('report_:invoiceId.pdf')
   async getInvoiceReport(
     @Param('invoiceId') invoiceId: string,
@@ -90,23 +79,21 @@ export class InvoicesController {
     const pdf = await invoicesReport(data).getStream();
 
     res.contentType('application/pdf');
-    pdf.pipe(res);
+    pdf.pipe(res); // .end();
     pdf.end();
-
-    return {}; // not null response for interceptor
   }
 
+  @ZodResponse({ type: InvoiceForReportDto })
   @Get(':invoiceId')
   async getInvoice(@Param('invoiceId') invoiceId: string) {
     return this.invoicesService.invoiceForReport(invoiceId);
   }
 
+  @ZodResponse({ type: [InvoiceForListDto] })
   @Get('')
-  async getInvoices(@Query('customer') customer?: string) {
-    const filter: InvoicesFilter = {};
-    if (customer) {
-      filter.customer = customer;
-    }
-    return this.invoicesDao.getAll(filter);
+  async getInvoices(
+    @Query() query: InvoicesFilterDto,
+  ): Promise<InvoiceForList[]> {
+    return this.invoicesService.getInvoicesList(query);
   }
 }

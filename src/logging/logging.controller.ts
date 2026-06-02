@@ -10,10 +10,10 @@ import { LogQuery } from './interfaces/log-query.class.js';
 import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
 
 @Controller('logging')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 @Modules('admin')
 export class LoggingController {
-  constructor(private logDao: LoggerDaoService) { }
+  constructor(private logDao: LoggerDaoService) {}
 
   @Get('dates-groups')
   async getDatesGroups(@Query() query: LogQuery) {

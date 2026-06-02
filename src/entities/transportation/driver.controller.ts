@@ -17,19 +17,19 @@ import { TransportationDriver } from './entities/driver.entity.js';
 import { DriverService } from './driver.service.js';
 import { Modules } from '../../login/index.js';
 import { ObjectId } from 'mongodb';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { DriverFilterQuery } from './dto/driver-filter.query.js';
 
 @Controller('transportation/driver')
 @Modules('transportation')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 export class DriverController {
   constructor(private driverService: DriverService) {}
 
   @Get(':id')
-  findOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  findOne(@Param('id') id: ObjectId) {
     return this.driverService.findOne(id);
   }
 
@@ -44,16 +44,13 @@ export class DriverController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id', ObjectIdPipe) id: ObjectId,
-    @Body() updateDriverDto: UpdateDriverDto,
-  ) {
+  update(@Param('id') id: ObjectId, @Body() updateDriverDto: UpdateDriverDto) {
     return this.driverService.updateOne(id, updateDriverDto);
   }
 
   @Delete(':id')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  remove(@Param('id', ObjectIdPipe) id: ObjectId) {
+  remove(@Param('id') id: ObjectId) {
     return this.driverService.deleteOne(id);
   }
 

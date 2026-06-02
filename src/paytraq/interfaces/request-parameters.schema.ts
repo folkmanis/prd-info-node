@@ -1,7 +1,13 @@
-import { RequestParameters } from './request-parameters.js';
-import Joi from 'joi';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export const RequestParametersSchema = Joi.object<RequestParameters>({
-  page: Joi.number().integer().positive().optional(),
-  query: Joi.string().optional(),
+export const RequestParametersSchema = z.strictObject({
+  page: z.number().int().positive().optional(),
+  query: z.string().optional(),
 });
+
+export type RequestParameters = z.infer<typeof RequestParametersSchema>;
+
+export class RequestParametersDto extends createZodDto(
+  RequestParametersSchema,
+) {}

@@ -94,10 +94,7 @@ export class LoginController {
     return user;
   }
 
-  @UsePipes(
-    new ValidationPipe({ transform: true, whitelist: true }),
-    PasswordPipe,
-  )
+  @UsePipes(new ValidationPipe({ transform: true }), PasswordPipe)
   @UseInterceptors(UpdateSessionUserInterceptor, UserUpdateNotifyInterceptor)
   @Patch()
   async updateUser(@Usr() user: User, @Body() update: UserSelfChangeableDto) {

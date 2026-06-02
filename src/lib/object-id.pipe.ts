@@ -1,10 +1,6 @@
-import {
-  ArgumentMetadata,
-  Injectable,
-  PipeTransform,
-  BadRequestException,
-} from '@nestjs/common';
+import { ArgumentMetadata, Injectable, PipeTransform } from '@nestjs/common';
 import { ObjectId } from 'mongodb';
+import { idToObjectId } from './zod-validators.js';
 
 @Injectable()
 export class ObjectIdPipe implements PipeTransform {
@@ -13,12 +9,6 @@ export class ObjectIdPipe implements PipeTransform {
       return value;
     }
 
-    try {
-      return ObjectId.createFromHexString(value);
-    } catch (error) {
-      throw new BadRequestException(
-        `id must be a single String of 12 bytes or a string of 24 hex characters`,
-      );
-    }
+    return idToObjectId.decode(value);
   }
 }

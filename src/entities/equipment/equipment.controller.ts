@@ -17,7 +17,7 @@ import { UpdateEquipmentDto } from './dto/update-equipment.dto.js';
 import { EquipmentDaoService } from './dao/equipment-dao.service.js';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { Equipment } from './entities/equipment.entity.js';
-import { ObjectIdPipe } from '../../lib/object-id.pipe.js';
+
 import { EquipmentFilterQuery } from './dto/filter-query.dto.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
 import { Modules } from '../../login/index.js';
@@ -26,7 +26,7 @@ import { Modules } from '../../login/index.js';
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Modules('jobs')
 export class EquipmentController {
-  constructor(private readonly daoService: EquipmentDaoService) { }
+  constructor(private readonly daoService: EquipmentDaoService) {}
 
   @Get('validate/:property')
   async getProperty(
@@ -36,7 +36,7 @@ export class EquipmentController {
   }
 
   @Get(':id')
-  async getOne(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async getOne(@Param('id') id: ObjectId) {
     return this.daoService.getOneById(id);
   }
 
@@ -53,17 +53,14 @@ export class EquipmentController {
 
   @Patch(':id')
   @Modules('jobs-admin')
-  async post(
-    @Param('id', ObjectIdPipe) id: ObjectId,
-    @Body() update: UpdateEquipmentDto,
-  ) {
+  async post(@Param('id') id: ObjectId, @Body() update: UpdateEquipmentDto) {
     return this.daoService.updateOne(id, update);
   }
 
   @Delete(':id')
   @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async delete(@Param('id', ObjectIdPipe) id: ObjectId) {
+  async delete(@Param('id') id: ObjectId) {
     return this.daoService.deleteOneById(id);
   }
 }

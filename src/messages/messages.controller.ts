@@ -18,7 +18,7 @@ import { MessagesService } from './messages.service.js';
 @Controller('messages')
 @UseInterceptors(MessageNotifyInterceptor)
 export class MessagesController {
-  constructor(private messagesService: MessagesService) { }
+  constructor(private messagesService: MessagesService) {}
 
   @Get()
   async getMessages(@Usr() user: User) {
@@ -27,10 +27,7 @@ export class MessagesController {
   }
 
   @Patch('read/:id')
-  async markOneRead(
-    @Param('id', ObjectIdPipe) _id: ObjectId,
-    @Usr() user: User,
-  ) {
+  async markOneRead(@Param('id') _id: ObjectId, @Usr() user: User) {
     const modifiedCount = await this.messagesService.markAs(
       'seenBy',
       user.username,
@@ -58,10 +55,7 @@ export class MessagesController {
 
   @Delete(':id')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteMessage(
-    @Param('id', ObjectIdPipe) _id: ObjectId,
-    @Usr() user: User,
-  ) {
+  async deleteMessage(@Param('id') _id: ObjectId, @Usr() user: User) {
     return this.messagesService.markAs('deletedBy', user.username, { _id });
   }
 }

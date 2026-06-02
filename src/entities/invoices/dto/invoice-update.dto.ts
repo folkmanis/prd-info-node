@@ -1,8 +1,11 @@
-import { Invoice } from '../entities/invoice.entity.js';
-import { PartialType, PickType } from '@nestjs/mapped-types';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { InvoiceSchema } from '../entities/invoice.entity.js';
 
-export const INVOICE_UPDATE_FIELDS = ['comment', 'paytraq'] as const;
+export const InvoiceUpdateShema = InvoiceSchema.pick({
+  comment: true,
+  paytraq: true,
+}).partial();
+export type InvoiceUpdate = z.infer<typeof InvoiceUpdateShema>;
 
-export class InvoiceUpdate extends PartialType(
-  PickType(Invoice, INVOICE_UPDATE_FIELDS),
-) { }
+export class InvoiceUpdateDto extends createZodDto(InvoiceUpdateShema) {}

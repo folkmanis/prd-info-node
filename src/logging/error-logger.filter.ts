@@ -1,10 +1,19 @@
-import { ArgumentsHost, Catch, HttpException, Logger } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  Logger,
+} from '@nestjs/common';
 import { BaseExceptionFilter } from '@nestjs/core';
 import { Request } from 'express';
 import { pick } from 'lodash-es';
 
-@Catch()
-export class ErrorLoggerFilter<T> extends BaseExceptionFilter {
+@Catch(HttpException)
+export class ErrorLoggerFilter<T>
+  extends BaseExceptionFilter
+  implements ExceptionFilter
+{
   private readonly logger = new Logger('HTTP Error');
 
   catch(exception: T, host: ArgumentsHost) {

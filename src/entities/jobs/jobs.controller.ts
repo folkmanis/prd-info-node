@@ -29,7 +29,7 @@ import { AllowNullResponse } from '../../lib/null-response.interceptor.js';
 
 @Controller('jobs')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
   constructor(

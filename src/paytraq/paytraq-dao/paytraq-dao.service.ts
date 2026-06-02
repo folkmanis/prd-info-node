@@ -1,22 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { URL } from 'url';
-import https from 'https';
 import { IncomingMessage } from 'http';
+import https from 'https';
+import { URL } from 'url';
+import { PreferencesService } from '../../preferences/index.js';
+import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 import {
-  PaytraqClients,
   PaytraqClient,
-  ShippingAddress,
+  PaytraqClients,
   ShippingAddresses,
 } from '../interfaces/client.js';
 import { PaytraqProduct, PaytraqProducts } from '../interfaces/product.js';
-import { PaytraqSales, PaytraqSale } from '../interfaces/sale.js';
-import { RequestParameters } from '../interfaces/request-parameters.js';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
-import { xmlToJs, Options, jsToXml } from './xml-converter.js';
+import { RequestParameters } from '../interfaces/request-parameters.schema.js';
+import { PaytraqSale, PaytraqSales } from '../interfaces/sale.js';
+import { SalesInput } from '../interfaces/sales-input.schema.js';
 import { ApiURLWithQuery } from './api-url-with-query.js';
 import { ApiURL } from './api-url.class.js';
-import { PreferencesService } from '../../preferences/index.js';
-import { SalesInput } from '../interfaces/sales-input.js';
+import { Options, jsToXml, xmlToJs } from './xml-converter.js';
 
 const CLIENT_OPTIONS: Options = { stringFields: ['RegNumber', 'Zip', 'Phone'] };
 const SALE_OPTIONS: Options = {

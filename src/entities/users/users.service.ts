@@ -3,7 +3,7 @@ import { SystemModules } from '../../preferences/index.js';
 import { LoginCredentials, UsersDaoService } from './dao/users-dao.service.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
 import { ModuleUserPreferences, User } from './entities/user.interface.js';
-import { assertUser } from '../../lib/assertions.js';
+import { assertUser } from './assert-user.js';
 
 @Injectable()
 export class UsersService {
@@ -23,7 +23,7 @@ export class UsersService {
 
   async updateUser(username: string, update: UpdateUserDto): Promise<User> {
     const user = await this.usersDao.updateOne({ ...update, username });
-    assertUser(user, 'Invalid username');
+    assertUser(user);
     return user;
   }
 

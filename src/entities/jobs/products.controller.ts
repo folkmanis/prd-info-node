@@ -12,7 +12,7 @@ import { ProductsQuery } from './dto/products-query.js';
 import { JobsService } from './jobs.service.js';
 
 @Controller('jobs/products')
-@UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+@UsePipes(new ValidationPipe({ transform: true }))
 @Modules('jobs')
 export class ProductsController {
   constructor(private readonly service: JobsService) {}

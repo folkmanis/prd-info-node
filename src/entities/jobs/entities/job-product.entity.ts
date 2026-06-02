@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsNumber } from 'class-validator';
-
+import { z } from 'zod';
 export class JobProduct {
   @IsString()
   name: string;
@@ -17,3 +17,11 @@ export class JobProduct {
   @IsString()
   units: string;
 }
+
+export const JobProductSchema = z.object({
+  name: z.string(),
+  units: z.string(),
+  price: z.number(),
+  count: z.number(),
+  comment: z.string().nullable().default(''),
+});
