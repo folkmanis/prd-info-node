@@ -6,7 +6,7 @@ export const AppConfigSchema = z.object({
   DB_SRV: z.string(),
   LOGFILE: z.string().default('./error.log'),
   BODY_SIZE_LIMIT: z.string().default('5mb'),
-  DEBUG: z.stringbool({ truthy: ['1', 'Y'], falsy: ['0', 'N'] }),
+  DEBUG: z.stringbool({ truthy: ['1', 'Y'], falsy: ['0', 'N'] }).default(false),
   JOBS_INPUT: z.string(),
   FTP_FOLDER: z.string(),
   DROP_FOLDER: z.string(),

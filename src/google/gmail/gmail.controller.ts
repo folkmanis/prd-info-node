@@ -25,7 +25,7 @@ import { Usr } from '../../session/index.js';
 import {
   AttachmentSaveDto,
   ThreadQuery,
-  ThreadsQuery,
+  ThreadsQueryDto,
   MessageModifyDto,
 } from './dto/index.js';
 import { MessageData } from './entities/index.js';
@@ -72,21 +72,17 @@ export class GmailController {
   }
 
   @Patch('message/:id')
-  @UseInterceptors(
-    new PluckInterceptor('data'),
-    ClassSerializerInterceptor,
-    new PlainToClassInterceptor(MessageData),
-  )
-  modifyMessage(
+  async modifyMessage(
     @Gmail() gmail: gmail_v1.Gmail,
     @Param('id') id: string,
     @Body() changes: MessageModifyDto,
   ) {
-    return gmail.users.messages.modify({
+    const result = await gmail.users.messages.modify({
       userId: 'me',
       id,
       requestBody: changes,
     });
+    return result.data.id;
   }
 
   @Get('message/:id')
@@ -125,7 +121,7 @@ export class GmailController {
   @UseInterceptors(new PluckInterceptor('data'))
   async getThreads(
     @Gmail() gmail: gmail_v1.Gmail,
-    @Query() query: ThreadsQuery,
+    @Query() query: ThreadsQueryDto,
   ) {
     return gmail.users.threads.list({
       userId: 'me',

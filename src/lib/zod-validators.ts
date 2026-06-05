@@ -1,7 +1,22 @@
 import { formatISO } from 'date-fns';
 import { ObjectId } from 'mongodb';
 import { createZodDto } from 'nestjs-zod';
-import { z } from 'zod';
+import { z, ZodType } from 'zod';
+
+export const stringToInt = z.codec(
+  z.string().regex(z.regexes.integer),
+  z.int(),
+  {
+    decode: (str) => Number.parseInt(str, 10),
+    encode: (num) => num.toString(),
+  },
+);
+
+export const stringToArray = <T>(schema: ZodType<T>) =>
+  z.codec(z.string(), z.array(schema), {
+    decode: (str) => str.split(','),
+    encode: (arr) => arr.join(','),
+  });
 
 export const idToObjectId = z.codec(
   z.string().length(24),

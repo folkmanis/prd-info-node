@@ -1,15 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Collection, MatchKeysAndValues } from 'mongodb';
+import { flatten } from 'flat';
+import { intersection } from 'lodash-es';
+import { Collection, Filter, MatchKeysAndValues } from 'mongodb';
 import { from, Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { DatabaseService } from '../../../database/index.js';
+import { XmfJobsQuery } from '../dto/xmf-jobs-filter.js';
 import { ArchiveJob } from '../entities/xmf-archive.interface.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { flatten } from 'flat';
 
 @Injectable()
 export class XmfSearchDao {
-
   private collection: Collection<ArchiveJob>;
 
   constructor(dbService: DatabaseService) {
@@ -18,7 +18,11 @@ export class XmfSearchDao {
     this.createIndexes();
   }
 
-  async findJobs({ start, limit, filter }: FilterType<ArchiveJob>) {
+  async findJobs(
+    { start, limit, ...query }: XmfJobsQuery,
+    customers: string[],
+  ) {
+    const filter = this.createFilter(query, customers);
     return this.collection
       .find(filter, {
         projection: {
@@ -43,11 +47,13 @@ export class XmfSearchDao {
       .toArray();
   }
 
-  async getCount({ filter }: FilterType<ArchiveJob>): Promise<number> {
+  async getCount(query: XmfJobsQuery, customers: string[]): Promise<number> {
+    const filter = this.createFilter(query, customers);
     return this.collection.countDocuments(filter);
   }
 
-  async findFacet({ filter }: FilterType<ArchiveJob>) {
+  async findFacet(query: XmfJobsQuery, customers: string[]) {
+    const filter = this.createFilter(query, customers);
     const pipeline = [
       { $match: filter },
       {
@@ -86,9 +92,37 @@ export class XmfSearchDao {
       },
     ];
     const customers = await this.collection
-      .aggregate<{ _id: string; }>(pipeline)
+      .aggregate<{ _id: string }>(pipeline)
       .toArray();
     return customers.map((res) => res._id);
+  }
+
+  private createFilter(
+    query: Omit<XmfJobsQuery, 'start' | 'limit'>,
+    customers: string[],
+  ): Filter<ArchiveJob> {
+    const { customerName, search, year, month } = query;
+    const filter: Filter<ArchiveJob> = {};
+
+    filter.CustomerName = {
+      $in: Array.isArray(customerName)
+        ? intersection(customerName, customers)
+        : customers,
+    };
+
+    if (search) {
+      filter['$or'] = [
+        { JDFJobID: search },
+        { DescriptiveName: { $regex: search, $options: 'i' } },
+      ];
+    }
+    if (year) {
+      filter['Archives.yearIndex'] = { $in: year };
+    }
+    if (month) {
+      filter['Archives.monthIndex'] = { $in: month };
+    }
+    return filter;
   }
 
   private createIndexes() {
@@ -115,7 +149,7 @@ export class XmfSearchDao {
 
   insertManyRx(
     jobs: ArchiveJob[],
-  ): Observable<{ modifiedCount: number; upsertedCount: number; }> {
+  ): Observable<{ modifiedCount: number; upsertedCount: number }> {
     if (jobs.length === 0) {
       return of({ modifiedCount: 0, upsertedCount: 0 });
     }

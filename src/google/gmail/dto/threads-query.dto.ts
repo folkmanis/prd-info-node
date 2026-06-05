@@ -1,27 +1,51 @@
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class ThreadsQuery {
-  @Type(() => Number)
-  @IsNumber()
-  @IsOptional()
-  maxResults?: number;
+export const ThreadsFilterSchema = z
+  .object({
+    maxResults: z.number().int().positive(),
+    pageToken: z.string(),
+    q: z.string(),
+    labelIds: z.array(z.string()),
+    includeSpamTrash: z.stringbool(),
+  })
+  .partial();
 
-  @IsString()
-  @IsOptional()
-  pageToken?: string;
+export const ThreadsQuerySchema = z
+  .object({
+    maxResults: z.string(),
+    pageToken: z.string(),
+    q: z.string(),
+    labelIds: z.string(),
+    includeSpamTrash: z.string(),
+  })
+  .partial();
 
-  @IsString()
-  @IsOptional()
-  q?: string;
+export const threadsQueryToFilter = z.codec(
+  ThreadsQuerySchema,
+  ThreadsFilterSchema,
+  {
+    encode: (filter) => ({
+      ...filter,
+      maxResults: filter.maxResults?.toFixed(0),
+      labelIds: filter.labelIds?.join(','),
+    }),
+    decode: (query) => ({
+      ...query,
+      labelIds:
+        typeof query.labelIds === 'string'
+          ? query.labelIds.split(',')
+          : undefined,
+      maxResults: query.maxResults
+        ? Number.parseInt(query.maxResults)
+        : undefined,
+    }),
+  },
+);
 
-  @Transform(({ value }) => typeof value === 'string' && value.split(','))
-  @IsString({ each: true })
-  @IsOptional()
-  labelIds?: string[];
+export type ThreadsFilter = z.output<typeof threadsQueryToFilter>;
+export type ThreadsQuery = z.input<typeof threadsQueryToFilter>;
 
-  @Transform(({ value }) => JSON.parse(value))
-  @IsBoolean()
-  @IsOptional()
-  includeSpamTrash?: boolean;
-}
+export class ThreadsQueryDto extends createZodDto(threadsQueryToFilter, {
+  codec: true,
+}) {}

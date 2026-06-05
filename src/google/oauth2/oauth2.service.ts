@@ -37,7 +37,6 @@ export class Oauth2Service {
       clientSecret: this.config.web.client_secret,
       redirectUri: this.config.oAuthRedirect,
     });
-
   }
 
   async getAuthUrl(sessionId: string, scopes: string[]): Promise<string> {
@@ -57,7 +56,7 @@ export class Oauth2Service {
     sessionId: string,
   ): Promise<Credentials> {
     try {
-      const tokenData: { s: string; } = await this.jwtService.verifyAsync(state);
+      const tokenData: { s: string } = await this.jwtService.verifyAsync(state);
       if (tokenData.s !== sessionId) {
         throw new Error('Invalid state returned');
       }
@@ -92,13 +91,13 @@ export class Oauth2Service {
 
   async getUserPicture(
     url: string,
-  ): Promise<{ image: Binary; type?: string; } | null> {
+  ): Promise<{ image: Binary; type?: string } | null> {
     const image$ = this.httpService
       .get<Buffer>(url, { responseEncoding: 'binary' })
       .pipe(
         map((resp) => ({
           image: new Binary(resp.data),
-          type: resp.headers['content-type'],
+          type: resp.headers['content-type'] as string,
         })),
         catchError(() => of(null)),
       );

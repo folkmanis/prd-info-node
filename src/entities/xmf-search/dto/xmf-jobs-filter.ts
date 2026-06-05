@@ -1,54 +1,14 @@
-import { intersection } from 'lodash-es';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
-import { ArchiveJob } from '../entities/xmf-archive.interface.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { stringToArray, stringToInt } from '../../../lib/zod-validators.js';
 
-export class XmfJobsFilter extends StartLimitFilter<ArchiveJob> {
-  @IsOptional()
-  @IsString()
-  q?: string;
-
-  @IsOptional()
-  @IsString({ each: true })
-  customerName?: string[];
-
-  @IsOptional()
-  @IsNumber(undefined, { each: true })
-  year?: number[];
-
-  @IsOptional()
-  @IsNumber(undefined, { each: true })
-  month?: number[];
-
-  @IsString({ each: true })
-  customers: string[];
-
-  toFilter(): FilterType<ArchiveJob> {
-    const filter: Record<string, any> = {};
-    const { customerName, q, year, month, start, limit } = this;
-    const customers = customerName
-      ? intersection(customerName, this.customers)
-      : this.customers;
-    filter.CustomerName = {
-      $in: customers,
-    };
-    if (q) {
-      filter['$or'] = [
-        { JDFJobID: q },
-        { DescriptiveName: { $regex: q, $options: 'i' } },
-      ];
-    }
-    if (year) {
-      filter['Archives.yearIndex'] = { $in: year };
-    }
-    if (month) {
-      filter['Archives.monthIndex'] = { $in: month };
-    }
-    return {
-      start,
-      limit,
-      filter,
-    };
-  }
-}
+const XmfJobsQuerySchema = z.object({
+  search: z.string().optional(),
+  customerName: stringToArray(z.string()).optional(),
+  year: stringToArray(stringToInt).optional(),
+  month: stringToArray(stringToInt).optional(),
+  start: stringToInt.default(0),
+  limit: stringToInt.default(100),
+});
+export type XmfJobsQuery = z.infer<typeof XmfJobsQuerySchema>;
+export class XmfJobsQueryDto extends createZodDto(XmfJobsQuerySchema) {}
