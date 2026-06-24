@@ -50,3 +50,8 @@ export const isoDateToDate = z.codec(z.iso.date(), z.date(), {
   decode: (isoString) => new Date(isoString),
   encode: (date) => formatISO(date, { representation: 'date' }),
 });
+
+export const isoDatetimeToDate = z.codec(z.iso.datetime(), z.date(), {
+  decode: (isoString) => new Date(isoString),
+  encode: (date) => date.toISOString(),
+});

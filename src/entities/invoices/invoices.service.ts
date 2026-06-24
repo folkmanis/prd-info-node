@@ -56,7 +56,7 @@ export class InvoicesService {
     );
     return {
       ...data,
-      customerInfo,
+      customerInfo: customerInfo,
       total: data.products.reduce((acc, curr) => acc + curr.total, 0),
     };
   }

@@ -1,15 +1,15 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database/index.js';
-import { Collection } from 'mongodb/mongodb.js';
+import { Collection, MongoClient } from 'mongodb/mongodb.js';
+import { MONGO_CLIENT } from '../../../database/mongo-connection.provider.js';
 
 const JOBS_COLLECTION_NAME = 'jobs';
 
-export const JOBS_COLLECTION = 'JOBS_COLLECTION';
+export const JOBS_COLLECTION = Symbol('JOBS_COLLECTION');
 
-export const jobsCollectionProvider: FactoryProvider = {
+export const provideJobsCollection: FactoryProvider = {
   provide: JOBS_COLLECTION,
-  useFactory: async (dbService: DatabaseService) => {
-    const db = dbService.db();
+  useFactory: async (client: MongoClient) => {
+    const db = client.db();
 
     const collection = db.collection(JOBS_COLLECTION_NAME);
 
@@ -17,7 +17,7 @@ export const jobsCollectionProvider: FactoryProvider = {
 
     return collection;
   },
-  inject: [DatabaseService],
+  inject: [MONGO_CLIENT],
 };
 
 async function setDefaultProduction(collection: Collection) {

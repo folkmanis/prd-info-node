@@ -6,6 +6,7 @@ import { ModuleUserPreferences, User } from '../entities/user.interface.js';
 import { SessionsDaoService } from './sessions-dao.service.js';
 import { USERS } from './users.provider.js';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { MONGO_CLIENT } from '../../../database/mongo-connection.provider.js';
 
 export type LoginCredentials = Partial<
   Record<'username' | 'password' | 'googleId', string>
@@ -16,7 +17,7 @@ export class UsersDaoService {
   constructor(
     @Inject(USERS) private collection: Collection<User>,
     private sessionsDao: SessionsDaoService,
-    @Inject('MONGO_CLIENT') private connection: MongoClient,
+    @Inject(MONGO_CLIENT) private connection: MongoClient,
   ) {}
 
   async findAllUsers({

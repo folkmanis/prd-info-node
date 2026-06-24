@@ -75,7 +75,7 @@ export class MessagesService {
   async markAs(
     prop: 'seenBy' | 'deletedBy',
     user: string,
-    filter: { _id?: ObjectId; } = {},
+    filter: { _id?: ObjectId } = {},
   ): Promise<number> {
     const resp = await this.collection.updateMany(filter, {
       $addToSet: {
@@ -133,7 +133,7 @@ export class MessagesService {
           pipeline: [
             {
               $match: {
-                ftpUser: true,
+                'ftpUserData.folder': { $type: 'string' },
                 disabled: { $ne: true },
                 $expr: {
                   $and: [

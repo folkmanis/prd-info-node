@@ -20,7 +20,9 @@ const PERMISSIONS_COLLECTION = 'permissions';
 
 @Injectable()
 export class UsersFirestoreService {
-  private readonly firestore = getFirestore();
+  private get firestore() {
+    return getFirestore();
+  }
 
   private get usersCollection() {
     return this.firestore.collection(USERS_COLLECTION);

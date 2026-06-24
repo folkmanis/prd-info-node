@@ -3,15 +3,15 @@ import { ConfigService } from '@nestjs/config';
 import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import { MongoClient } from 'mongodb';
+import { MONGO_CLIENT } from '../database/mongo-connection.provider.js';
 
 @Injectable()
 export class SessionMiddleware implements NestMiddleware {
-
   use;
 
   constructor(
     private config: ConfigService,
-    @Inject('MONGO_CLIENT') private connection: MongoClient,
+    @Inject(MONGO_CLIENT) private connection: MongoClient,
   ) {
     this.use = session({
       secret: 'HGG50EtOT7',
@@ -29,7 +29,5 @@ export class SessionMiddleware implements NestMiddleware {
       resave: false,
       rolling: true,
     });
-
   }
-
 }
