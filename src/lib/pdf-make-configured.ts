@@ -1,9 +1,10 @@
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
 import { join } from 'path';
 import Pdfmake from 'pdfmake';
 
-const __dirname = join(dirname(fileURLToPath(import.meta.url)), 'fonts');
+import appRoot from 'app-root-path';
+
+const __dirname = join(appRoot.path, 'static', 'fonts');
+
 Pdfmake.addFonts({
   Roboto: {
     normal: join(__dirname, 'Roboto-Regular.ttf'),

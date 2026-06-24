@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CustomersService } from './customers.service.js';
 import { CustomersController } from './customers.controller.js';
 import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
-import { customersCollectionProvider } from './customers-dao/customers-provider.js';
+import { provideCustomersCollection } from './customers-dao/customers-provider.js';
 import { NotificationsModule } from '../../notifications/index.js';
 import { MessagesModule } from '../../messages/index.js';
 
@@ -11,9 +11,9 @@ import { MessagesModule } from '../../messages/index.js';
   controllers: [CustomersController],
   providers: [
     CustomersService,
-    customersCollectionProvider,
+    provideCustomersCollection,
     CustomersDaoService,
   ],
   exports: [CustomersService],
 })
-export class CustomersModule { }
+export class CustomersModule {}

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JobsService } from './jobs.service.js';
 import { JobsController } from './jobs.controller.js';
-import { jobsCollectionProvider } from './dao/jobs-collection.provider.js';
+import { provideJobsCollection } from './dao/jobs-collection.provider.js';
 import { JobsDao } from './dao/jobs-dao.service.js';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
 import { KastesJobsDao } from './dao/kastes-jobs-dao.js';
@@ -38,7 +38,7 @@ import { PreferencesModule } from '../../preferences/preferences.module.js';
   providers: [
     JobsService,
     JobFilesService,
-    jobsCollectionProvider,
+    provideJobsCollection,
     JobsDao,
     JobsInvoicesDao,
     KastesJobsDao,

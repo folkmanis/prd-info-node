@@ -1,10 +1,14 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Collection, FindOptions, ObjectId } from 'mongodb';
-import { from, map, Observable, tap } from 'rxjs';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { CreateCustomerDto } from '../dto/create-customer.dto.js';
-import { ListCustomer } from '../dto/list-customer.dto.js';
-import { UpdateCustomerDto } from '../dto/update-customer.dto.js';
+import { Inject, Injectable } from '@nestjs/common';
+import { Collection, Filter, FindOptions, ObjectId, WithId } from 'mongodb';
+import { from, map, Observable } from 'rxjs';
+import { isFound } from '../../../lib/assertions.js';
+import { CreateCustomer } from '../dto/create-customer.dto.js';
+import {
+  CustomerList,
+  CUSTOMERS_LIST_DEFAULT_PROJECTION,
+} from '../dto/customer-list.dto.js';
+import { CustomersQuery } from '../dto/customers-query.js';
+import { UpdateCustomer } from '../dto/update-customer.dto.js';
 import { Customer } from '../entities/customer.entity.js';
 import { CUSTOMERS_COLLECTION } from './customers-provider.js';
 
@@ -16,19 +20,14 @@ export class CustomersDaoService {
   ) {}
 
   async getCustomers(
-    { start, limit, filter }: FilterType<Customer>,
-    projection?: FindOptions<Customer>['projection'],
-  ): Promise<ListCustomer[]> {
+    { start, limit, filter }: CustomersQuery,
+    projection: FindOptions<Customer>['projection'] = CUSTOMERS_LIST_DEFAULT_PROJECTION,
+  ): Promise<CustomerList[]> {
     return this.collection
       .find(filter, {
-        projection: projection ?? {
-          _id: 1,
-          CustomerName: 1,
-          code: 1,
-          disabled: 1,
-        },
+        projection: projection,
         sort: {
-          CustomerName: 1,
+          customerName: 1,
         },
         skip: start,
         limit,
@@ -36,63 +35,68 @@ export class CustomersDaoService {
       .toArray();
   }
 
-  async getCustomerById(_id: ObjectId): Promise<Customer | null> {
+  async getCustomersWithLocation(): Promise<
+    WithId<Pick<Customer, 'customerName' | 'shippingAddress'>>[]
+  > {
+    const filter = {
+      'shippingAddress.googleId': { $ne: null },
+      disabled: false,
+    };
+    const projection = {
+      customerName: 1,
+      shippingAddress: 1,
+    };
+    const sort = {
+      customerName: 1 as 1,
+    };
+
+    return this.collection
+      .find(filter, {
+        projection,
+        sort,
+      })
+      .toArray();
+  }
+
+  async getCustomerById(_id: ObjectId): Promise<WithId<Customer> | null> {
     return this.collection.findOne({ _id });
   }
 
-  getCustomerByIdRx(id: ObjectId): Observable<Customer> {
-    return from(this.getCustomerById(id)).pipe(
-      tap((customer) => {
-        if (customer === null) throw new NotFoundException(id);
-      }),
-      map((customer) => customer as Customer),
-    );
+  getCustomerByIdRx(id: ObjectId): Observable<WithId<Customer>> {
+    return from(this.getCustomerById(id)).pipe(map((c) => isFound(c)));
   }
 
-  async getCustomerByName(CustomerName: string): Promise<Customer | null> {
-    return this.collection.findOne({ CustomerName });
+  async getCustomerByName(
+    customerName: string,
+  ): Promise<WithId<Customer> | null> {
+    return this.collection.findOne({ customerName });
   }
 
-  async insertOne(customer: CreateCustomerDto): Promise<Customer | null> {
-    const { CustomerName } = customer;
-    return this.collection.findOneAndReplace({ CustomerName }, customer, {
+  async insertOne(customer: CreateCustomer): Promise<WithId<Customer> | null> {
+    const { customerName } = customer;
+    return this.collection.findOneAndReplace({ customerName }, customer, {
       returnDocument: 'after',
       upsert: true,
     });
   }
 
-  async insertMany(cust: Customer[]): Promise<number> {
-    const { insertedCount } = await this.collection.insertMany(cust);
-    return insertedCount;
-  }
-
-  async deleteOne(_id: ObjectId): Promise<number | undefined> {
+  async deleteOne(_id: ObjectId): Promise<number> {
     const { deletedCount } = await this.collection.deleteOne({ _id });
     return deletedCount;
   }
 
   async updateOne(
     _id: ObjectId,
-    customer: UpdateCustomerDto,
-  ): Promise<Customer | null> {
-    return this.collection.findOneAndUpdate(
-      { _id },
-      { $set: customer },
-      { returnDocument: 'after' },
-    );
+    update: UpdateCustomer,
+  ): Promise<WithId<Customer> | null> {
+    return this.collection.findOneAndUpdate({ _id }, update, {
+      returnDocument: 'after',
+    });
   }
 
-  async validate<K extends keyof Customer>(
-    property: K,
-  ): Promise<Customer[K][]> {
-    return await this.collection
-      .find(
-        {},
-        {
-          projection: { _id: 0, [property]: 1 },
-        },
-      )
-      .map((data) => data[property])
-      .toArray();
+  async validateProperty(filter: Filter<Customer>): Promise<1 | 0> {
+    return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
+      1 | 0
+    >;
   }
 }

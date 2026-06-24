@@ -1,39 +1,32 @@
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Filter } from 'mongodb';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { stringToInt } from '../../../lib/zod-validators.js';
 import { Customer } from '../entities/customer.entity.js';
 
-export class CustomersQuery extends StartLimitFilter<Customer> {
-  @IsString()
-  @IsOptional()
-  name: string;
-
-  @IsString()
-  @IsOptional()
-  email?: string;
-
-  @Transform(({ value }) => (value === 'true' ? true : false))
-  @IsBoolean()
-  disabled = false;
-
-  toFilter() {
-    const { start, limit } = this;
-    const filter: Filter<any> = {};
-    if (!this.disabled) {
+const CustomersQuerySchema = z
+  .object({
+    start: stringToInt,
+    limit: stringToInt,
+    name: z.string(),
+    email: z.string(),
+    disabled: z.stringbool(),
+  })
+  .partial()
+  .transform(({ start, limit, ...query }) => {
+    const filter: Filter<Customer> = {};
+    if (!query.disabled) {
       filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
     }
-    if (this.name) {
-      filter.CustomerName = new RegExp(this.name, 'i');
+    if (query.name) {
+      filter.customerName = new RegExp(query.name, 'i');
     }
-    if (this.email) {
-      filter['contacts.email'] = this.email;
+    if (query.email) {
+      filter['contacts.email'] = query.email;
     }
 
-    return {
-      start,
-      limit,
-      filter,
-    };
-  }
-}
+    return { start: start ?? 0, limit, filter };
+  });
+export type CustomersQuery = z.infer<typeof CustomersQuerySchema>;
+
+export class CustomersQueryDto extends createZodDto(CustomersQuerySchema) {}

@@ -5,9 +5,11 @@ import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
 import { APP_LOGGER, loggerFactory } from './logger.factory.js';
 import { LoggingController } from './logging.controller.js';
 import { LoggingService } from './logging.service.js';
+import { provideLogCollection } from './logger-dao/log-collection.provider.js';
 
 @Module({
   providers: [
+    provideLogCollection,
     LoggerDaoService,
     logLevelsFactory,
     loggerFactory,

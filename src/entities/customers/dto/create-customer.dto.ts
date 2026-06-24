@@ -1,4 +1,10 @@
-import { Customer } from '../entities/customer.entity.js';
-import { OmitType } from '@nestjs/mapped-types';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { CustomerSchema } from '../entities/customer.entity.js';
 
-export class CreateCustomerDto extends OmitType(Customer, ['_id']) { }
+const CreateCustomerSchema = CustomerSchema;
+export type CreateCustomer = z.infer<typeof CreateCustomerSchema>;
+
+export class CreateCustomerDto extends createZodDto(CreateCustomerSchema, {
+  codec: true,
+}) {}
