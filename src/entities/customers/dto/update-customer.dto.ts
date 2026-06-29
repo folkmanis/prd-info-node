@@ -17,7 +17,7 @@ const UpdateCustomerSchema = z
     insertedFromXmf: isoDatetimeToDate.nullable(),
     financial: FinancialSchema.nullable(),
     ftpUserData: FtpUserDataSchema.nullable(),
-    contacts: z.array(CustomerContactSchema),
+    contacts: z.array(CustomerContactSchema).nullable(),
     shippingAddress: ShippingAddressSchema.nullable(),
   })
   .partial()

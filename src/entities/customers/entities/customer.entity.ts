@@ -34,7 +34,7 @@ export const CustomerSchema = z
     insertedFromXmf: isoDatetimeToDate.optional(),
     financial: FinancialSchema.optional(),
     ftpUserData: FtpUserDataSchema.optional(),
-    contacts: z.array(CustomerContactSchema),
+    contacts: z.array(CustomerContactSchema).optional(),
     shippingAddress: ShippingAddressSchema.optional(),
   })
   .meta({ id: 'CustomerSchema' });

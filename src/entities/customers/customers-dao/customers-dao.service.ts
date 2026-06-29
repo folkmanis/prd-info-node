@@ -1,6 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection, Filter, FindOptions, ObjectId, WithId } from 'mongodb';
-import { from, map, Observable } from 'rxjs';
+import {
+  ChangeStreamDocument,
+  Collection,
+  Filter,
+  FindOptions,
+  ObjectId,
+  WithId,
+} from 'mongodb';
+import { from, map, Observable, share } from 'rxjs';
 import { isFound } from '../../../lib/assertions.js';
 import { CreateCustomer } from '../dto/create-customer.dto.js';
 import {
@@ -98,5 +105,46 @@ export class CustomersDaoService {
     return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
       1 | 0
     >;
+  }
+
+  watchChanges(
+    pipeline: Record<string, any>[] = [],
+  ): Observable<ChangeStreamDocument<Customer>> {
+    const obs$ = new Observable<ChangeStreamDocument<Customer>>(
+      (subscriber) => {
+        const stream = this.collection.watch(pipeline, {
+          fullDocument: 'updateLookup',
+        });
+
+        let cancelled = false;
+
+        (async () => {
+          try {
+            for await (const change of stream) {
+              if (cancelled) {
+                break;
+              }
+              subscriber.next(change);
+            }
+
+            subscriber.complete();
+          } catch (error) {
+            subscriber.error(error);
+          }
+        })();
+
+        return () => {
+          cancelled = true;
+          void stream.close();
+        };
+      },
+    );
+    return obs$.pipe(
+      share({
+        resetOnRefCountZero: true,
+        resetOnComplete: true,
+        resetOnError: true,
+      }),
+    );
   }
 }

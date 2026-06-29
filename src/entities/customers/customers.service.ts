@@ -1,6 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ObjectId, WithId } from 'mongodb';
+import { mergeMap, tap } from 'rxjs';
 import { isFound } from '../../lib/assertions.js';
+import { ValidationResult } from '../../lib/validation-result.dto.js';
+import { MessagesService } from '../../messages/messages.service.js';
+import {
+  SystemNotification,
+  Systemoperations,
+} from '../../notifications/index.js';
+import { NotificationsService } from '../../notifications/notifications.service.js';
 import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
 import { CreateCustomer } from './dto/create-customer.dto.js';
 import { CustomerList } from './dto/customer-list.dto.js';
@@ -10,7 +18,11 @@ import { Customer } from './entities/customer.entity.js';
 
 @Injectable()
 export class CustomersService {
-  constructor(private readonly customersDao: CustomersDaoService) {}
+  constructor(
+    private readonly customersDao: CustomersDaoService,
+    private readonly notificationsService: NotificationsService,
+    private readonly messagesService: MessagesService,
+  ) {}
 
   async getCustomerById(id: ObjectId): Promise<WithId<Customer>> {
     return isFound(this.customersDao.getCustomerById(id));
@@ -52,11 +64,70 @@ export class CustomersService {
   async validateProperty<K extends keyof Customer>(
     key: K,
     value: Customer[K],
-  ): Promise<boolean> {
+  ): Promise<ValidationResult> {
     const pattern = `^${value}$`;
     const result = await this.customersDao.validateProperty({
       [key]: new RegExp(pattern, 'i'),
     });
-    return Boolean(result);
+    return { valid: result === 0, property: key, value };
+  }
+
+  watchFtpUserDataChanges() {
+    const pipeline = [
+      {
+        $match: {
+          $or: [
+            // New document with ftpUserData
+            {
+              operationType: 'insert',
+              'fullDocument.ftpUserData': { $exists: true },
+            },
+
+            // Document replaced with ftpUserData
+            {
+              operationType: 'replace',
+              'fullDocument.ftpUserData': { $exists: true },
+            },
+
+            // ftpUserData added or modified
+            {
+              operationType: 'update',
+              $or: [
+                {
+                  'updateDescription.updatedFields.ftpUserData': {
+                    $exists: true,
+                  },
+                },
+              ],
+            },
+            // disabled state changed
+            {
+              operationType: 'update',
+              'updateDescription.updatedFields.disabled': {
+                $exists: true,
+              },
+            },
+
+            // ftpUserData removed
+            {
+              operationType: 'update',
+              'updateDescription.removedFields': 'ftpUserData',
+            },
+          ],
+        },
+      },
+    ];
+    return this.customersDao.watchChanges(pipeline).pipe(
+      mergeMap(() => this.messagesService.ftpFolderUploadsCount()),
+      tap(
+        (count) =>
+          count > 0 &&
+          this.notificationsService.notify(
+            new SystemNotification({
+              operation: Systemoperations.MESSAGES_UPDATED,
+            }),
+          ),
+      ),
+    );
   }
 }

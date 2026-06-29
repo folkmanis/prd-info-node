@@ -7,19 +7,18 @@ import {
   Patch,
   Put,
   Query,
-  UseInterceptors,
 } from '@nestjs/common';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import z from 'zod';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { ValidationResultDto } from '../../lib/validation-result.dto.js';
 import { ObjectIdDto } from '../../lib/zod-validators.js';
 import { Modules } from '../../login/index.js';
-import { CustomerNotifyInterceptor } from './customer-notify.interceptor.js';
 import { CustomersService } from './customers.service.js';
 import { CreateCustomerDto } from './dto/create-customer.dto.js';
 import { CustomerList, CustomerListDto } from './dto/customer-list.dto.js';
 import { CustomerDto } from './dto/customer.dto.js';
-import { CustomersQuery } from './dto/customers-query.js';
+import { CustomersQueryDto } from './dto/customers-query.js';
 import { UpdateCustomerDto } from './dto/update-customer.dto.js';
 import { Customer } from './entities/customer.entity.js';
 
@@ -38,7 +37,6 @@ export class CustomersController {
   @ZodResponse({ type: CustomerDto })
   @Patch(':id')
   @Modules('jobs-admin')
-  @UseInterceptors(CustomerNotifyInterceptor)
   async updateCustomer(
     @Param('id') id: ObjectIdDto,
     @Body() customer: UpdateCustomerDto,
@@ -53,7 +51,7 @@ export class CustomersController {
     return this.service.deleteOne(id);
   }
 
-  @ZodResponse({ type: createZodDto(z.boolean()) })
+  @ZodResponse({ type: ValidationResultDto })
   @Get('validate/:property')
   async validate(
     @Param(
@@ -74,7 +72,7 @@ export class CustomersController {
 
   @ZodResponse({ type: [CustomerListDto] })
   @Get()
-  async getAll(@Query() query: CustomersQuery): Promise<CustomerList[]> {
+  async getAll(@Query() query: CustomersQueryDto): Promise<CustomerList[]> {
     return this.service.getCustomers(query);
   }
 }

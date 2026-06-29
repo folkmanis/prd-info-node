@@ -24,7 +24,6 @@ const CustomersQuerySchema = z
     if (query.email) {
       filter['contacts.email'] = query.email;
     }
-
     return { start: start ?? 0, limit, filter };
   });
 export type CustomersQuery = z.infer<typeof CustomersQuerySchema>;
