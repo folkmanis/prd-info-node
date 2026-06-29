@@ -11,6 +11,7 @@ export const AppConfigSchema = z.object({
   FTP_FOLDER: z.string(),
   DROP_FOLDER: z.string(),
   FIREBASE_ADMIN_CREDENTIALS: z.string(),
+  GOOGLE_APPLICATION_CREDENTIALS: z.string(),
   GOOGLE_OAUTH2_CREDENTIALS: z.string(),
   GOOGLE_OAUTH2_REDIRECT: z.string(),
   JWT_SECRET: z.string(),
