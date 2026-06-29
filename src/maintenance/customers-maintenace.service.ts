@@ -19,6 +19,7 @@ export class CustomersMaintenanceService {
     await this.deleteEmptyFields();
     await this.cleanupShippingAddress();
     await this.addDisabledField();
+    await this.deleteEmptyDescription();
     await this.createIndexes();
   }
 
@@ -44,6 +45,17 @@ export class CustomersMaintenanceService {
           },
         },
       ],
+    );
+    this.logger.log(
+      `Processed ${result.matchedCount}, updated ${result.modifiedCount} records`,
+    );
+  }
+
+  private async deleteEmptyDescription() {
+    this.logger.log(`Deleting empy fields`);
+    const result = await this.customersCollection.updateMany(
+      { description: '' },
+      { $unset: { description: '' } },
     );
     this.logger.log(
       `Processed ${result.matchedCount}, updated ${result.modifiedCount} records`,
