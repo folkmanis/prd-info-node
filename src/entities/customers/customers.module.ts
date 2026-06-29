@@ -1,10 +1,10 @@
-import { Module } from '@nestjs/common';
-import { CustomersService } from './customers.service.js';
-import { CustomersController } from './customers.controller.js';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { MessagesModule } from '../../messages/index.js';
+import { NotificationsModule } from '../../notifications/index.js';
 import { CustomersDaoService } from './customers-dao/customers-dao.service.js';
 import { provideCustomersCollection } from './customers-dao/customers-provider.js';
-import { NotificationsModule } from '../../notifications/index.js';
-import { MessagesModule } from '../../messages/index.js';
+import { CustomersController } from './customers.controller.js';
+import { CustomersService } from './customers.service.js';
 
 @Module({
   imports: [NotificationsModule, MessagesModule],
@@ -16,4 +16,10 @@ import { MessagesModule } from '../../messages/index.js';
   ],
   exports: [CustomersService],
 })
-export class CustomersModule {}
+export class CustomersModule implements OnApplicationBootstrap {
+  constructor(private customersService: CustomersService) {}
+
+  onApplicationBootstrap() {
+    this.customersService.watchFtpUserDataChanges().subscribe();
+  }
+}

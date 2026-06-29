@@ -132,7 +132,7 @@ function findAllPipeline(
     $lookup: {
       from: 'customers',
       localField: 'customer',
-      foreignField: 'CustomerName',
+      foreignField: 'customerName',
       as: 'custCode',
     },
   });

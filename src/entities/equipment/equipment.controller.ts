@@ -1,29 +1,28 @@
-import { ObjectId } from 'mongodb';
 import {
-  UseInterceptors,
-  Controller,
-  Get,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ValidationPipe,
-  UsePipes,
-  Query,
+  Get,
+  Param,
+  Patch,
   Put,
+  Query,
+  UseInterceptors,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
+import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { EquipmentDaoService } from './dao/equipment-dao.service.js';
 import { CreateEquipmentDto } from './dto/create-equipment.dto.js';
 import { UpdateEquipmentDto } from './dto/update-equipment.dto.js';
-import { EquipmentDaoService } from './dao/equipment-dao.service.js';
-import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
 import { Equipment } from './entities/equipment.entity.js';
 
-import { EquipmentFilterQuery } from './dto/filter-query.dto.js';
 import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { ObjectIdDto } from '../../lib/zod-validators.js';
 import { Modules } from '../../login/index.js';
+import { EquipmentFilterQuery } from './dto/filter-query.dto.js';
 
 @Controller('equipment')
-@UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
 @Modules('jobs')
 export class EquipmentController {
   constructor(private readonly daoService: EquipmentDaoService) {}
@@ -36,15 +35,17 @@ export class EquipmentController {
   }
 
   @Get(':id')
-  async getOne(@Param('id') id: ObjectId) {
+  async getOne(@Param('id') id: ObjectIdDto) {
     return this.daoService.getOneById(id);
   }
 
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Get('')
   async getAll(@Query() filter: EquipmentFilterQuery) {
     return this.daoService.findAll(filter.toFilter());
   }
 
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
   @Put()
   @Modules('jobs-admin')
   async put(@Body() equipment: CreateEquipmentDto) {
@@ -53,14 +54,18 @@ export class EquipmentController {
 
   @Patch(':id')
   @Modules('jobs-admin')
-  async post(@Param('id') id: ObjectId, @Body() update: UpdateEquipmentDto) {
+  async post(
+    @Param('id') id: ObjectIdDto,
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    update: UpdateEquipmentDto,
+  ) {
     return this.daoService.updateOne(id, update);
   }
 
   @Delete(':id')
   @Modules('jobs-admin')
   @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async delete(@Param('id') id: ObjectId) {
+  async delete(@Param('id') id: ObjectIdDto) {
     return this.daoService.deleteOneById(id);
   }
 }

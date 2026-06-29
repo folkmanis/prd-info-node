@@ -50,12 +50,12 @@ export class MessagesService {
     return aggr[0];
   }
 
-  ftpFolderUploads(ftpFolder: string): Observable<Message[]> {
+  ftpFolderUploadsCount(): Promise<number> {
     const filter = {
       'data.operation': 'add',
-      'data.path.0': ftpFolder,
+      'data.path.0': { $exists: 1 },
     };
-    return from(this.collection.find(filter).toArray());
+    return this.collection.countDocuments(filter);
   }
 
   async add(msg: Message): Promise<ObjectId> {
@@ -145,7 +145,7 @@ export class MessagesService {
             },
             {
               $project: {
-                CustomerName: 1,
+                customerName: 1,
                 code: 1,
                 folder: '$$folder',
               },
