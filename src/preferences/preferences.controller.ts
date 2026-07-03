@@ -1,26 +1,33 @@
 import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { ZodResponse } from 'nestjs-zod';
 import { Modules } from '../login/index.js';
-import { PreferencesDao } from './dao/preferencesDao.service.js';
-import { SystemModules } from './interfaces/system-modules.interface.js';
-import { SystemPreferenceModule } from './interfaces/system-preferences.interface.js';
+import { ModuleNameDto } from './dto/module-name.dto.js';
+import { PreferencesUpdateDto } from './dto/preferences-update.dto.js';
+import { PreferencesDto } from './dto/preferences.dto.js';
+import { PreferencesService } from './preferences.service.js';
 
 @Controller('preferences')
 export class PreferencesController {
-  constructor(private preferencesDao: PreferencesDao) { }
+  constructor(private preferencesService: PreferencesService) {}
 
+  @ZodResponse({ type: PreferencesDto })
   @Modules('admin')
   @Patch()
-  async updateAll(@Body() preferences: SystemPreferenceModule[]) {
-    return this.preferencesDao.updatePreferences(...preferences);
+  async updateAll(@Body() preferences: PreferencesUpdateDto) {
+    return this.preferencesService.updatePreferences(preferences);
   }
 
+  @ZodResponse({ type: PreferencesDto })
   @Get(':module')
-  async getPreferences(@Param('module') module: SystemModules) {
-    return this.preferencesDao.getModulePreferences(module);
+  async getPreferences(@Param() params: ModuleNameDto) {
+    return this.preferencesService.getSystemPreferences({
+      module: params.module,
+    });
   }
 
+  @ZodResponse({ type: PreferencesDto })
   @Get()
   async getAllPreferences() {
-    return this.preferencesDao.getAllPreferences();
+    return this.preferencesService.getSystemPreferences();
   }
 }

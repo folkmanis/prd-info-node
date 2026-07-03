@@ -1,14 +1,13 @@
 import { RequestParameters } from '../interfaces/request-parameters.schema.js';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
-import { ApiURL } from './api-url.class.js';
+import { ApiURL, ConnectionParams } from './api-url.class.js';
 
 export class ApiURLWithQuery extends ApiURL {
   constructor(
-    prefs: PaytraqSystemPreference,
+    connectionParams: ConnectionParams,
     { page, query }: RequestParameters,
     ...path: string[]
   ) {
-    super(prefs, ...path);
+    super(connectionParams, ...path);
     if (page) {
       this.searchParams.append('page', page.toString());
     }

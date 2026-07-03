@@ -1,31 +1,34 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService, UserPreferences } from '../entities/users/index.js';
 import { PreferencesDao } from './dao/preferencesDao.service.js';
 import {
-  SystemPreferenceModule,
-  SystemPreference,
+  ModuleSettings,
+  PreferencesDbModules,
+  PreferencesModuleNames,
 } from './interfaces/system-preferences.interface.js';
-import { SystemModules } from './interfaces/system-modules.interface.js';
+import { assertCondition } from '../lib/assertions.js';
 
 @Injectable()
 export class PreferencesService {
-  constructor(
-    private usersService: UsersService,
-    private preferencesDao: PreferencesDao,
-  ) { }
+  constructor(private preferencesDao: PreferencesDao) {}
 
-  async getUserPreferences(username: string): Promise<UserPreferences> {
-    const { preferences } = await this.usersService.getOneByUsername(username);
-    return preferences;
+  async getSystemPreferences<M extends PreferencesModuleNames>(
+    filter: { module?: M } = {},
+  ): Promise<PreferencesDbModules[]> {
+    return this.preferencesDao.getAllPreferences(filter);
   }
 
-  async getSystemPreferences(): Promise<SystemPreferenceModule[]> {
-    return this.preferencesDao.getAllPreferences();
+  async getModulePreferences<M extends PreferencesModuleNames>(
+    module: M,
+  ): Promise<ModuleSettings<M>> {
+    const settings = await this.getSystemPreferences({ module });
+    assertCondition(settings[0].module === module);
+    return settings[0].settings as ModuleSettings<M>;
   }
 
-  async getModuleSystemPreferences(
-    module: SystemModules,
-  ): Promise<SystemPreference> {
-    return this.preferencesDao.getModulePreferences(module);
+  async updatePreferences(
+    update: PreferencesDbModules[],
+  ): Promise<PreferencesDbModules[]> {
+    await this.preferencesDao.updatePreferences(update);
+    return this.getSystemPreferences();
   }
 }

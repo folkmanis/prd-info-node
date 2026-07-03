@@ -1,18 +1,16 @@
 import { URL, URLSearchParams } from 'url';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
+import { assertCondition, assertNotNull } from '../../lib/assertions.js';
+
+export type ConnectionParams = {
+  apiUrl: string;
+  apiKey: string;
+  apiToken: string;
+};
 
 export class ApiURL extends URL {
-  constructor(
-    { connectionParams }: PaytraqSystemPreference,
-    ...path: string[]
-  ) {
-    if (!connectionParams) {
-      throw new Error('paytraq parameters not set');
-    }
+  constructor(connectionParams: ConnectionParams, ...path: string[]) {
     const { apiUrl, apiKey, apiToken } = connectionParams;
-    if (!apiUrl || !apiKey || !apiToken) {
-      throw new Error('missing server info');
-    }
+    assertCondition(apiUrl && apiKey && apiToken, 'missing server info');
     super(path.join('/'), apiUrl);
     const params = new URLSearchParams({
       APIToken: apiToken,

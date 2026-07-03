@@ -15,9 +15,9 @@ import { JobQuery } from './dto/job-query.js';
 import { TCreatedPdf } from 'pdfmake';
 import { jobsReport } from './jobs-report/jobs-report.js';
 import { PreferencesService } from '../../preferences/preferences.service.js';
-import { JobsSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 import { JobOneProduct } from './entities/job-one-product.js';
 import { InvoiceProduct } from '../invoices/entities/invoice.entity.js';
+import { JobsSettings } from '../../preferences/interfaces/module-settings/job-settings.js';
 
 @Injectable()
 export class JobsService {
@@ -120,9 +120,7 @@ export class JobsService {
     return jobProductsReport(query, data);
   }
 
-  private async getPreferences(): Promise<JobsSystemPreference> {
-    return this.preferencesService.getModuleSystemPreferences(
-      'jobs',
-    ) as Promise<JobsSystemPreference>;
+  private async getPreferences(): Promise<JobsSettings> {
+    return this.preferencesService.getModulePreferences('jobs');
   }
 }

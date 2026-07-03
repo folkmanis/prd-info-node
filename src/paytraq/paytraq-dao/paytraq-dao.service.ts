@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { IncomingMessage } from 'http';
 import https from 'https';
 import { URL } from 'url';
+import { assertNotNull } from '../../lib/assertions.js';
 import { PreferencesService } from '../../preferences/index.js';
-import { PaytraqSystemPreference } from '../../preferences/interfaces/system-preferences.interface.js';
 import {
   PaytraqClient,
   PaytraqClients,
@@ -14,7 +14,7 @@ import { RequestParameters } from '../interfaces/request-parameters.schema.js';
 import { PaytraqSale, PaytraqSales } from '../interfaces/sale.js';
 import { SalesInput } from '../interfaces/sales-input.schema.js';
 import { ApiURLWithQuery } from './api-url-with-query.js';
-import { ApiURL } from './api-url.class.js';
+import { ApiURL, ConnectionParams } from './api-url.class.js';
 import { Options, jsToXml, xmlToJs } from './xml-converter.js';
 
 const CLIENT_OPTIONS: Options = { stringFields: ['RegNumber', 'Zip', 'Phone'] };
@@ -27,16 +27,17 @@ const RX_INTERVAL = 1000; // minimum ms between requests;
 export class PaytraqDaoService {
   private reqTime = 0;
 
-  private async params(): Promise<PaytraqSystemPreference> {
-    return this.preferencesService.getModuleSystemPreferences(
-      'paytraq',
-    ) as Promise<PaytraqSystemPreference>;
+  private async connectionParams(): Promise<ConnectionParams> {
+    const { connectionParams } =
+      await this.preferencesService.getModulePreferences('paytraq');
+    assertNotNull(connectionParams);
+    return connectionParams;
   }
 
   constructor(private preferencesService: PreferencesService) {}
 
   async getClients(query: RequestParameters): Promise<PaytraqClients> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURLWithQuery(params, query, 'clients');
 
     return this.delay()
@@ -51,7 +52,7 @@ export class PaytraqDaoService {
   }
 
   async getClient(clientId: number): Promise<PaytraqClient> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURL(params, 'client', clientId.toString());
 
     return this.delay()
@@ -63,7 +64,7 @@ export class PaytraqDaoService {
   async getClientShippingAddresses(
     clientId: number,
   ): Promise<ShippingAddresses> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURL(
       params,
       'client',
@@ -80,7 +81,7 @@ export class PaytraqDaoService {
   }
 
   async getProducts(query: RequestParameters): Promise<PaytraqProducts> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURLWithQuery(params, query, 'products');
 
     return this.delay()
@@ -92,7 +93,7 @@ export class PaytraqDaoService {
   }
 
   async getProduct(productId: number): Promise<PaytraqProduct> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURL(params, 'product', productId.toString());
 
     return this.delay()
@@ -102,7 +103,7 @@ export class PaytraqDaoService {
   }
 
   async getSales(query: RequestParameters): Promise<PaytraqSales> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURLWithQuery(params, query, 'sales');
 
     return this.delay()
@@ -114,7 +115,7 @@ export class PaytraqDaoService {
   }
 
   async getSale(saleId: number): Promise<PaytraqSale> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURL(params, 'sale', saleId.toString());
 
     return this.delay()
@@ -129,7 +130,7 @@ export class PaytraqDaoService {
   }
 
   async postSale(sale: SalesInput): Promise<{ [key: string]: any }> {
-    const params = await this.params();
+    const params = await this.connectionParams();
     const url = new ApiURL(params, 'sale');
     const xml = jsToXml(sale);
     return this.delay()

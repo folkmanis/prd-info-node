@@ -3,7 +3,7 @@ import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
 import { LoggingService } from './logging.service.js';
 import { ConsoleTransport } from './transports/console.transport.js';
 import { MongoTransport } from './transports/mongo.transport.js';
-import { AppLogLevels } from '../preferences/index.js';
+import { AppLogLevels } from './log-levels.factory.js';
 
 export const APP_LOGGER = 'APP_LOGGER';
 

@@ -13,10 +13,10 @@ import {
   TDocumentInformation,
 } from 'pdfmake/interfaces.js';
 import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
-import { JobsSystemPreference } from '../../../preferences/interfaces/system-preferences.interface.js';
 import { JobQuery } from '../dto/job-query.js';
 import { JobsProductsTotals } from '../dto/jobs-products-totals.js';
 import { JobOneProduct } from '../entities/job-one-product.js';
+import { JobsSettings } from '../../../preferences/interfaces/module-settings/job-settings.js';
 
 const SMALL: Style = { fontSize: 8 };
 const MEDIUM: Style = { fontSize: 10, lineHeight: 1.2 };
@@ -83,7 +83,7 @@ export function jobsReport(
   query: JobQuery,
   jobs: JobOneProduct[],
   totals: JobsProductsTotals[],
-  preferences: JobsSystemPreference,
+  preferences: JobsSettings,
   l?: Locale,
 ) {
   if (l) {
@@ -128,7 +128,7 @@ export function jobsReport(
 
 function createHeaderLeftColumn(
   query: JobQuery,
-  preferences: JobsSystemPreference,
+  preferences: JobsSettings,
 ): Content[] {
   const { fromDate, toDate, customer, jobsId, name, productsName } = query;
   const result = [] as Content[];
@@ -220,7 +220,7 @@ function totalsTable(totals: JobsProductsTotals[]): Table {
 
 function jobsTable(
   jobs: JobOneProduct[],
-  states: JobsSystemPreference['jobStates'],
+  states: JobsSettings['jobStates'],
 ): Table {
   const tableHeader: TableCell[] = [
     content('Nr.').bold().end(),
@@ -266,7 +266,7 @@ function jobsTable(
 
 function getStatusDescription(
   state: number,
-  states: JobsSystemPreference['jobStates'],
+  states: JobsSettings['jobStates'],
 ): string {
   return states.find((s) => s.state === state)?.description ?? state.toString();
 }

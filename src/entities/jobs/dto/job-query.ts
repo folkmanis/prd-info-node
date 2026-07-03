@@ -12,9 +12,9 @@ import { Filter } from 'mongodb';
 import { pickNotNull } from '../../../lib/pick-not-null.js';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { JobsSettings } from '../../../preferences/interfaces/module-settings/job-settings.js';
 import { JOB_CATEGORIES, JobCategories } from '../entities/job-categories.js';
 import { Job } from '../entities/job.entity.js';
-import { JobsSystemPreference } from '../../../preferences/interfaces/system-preferences.interface.js';
 
 export class JobQuery extends StartLimitFilter<Job> {
   @Type(() => Date)
@@ -102,7 +102,7 @@ export class JobQuery extends StartLimitFilter<Job> {
     };
   }
 
-  statusDescriptions(states: JobsSystemPreference['jobStates']): string[] {
+  statusDescriptions(states: JobsSettings['jobStates']): string[] {
     if (!this.jobStatus) {
       return states.map((s) => s.description);
     } else {

@@ -1,73 +1,73 @@
-import { ShippingAddress } from '../../entities/customers/entities/customer.entity.js';
-import { FuelType } from '../../entities/transportation/index.js';
-import { SystemModules } from './system-modules.interface.js';
+import { z } from 'zod';
+import { JobsSettingsSchema } from './module-settings/job-settings.js';
+import { KastesSettingsSchema } from './module-settings/kastes-settings.js';
+import { PaytraqSettingsSchema } from './module-settings/paytraq-settings.js';
+import { SystemSettingsSchema } from './module-settings/system-settings.js';
+import { TransportationSettingsSchema } from './module-settings/transportation-settings.js';
 
-export type LogLevel =
-  | 'error'
-  | 'warn'
-  | 'info'
-  | 'http'
-  | 'verbose'
-  | 'debug'
-  | 'silly';
+const PreferencesSettings = {
+  system: SystemSettingsSchema,
+  kastes: KastesSettingsSchema,
+  jobs: JobsSettingsSchema,
+  paytraq: PaytraqSettingsSchema,
+  transportation: TransportationSettingsSchema,
+} as const;
 
-export type AppLogLevels = Record<LogLevel, number>;
+export const PreferencesSettingsSchema = z.object(PreferencesSettings);
 
-export type SystemPreference =
-  | KastesSystemPreference
-  | SystemSystemPreference
-  | JobsSystemPreference
-  | PaytraqSystemPreference
-  | TransportationSystemPreference;
+export const PreferencesDbModulesSchema = z.discriminatedUnion('module', [
+  z.object({
+    module: z.literal('system'),
+    settings: PreferencesSettings['system'],
+  }),
+  z.object({
+    module: z.literal('kastes'),
+    settings: PreferencesSettings['kastes'],
+  }),
+  z.object({
+    module: z.literal('jobs'),
+    settings: PreferencesSettings['jobs'],
+  }),
+  z.object({
+    module: z.literal('paytraq'),
+    settings: PreferencesSettings['paytraq'],
+  }),
+  z.object({
+    module: z.literal('transportation'),
+    settings: PreferencesSettings['transportation'],
+  }),
+]);
+export type PreferencesDbModules = z.infer<typeof PreferencesDbModulesSchema>;
 
-export interface SystemPreferenceModule {
-  module: SystemModules;
-  settings: SystemPreference;
-}
+export const MODULES = PreferencesDbModulesSchema.options.map(
+  (obj) => obj.shape.module.value,
+);
+export const PreferencesModuleNamesSchema = z.enum(MODULES);
+export type PreferencesModuleNames = z.infer<
+  typeof PreferencesModuleNamesSchema
+>;
 
-export interface KastesSystemPreference {
-  colors: { [key: string]: string };
-}
+export type ModuleSettings<M extends PreferencesModuleNames> =
+  Extract<PreferencesDbModules, { module: M }> extends { settings: infer S }
+    ? S
+    : never;
+type jjj = ModuleSettings<'jobs'>;
 
-export interface SystemSystemPreference {
-  menuExpandedByDefault: boolean;
-  logLevels: [number, LogLevel][];
-  hostname: string;
-}
-
-export interface ProductUnit {
-  shortName: string;
-  description: string;
-  disabled: boolean;
-}
-
-export interface JobsSystemPreference {
-  productCategories: {
-    category: string;
-    description: string;
-  }[];
-  jobStates: {
-    state: number;
-    description: string;
-  }[];
-  productUnits: ProductUnit[];
-}
-
-export interface PaytraqSystemPreference {
-  enabled: boolean;
-  connectionParams: PaytraqSystemPreference['enabled'] extends true
-    ? PaytraqConnectionParams
-    : null;
-}
-export interface TransportationSystemPreference {
-  shippingAddress: ShippingAddress | null;
-  fuelTypes: FuelType[];
-}
-
-export interface PaytraqConnectionParams {
-  connectUrl: string;
-  connectKey: string;
-  apiUrl: string;
-  apiKey: string;
-  apiToken: string;
-}
+export const preferencesObjectToDbArray = z.codec(
+  PreferencesSettingsSchema,
+  PreferencesDbModulesSchema.array(),
+  {
+    encode: (value) => {
+      return Object.assign(
+        {},
+        ...value.map((mod) => ({ [mod.module]: mod.settings })),
+      );
+    },
+    decode: (value) => {
+      return MODULES.map((module) => ({
+        module,
+        settings: value[module],
+      })) as PreferencesDbModules[];
+    },
+  },
+);

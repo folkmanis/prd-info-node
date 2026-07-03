@@ -1,6 +1,6 @@
-import { SystemPreferenceModule } from '../interfaces/system-preferences.interface.js';
+import { PreferencesDbModules } from '../interfaces/system-preferences.interface.js';
 
-export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
+export const DEFAULT_PREFERENCES: PreferencesDbModules[] = [
   {
     module: 'kastes',
     settings: {
@@ -15,17 +15,8 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
     module: 'system',
     settings: {
       menuExpandedByDefault: false,
-      logLevels: [
-        [5, 'debug'],
-        [0, 'error'],
-        [2, 'info'],
-        [6, 'silly'],
-        [4, 'verbose'],
-        [1, 'warn'],
-        [3, 'http'],
-      ],
       hostname: 'http://localhost',
-      shippingAddress: null,
+      companyName: '',
     },
   },
   {
@@ -60,6 +51,7 @@ export const DEFAULT_PREFERENCES: SystemPreferenceModule[] = [
         },
       ],
       productUnits: [],
+      jobRootPath: '',
     },
   },
   {

@@ -1,7 +1,7 @@
 import { LoggerService } from '@nestjs/common';
-import { AppLogLevels, LogLevel } from '../../preferences/index.js';
 import { LogRecord } from '../interfaces/log-record.interface.js';
 import { LoggerDaoService } from '../logger-dao/logger-dao.service.js';
+import { AppLogLevels, LogLevel } from '../log-levels.factory.js';
 
 interface MongoTransportConfig {
   level: LogLevel;
