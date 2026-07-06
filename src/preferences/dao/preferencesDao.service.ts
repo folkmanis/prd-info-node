@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { flatten } from 'flat';
 import { Collection } from 'mongodb';
-import { DatabaseService } from '../../database/database.service.js';
 import { pickNotNull } from '../../lib/pick-not-null.js';
 import {
   PreferencesDbModules,
   PreferencesModuleNames,
 } from '../interfaces/system-preferences.interface.js';
+import { PREFERENCES_COLLECTION } from './preferences-collection.provider.js';
 
 interface BulkUpdateOne {
   updateOne: {
@@ -21,13 +21,10 @@ interface BulkUpdateOne {
 
 @Injectable()
 export class PreferencesDao {
-  preferences: Collection<PreferencesDbModules>;
-
-  constructor(private dbService: DatabaseService) {
-    this.preferences = this.dbService.db().collection('preferences');
-
-    this.createindexes();
-  }
+  constructor(
+    @Inject(PREFERENCES_COLLECTION)
+    private preferences: Collection<PreferencesDbModules>,
+  ) {}
 
   async getAllPreferences<M extends PreferencesModuleNames>(
     filter: { module?: M } = {},
@@ -69,12 +66,5 @@ export class PreferencesDao {
       ordered: false,
     });
     return modifiedCount;
-  }
-
-  private createindexes() {
-    this.preferences.createIndex(
-      { module: 1 },
-      { unique: true, name: 'module_1' },
-    );
   }
 }
