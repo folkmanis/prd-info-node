@@ -4,6 +4,7 @@ import { MONGO_CLIENT } from '../database/mongo-connection.provider.js';
 import { CustomersMaintenanceService } from './customers-maintenace.service.js';
 import { JobsMaintenanceService } from './jobs-maintenance.service.js';
 import { LogMaintenanceService } from './log-maintenance.service.js';
+import { MaterialsMaintenanceService } from './materials-maintenance.service.js';
 
 @Injectable()
 export class MaintenanceService {
@@ -14,6 +15,7 @@ export class MaintenanceService {
     private customersMaintenance: CustomersMaintenanceService,
     private logMaintenance: LogMaintenanceService,
     private jobsMaintenance: JobsMaintenanceService,
+    private materialsMaintenance: MaterialsMaintenanceService,
   ) {}
 
   async performTasks() {
@@ -21,6 +23,7 @@ export class MaintenanceService {
     await this.jobsMaintenance.performTasks();
     await this.customersMaintenance.performTasks();
     await this.logMaintenance.performTasks();
+    await this.materialsMaintenance.performTasks();
   }
 
   async close() {

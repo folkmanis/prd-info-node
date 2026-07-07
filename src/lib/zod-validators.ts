@@ -2,6 +2,7 @@ import { formatISO } from 'date-fns';
 import { ObjectId } from 'mongodb';
 import { createZodDto } from 'nestjs-zod';
 import { z, ZodType } from 'zod';
+import { pickNotNull } from './pick-not-null.js';
 
 export const stringToInt = z.codec(
   z.string().regex(z.regexes.integer),
@@ -55,3 +56,25 @@ export const isoDatetimeToDate = z.codec(z.iso.datetime(), z.date(), {
   decode: (isoString) => new Date(isoString),
   encode: (date) => date.toISOString(),
 });
+
+export const objectToUpdate = z
+  .record(z.string(), z.any())
+  .transform((value) => {
+    const update: (
+      | { $set: Record<string, any> }
+      | { $unset: Record<string, any> }
+    )[] = [];
+
+    const $set = pickNotNull(value);
+    if (Object.keys($set).length > 0) {
+      update.push({ $set });
+    }
+
+    const $unset = Object.entries(value)
+      .filter(([_, v]) => v === null)
+      .map(([k]) => k);
+    if ($unset.length > 0) {
+      update.push({ $unset });
+    }
+    return update;
+  });

@@ -9,6 +9,8 @@ import { provideMongoConnection } from '../database/mongo-connection.provider.js
 import { provideLogCollection } from '../logging/logger-dao/log-collection.provider.js';
 import { LogMaintenanceService } from './log-maintenance.service.js';
 import { JobsMaintenanceService } from './jobs-maintenance.service.js';
+import { MaterialsMaintenanceService } from './materials-maintenance.service.js';
+import { provideMaterialsCollection } from '../entities/materials/dao/materials-collection.provider.js';
 
 @Module({
   providers: [
@@ -16,10 +18,12 @@ import { JobsMaintenanceService } from './jobs-maintenance.service.js';
     provideJobsCollection,
     provideCustomersCollection,
     provideLogCollection,
+    provideMaterialsCollection,
     MaintenanceService,
     JobsMaintenanceService,
     CustomersMaintenanceService,
     LogMaintenanceService,
+    MaterialsMaintenanceService,
   ],
   imports: [
     ConfigModule.forRoot({

@@ -7,63 +7,70 @@ import {
   Patch,
   Put,
   Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
-import { ObjectId } from 'mongodb';
 
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { z } from 'zod';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
+import { ValidationResultDto } from '../../lib/validation-result.dto.js';
+import { ObjectIdDto } from '../../lib/zod-validators.js';
 import { Modules } from '../../login/index.js';
-import { MaterialsDaoService } from './dao/materials-dao.service.js';
 import { CreateMaterialDto } from './dto/create-material.dto.js';
-import { MaterialFilterQuery } from './dto/material-filter-query.js';
+import { MaterialQueryDto } from './dto/material-filter-query.js';
+import { MaterialDto } from './dto/material.dto.schema.js';
+import { MaterialsListDto } from './dto/materials-list.dto.schema.js';
 import { UpdateMaterialDto } from './dto/update-material.dto.js';
 import { Material } from './entities/material.entity.js';
+import { MaterialsService } from './materials.service.js';
 
 @Controller('materials')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ transform: true }))
 export class MaterialsController {
-  constructor(private readonly materialsDao: MaterialsDaoService) {}
+  constructor(private readonly materialsService: MaterialsService) {}
 
+  @ZodResponse({ type: MaterialDto })
   @Put()
   @Modules('jobs-admin')
   async insertOne(@Body() material: CreateMaterialDto) {
-    return this.materialsDao.insertOne(material);
+    return this.materialsService.insertOne(material);
   }
 
+  @ZodResponse({ type: MaterialDto })
   @Patch(':id')
   @Modules('jobs-admin')
   async updateOne(
-    @Param('id') id: ObjectId,
+    @Param('id') id: ObjectIdDto,
     @Body() material: UpdateMaterialDto,
   ) {
-    return this.materialsDao.updateOne(id, material);
+    return this.materialsService.updateOne(id, material);
   }
 
+  @ZodResponse({ type: createZodDto(z.number()) })
   @Delete(':id')
   @Modules('jobs-admin')
-  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  async deleteOne(@Param('id') id: ObjectId) {
-    return this.materialsDao.deleteOneById(id);
+  async deleteOne(@Param('id') id: ObjectIdDto) {
+    return this.materialsService.deleteOne(id);
   }
 
+  @ZodResponse({ type: ValidationResultDto })
   @Get('validate/:property')
   async getProperty(
-    @Param('property', new ValidateObjectKeyPipe('name')) key: keyof Material,
+    @Param('property', new ValidateObjectKeyPipe<Material>('name'))
+    key: keyof Material,
+    @Query('value') value: string,
   ) {
-    return this.materialsDao.validationData(key);
+    return this.materialsService.validateProperty(key, value);
   }
 
+  @ZodResponse({ type: MaterialDto })
   @Get(':id')
-  async getOneById(@Param('id') id: ObjectId) {
-    return this.materialsDao.getOneById(id);
+  async getOne(@Param('id') id: ObjectIdDto) {
+    return this.materialsService.getOne(id);
   }
 
+  @ZodResponse({ type: [MaterialsListDto] })
   @Get('')
-  async getAll(@Query() query: MaterialFilterQuery) {
-    return this.materialsDao.findAll(query.toFilter());
+  async getAll(@Query() query: MaterialQueryDto) {
+    return this.materialsService.findAll(query);
   }
 }

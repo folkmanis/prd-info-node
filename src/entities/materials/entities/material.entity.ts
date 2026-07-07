@@ -1,54 +1,20 @@
-import { ObjectId } from 'mongodb';
-import { Transform, Type } from 'class-transformer';
-import {
-  ValidateNested,
-  IsString,
-  IsBoolean,
-  IsNumber,
-  Min,
-  IsOptional,
-  IsObject,
-} from 'class-validator';
+import { z } from 'zod';
 
-export class MaterialPrices {
-  @IsNumber()
-  @Min(0)
-  min: number;
+export const MaterialPricesSchema = z.object({
+  min: z.number().min(0),
+  price: z.number(),
+  description: z.string().optional(),
+});
+export type MaterialPrices = z.infer<typeof MaterialPricesSchema>;
 
-  @IsNumber()
-  price: number;
+export const MaterialSchema = z.object({
+  name: z.string(),
+  units: z.string(),
+  category: z.string(),
+  inactive: z.boolean(),
+  fixedPrice: z.number(),
+  prices: z.array(MaterialPricesSchema),
+  description: z.string().optional(),
+});
 
-  @IsString()
-  @IsOptional()
-  description: string;
-}
-
-export class Material {
-  @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
-  @IsObject()
-  _id: ObjectId;
-
-  @IsString()
-  name: string;
-
-  @IsString()
-  @IsOptional()
-  description: string;
-
-  @IsString()
-  units: string;
-
-  @IsString()
-  category: string;
-
-  @IsBoolean()
-  inactive: boolean;
-
-  @IsNumber()
-  fixedPrice: number;
-
-  @Type(() => MaterialPrices)
-  @ValidateNested({ each: true })
-  prices: MaterialPrices[];
-}
+export type Material = z.infer<typeof MaterialSchema>;

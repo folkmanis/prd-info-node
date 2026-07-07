@@ -1,14 +1,14 @@
-import { DatabaseService } from '../../../database/index.js';
 import { FactoryProvider } from '@nestjs/common';
-import { Collection } from 'mongodb';
+import { Collection, MongoClient } from 'mongodb';
+import { MONGO_CLIENT } from '../../../database/mongo-connection.provider.js';
 
 export const MATERIALS_COLLECTION = 'MATERIALS_COLLECTION';
 
-export const materialsCollectionProvider: FactoryProvider = {
+export const provideMaterialsCollection: FactoryProvider = {
   provide: MATERIALS_COLLECTION,
-  useFactory: (dbService: DatabaseService) => {
+  useFactory: (client: MongoClient) => {
     try {
-      const collection = dbService.db().collection('materials');
+      const collection = client.db().collection('materials');
       createIndexes(collection);
       return collection;
     } catch (error) {
@@ -16,7 +16,7 @@ export const materialsCollectionProvider: FactoryProvider = {
       process.exit(1);
     }
   },
-  inject: [DatabaseService],
+  inject: [MONGO_CLIENT],
 };
 
 function createIndexes(collection: Collection): void {

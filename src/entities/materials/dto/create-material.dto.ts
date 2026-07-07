@@ -1,4 +1,8 @@
-import { Material } from '../entities/material.entity.js';
-import { OmitType } from '@nestjs/mapped-types';
+import { MaterialSchema } from '../entities/material.entity.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
 
-export class CreateMaterialDto extends OmitType(Material, ['_id']) { }
+export const CreateMaterialSchema = MaterialSchema;
+export type CreateMaterial = z.infer<typeof CreateMaterialSchema>;
+
+export class CreateMaterialDto extends createZodDto(CreateMaterialSchema) {}

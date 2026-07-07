@@ -1,24 +1,23 @@
-import { EntityDao } from '../../entityDao.interface.js';
-import { Material } from '../entities/material.entity.js';
-import { CreateMaterialDto } from '../dto/create-material.dto.js';
-import { UpdateMaterialDto } from '../dto/update-material.dto.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { MATERIALS_COLLECTION } from './materials-collection.provider.js';
-import { Collection, ObjectId } from 'mongodb';
 import { Inject } from '@nestjs/common';
-import { flatten } from 'flat';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { CreateMaterial } from '../dto/create-material.dto.js';
+import { MaterialQuery } from '../dto/material-filter-query.js';
+import { MaterialsList } from '../dto/materials-list.dto.schema.js';
+import { UpdateMaterial } from '../dto/update-material.dto.js';
+import { Material } from '../entities/material.entity.js';
+import { MATERIALS_COLLECTION } from './materials-collection.provider.js';
 
-export class MaterialsDaoService implements EntityDao<Material> {
+export class MaterialsDaoService {
   constructor(
     @Inject(MATERIALS_COLLECTION)
     private readonly collection: Collection<Material>,
-  ) { }
+  ) {}
 
   async findAll({
     start,
     limit,
     filter,
-  }: FilterType<Material>): Promise<Partial<Material>[]> {
+  }: MaterialQuery): Promise<MaterialsList[]> {
     return this.collection
       .find(filter, {
         projection: {
@@ -38,11 +37,11 @@ export class MaterialsDaoService implements EntityDao<Material> {
       .toArray();
   }
 
-  async getOneById(id: ObjectId): Promise<Material | null> {
+  async getOneById(id: ObjectId): Promise<WithId<Material> | null> {
     return this.collection.findOne({ _id: id });
   }
 
-  async insertOne(material: CreateMaterialDto): Promise<Material | null> {
+  async insertOne(material: CreateMaterial): Promise<WithId<Material> | null> {
     return this.collection.findOneAndReplace(
       { name: material.name },
       material,
@@ -52,34 +51,21 @@ export class MaterialsDaoService implements EntityDao<Material> {
 
   async updateOne(
     id: ObjectId,
-    material: UpdateMaterialDto,
-  ): Promise<Material | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: id },
-      { $set: flatten(material, { safe: true }) },
-      { returnDocument: 'after' },
-    );
+    update: UpdateMaterial,
+  ): Promise<WithId<Material> | null> {
+    return this.collection.findOneAndUpdate({ _id: id }, update, {
+      returnDocument: 'after',
+    });
   }
 
-  async deleteOneById(id: ObjectId): Promise<number> {
+  async deleteOne(id: ObjectId): Promise<number> {
     const { deletedCount } = await this.collection.deleteOne({ _id: id });
     return deletedCount || 0;
   }
 
-  async validationData<K extends keyof Material>(
-    key: K,
-  ): Promise<Material[K][]> {
-    return this.collection
-      .find(
-        {},
-        {
-          projection: {
-            [key]: 1,
-            _id: 0,
-          },
-        },
-      )
-      .map((val) => val[key])
-      .toArray();
+  async validateProperty(filter: Filter<Material>): Promise<1 | 0> {
+    return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
+      1 | 0
+    >;
   }
 }
