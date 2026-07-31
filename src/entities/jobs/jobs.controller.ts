@@ -18,7 +18,7 @@ import { TouchProductInterceptor } from '../products/touch-product.interceptor.j
 import { JobsDao } from './dao/jobs-dao.service.js';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
 import { CreateJobDto } from './dto/create-job.dto.js';
-import { JobQuery } from './dto/job-query.js';
+import { JobFilterDto } from './dto/job-query.js';
 import { UpdateJobDto } from './dto/update-job.dto.js';
 import { JobId } from './job-id.decorator.js';
 import { JobNotifyInterceptor } from './job-notify.interceptor.js';
@@ -29,7 +29,6 @@ import { AllowNullResponse } from '../../lib/null-response.interceptor.js';
 
 @Controller('jobs')
 @Modules('jobs')
-@UsePipes(new ValidationPipe({ transform: true }))
 @UseInterceptors(JobNotifyInterceptor)
 export class JobsController {
   constructor(
@@ -47,18 +46,21 @@ export class JobsController {
 
   @Patch(':jobId')
   @UseInterceptors(TouchProductInterceptor)
+  @UsePipes(new ValidationPipe({ transform: true }))
   async updateOne(@JobId() jobId: number, @Body() jobUpdate: UpdateJobDto) {
     return this.jobsDao.updateJob({ ...jobUpdate, jobId });
   }
 
   @Patch('')
   @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
+  @UsePipes(new ValidationPipe({ transform: true }))
   async updateMany(@Body() jobsUpdate: UpdateJobDto[]) {
     return this.jobsDao.updateJobs(jobsUpdate);
   }
 
   @Put('')
   @UseInterceptors(TouchProductInterceptor)
+  @UsePipes(new ValidationPipe({ transform: true }))
   async insertOne(@Body() job: CreateJobDto) {
     const document = {
       ...job,
@@ -69,6 +71,7 @@ export class JobsController {
   }
 
   @Get('materials-summary')
+  @UsePipes(new ValidationPipe({ transform: true }))
   async getMaterialsSummary(@Query() query: JobMaterialsSummaryQuery) {
     return this.jobsService.getMaterialsTotals(query);
   }
@@ -80,16 +83,13 @@ export class JobsController {
 
   @Get('count')
   @UseInterceptors(new ResponseWrapperInterceptor('count', { wrapZero: true }))
-  async getJobsCount(@Query() query: JobQuery) {
-    return this.jobsService.getCount(
-      query.toFilter(),
-      Boolean(query.unwindProducts),
-    );
+  async getJobsCount(@Query() query: JobFilterDto) {
+    return this.jobsService.getCount(query);
   }
 
   @Get('report')
   @AllowNullResponse()
-  async jobProductsReport(@Query() query: JobQuery, @Res() res: Response) {
+  async jobProductsReport(@Query() query: JobFilterDto, @Res() res: Response) {
     const pdf = await this.jobsService.getJobsReport(query);
     const stream = await pdf.getStream();
     res.contentType('application/pdf');
@@ -103,7 +103,7 @@ export class JobsController {
   }
 
   @Get('')
-  async getJobs(@Query() query: JobQuery) {
-    return this.jobsService.getAll(query.toFilter(), !!query.unwindProducts);
+  async getJobs(@Query() query: JobFilterDto) {
+    return this.jobsService.getAll(query);
   }
 }

@@ -5,7 +5,7 @@ import { NotificationsWebSocket } from './notifications-websocket.interface.js';
 
 @Injectable()
 export class TokenGuard implements CanActivate {
-  constructor(private readonly tokenService: SessionTokenService) { }
+  constructor(private readonly tokenService: SessionTokenService) {}
 
   canActivate(
     context: ExecutionContext,

@@ -21,7 +21,7 @@ export class TouchProductInterceptor implements NestInterceptor {
     }
   };
 
-  constructor(private readonly productsService: ProductsService) { }
+  constructor(private readonly productsService: ProductsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(mergeMap((job) => this.touch(job)));

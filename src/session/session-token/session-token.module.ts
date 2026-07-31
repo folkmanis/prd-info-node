@@ -18,4 +18,4 @@ const SECRET = 'IvI3cS3wIZ';
   exports: [SessionTokenService],
   controllers: [],
 })
-export class SessionTokenModule { }
+export class SessionTokenModule {}

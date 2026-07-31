@@ -1,7 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection } from 'mongodb';
-import { FilterType } from '../../lib/start-limit-filter/filter-type.interface.js';
-import { LogRecord } from '../interfaces/log-record.interface.js';
+import { Collection, Filter } from 'mongodb';
+import { DatesGroup } from '../interfaces/dates-group.schema.js';
+import { LogQuery } from '../interfaces/log-query.schema.js';
+import { LogRecord } from '../interfaces/log-record.schema.js';
 import { LOG_COLLECTION } from './log-collection.provider.js';
 
 @Injectable()
@@ -14,11 +15,7 @@ export class LoggerDaoService {
     return this.collection.insertOne(record, { writeConcern: { w: 0 } });
   }
 
-  async readAll({
-    limit,
-    start,
-    filter,
-  }: FilterType<LogRecord>): Promise<LogRecord[]> {
+  async readAll({ limit, start, filter }: LogQuery): Promise<LogRecord[]> {
     return this.collection
       .find(filter, {
         sort: { timestamp: -1 },
@@ -28,11 +25,7 @@ export class LoggerDaoService {
       .toArray();
   }
 
-  async countDocuments({ filter }: FilterType<LogRecord>): Promise<number> {
-    return this.collection.countDocuments(filter);
-  }
-
-  async datesGroup({ filter }: FilterType<LogRecord>): Promise<string[]> {
+  async datesGroup(filter: Filter<LogRecord>): Promise<DatesGroup[]> {
     const pipeline: Array<any> = [
       {
         $match: filter,

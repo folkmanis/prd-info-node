@@ -7,4 +7,4 @@ import { ProductionStagesDaoService } from './dao/production-stages-dao.service.
   controllers: [ProductionStagesController],
   providers: [productionStagesProvidder, ProductionStagesDaoService],
 })
-export class ProductionStagesModule { }
+export class ProductionStagesModule {}

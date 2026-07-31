@@ -1,4 +1,4 @@
 export interface FirebaseUser {
-    username: string;
-    name: string;
+  username: string;
+  name: string;
 }

@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { FilterType } from '../../lib/start-limit-filter/filter-type.interface.js';
+import { TCreatedPdf } from 'pdfmake';
+import { assertCondition } from '../../lib/assertions.js';
+import { JobsSettings } from '../../preferences/interfaces/module-settings/job-settings.js';
+import { PreferencesService } from '../../preferences/preferences.service.js';
+import { InvoiceProduct } from '../invoices/entities/invoice.entity.js';
 import { JobsCounterService } from './dao/counters.service.js';
 import { JobsDao } from './dao/jobs-dao.service.js';
 import { JobsInvoicesDao } from './dao/jobs-invoices-dao.service.js';
-import { UpdateJobDto } from './dto/update-job.dto.js';
-import { Job } from './entities/job.entity.js';
-import { assertCondition } from '../../lib/assertions.js';
 import { JobsMaterialsDaoService } from './dao/jobs-materials-dao.service.js';
-import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
-import { ProductsQuery } from './dto/products-query.js';
 import { JobsProductsDaoService } from './dao/jobs-products-dao.service.js';
-import { jobProductsReport } from './job-products-report/job-products-report.js';
-import { JobQuery } from './dto/job-query.js';
-import { TCreatedPdf } from 'pdfmake';
-import { jobsReport } from './jobs-report/jobs-report.js';
-import { PreferencesService } from '../../preferences/preferences.service.js';
+import { JobMaterialsSummaryQuery } from './dto/job-materials-summary.query.js';
+import { JobFilter } from './dto/job-query.js';
+import { ProductsQuery } from './dto/products-query.js';
+import { UpdateJobDto } from './dto/update-job.dto.js';
 import { JobOneProduct } from './entities/job-one-product.js';
-import { InvoiceProduct } from '../invoices/entities/invoice.entity.js';
-import { JobsSettings } from '../../preferences/interfaces/module-settings/job-settings.js';
+import { Job } from './entities/job.entity.js';
+import { jobProductsReport } from './job-products-report/job-products-report.js';
+import { jobsReport } from './jobs-report/jobs-report.js';
 
 @Injectable()
 export class JobsService {
@@ -30,34 +29,31 @@ export class JobsService {
     private readonly preferencesService: PreferencesService,
   ) {}
 
-  async getAll<
-    K extends boolean,
-    Result = K extends true ? JobOneProduct : Job,
-  >(filter: FilterType<Job>, unwindProducts: K): Promise<Result[]> {
-    return this.jobsDao.getAll(filter, unwindProducts);
+  async getAll({
+    filter,
+    start,
+    limit,
+    unwindProducts,
+  }: JobFilter): Promise<
+    typeof unwindProducts extends true ? JobOneProduct[] : Job[]
+  > {
+    return this.jobsDao.getAll(filter, unwindProducts, start, limit);
   }
 
-  async getJobsReport(query: JobQuery): Promise<TCreatedPdf> {
-    const { filter } = query.toFilter();
+  async getJobsReport(query: JobFilter): Promise<TCreatedPdf> {
+    const { filter } = query.filter;
 
     const totals = await this.jobsProductsDao.getProductsTotals({ filter });
-    const jobs = await this.jobsDao.getAll(
-      { filter, limit: 0, start: 0 },
-      true,
-      {
-        jobId: 1,
-      },
-    );
+    const jobs = await this.jobsDao.getAll(filter, true, 0, 0, {
+      jobId: 1,
+    });
 
     const preferences = await this.getPreferences();
 
-    return jobsReport(query, jobs as JobOneProduct[], totals, preferences);
+    return jobsReport(query, jobs, totals, preferences);
   }
 
-  async getCount(
-    filter: FilterType<Job>,
-    unwindProducts: boolean,
-  ): Promise<number> {
+  async getCount({ filter, unwindProducts }: JobFilter): Promise<number> {
     const result = await this.jobsDao.getCount(
       { ...filter, start: 0, limit: 0 },
       unwindProducts,

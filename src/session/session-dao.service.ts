@@ -17,7 +17,7 @@ export class SessionDaoService {
   constructor(
     @Inject(SESSION_COLLECTION)
     private readonly collection: Collection<SessionEntity>,
-  ) { }
+  ) {}
 
   async findSession(id: string): Promise<SessionEntity | null> {
     return this.collection.findOne({ _id: id });

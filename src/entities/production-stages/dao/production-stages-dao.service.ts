@@ -13,7 +13,7 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
   constructor(
     @Inject(PRODUCTION_STAGES_COLLECTION)
     private readonly collection: Collection<ProductionStage>,
-  ) { }
+  ) {}
 
   async findAll({
     limit,

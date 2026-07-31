@@ -9,4 +9,4 @@ import { SessionTokenModule, SessionModule } from '../session/index.js';
   providers: [NotificationsService, NotificationsGateway],
   exports: [NotificationsService],
 })
-export class NotificationsModule { }
+export class NotificationsModule {}

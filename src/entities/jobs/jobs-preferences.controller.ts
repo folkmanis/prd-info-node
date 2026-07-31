@@ -6,7 +6,7 @@ import { ModuleUserPreferences, UsersService } from '../users/index.js';
 @Controller('jobs/preferences')
 @Modules('jobs')
 export class JobsPreferencesController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   async getPreferences(@Usr('username') username: string) {

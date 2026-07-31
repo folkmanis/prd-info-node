@@ -14,7 +14,7 @@ import { VeikalsKaste } from '../dto/veikals-kaste.dto.js';
 export class KastesDaoService {
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-  ) { }
+  ) {}
 
   findAllKastesCursor(pasutijums: number) {
     const kastesPipeline = [
@@ -146,7 +146,7 @@ export class KastesDaoService {
   }
 
   async setGatavsBulkUpdate(
-    updates: { _id: ObjectId; kaste: number; value: boolean; }[],
+    updates: { _id: ObjectId; kaste: number; value: boolean }[],
   ) {
     const bulkUpdates: AnyBulkWriteOperation<Veikals>[] = updates.map(
       (update) => ({

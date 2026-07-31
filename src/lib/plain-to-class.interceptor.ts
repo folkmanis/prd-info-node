@@ -13,9 +13,10 @@ import {
 import { map } from 'rxjs/operators';
 
 @Injectable()
-export class PlainToClassInterceptor<T extends Record<string, any>, R>
-  implements NestInterceptor<T, R>
-{
+export class PlainToClassInterceptor<
+  T extends Record<string, any>,
+  R,
+> implements NestInterceptor<T, R> {
   constructor(
     private type: ClassConstructor<R>,
     private options?: ClassTransformOptions,

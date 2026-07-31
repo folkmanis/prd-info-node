@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   AnyBulkWriteOperation,
   Collection,
+  Filter,
   SortDirection,
   UpdateFilter,
 } from 'mongodb';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
 import { UpdateJobDto } from '../dto/update-job.dto.js';
 import { JobOneProduct } from '../entities/job-one-product.js';
 import { JobProduct } from '../entities/job-product.entity.js';
@@ -22,20 +22,22 @@ export class JobsDao {
     K extends boolean,
     Result = K extends true ? JobOneProduct : Job,
   >(
-    query: FilterType<Job>,
+    filter: Filter<Job>,
     unwindProducts: K,
+    start: number = 0,
+    limit: number = 0,
     sort: Record<string, SortDirection> = {},
   ): Promise<Result[]> {
-    const aggr = findAllPipeline(query, unwindProducts, sort);
+    const aggr = findAllPipeline(filter, unwindProducts, start, limit, sort);
 
     return this.collection.aggregate(aggr).toArray() as any;
   }
 
   async getCount(
-    filter: FilterType<Job>,
+    filter: Filter<Job>,
     unwindProducts: boolean,
   ): Promise<[{ count: number }]> {
-    const pipeline = findAllPipeline(filter, unwindProducts);
+    const pipeline = findAllPipeline(filter, unwindProducts, 0, 0);
     pipeline.push({
       $count: 'count',
     });
@@ -110,11 +112,12 @@ function jobUpdate({
 }
 
 function findAllPipeline(
-  query: FilterType<Job>,
+  filter: Filter<Job>,
   unwindProducts: boolean,
+  start: number,
+  limit: number,
   sort: Record<string, SortDirection> = {},
 ): any[] {
-  const { start, limit, filter } = query;
   const aggr: any[] = [];
   if (unwindProducts) {
     aggr.push({

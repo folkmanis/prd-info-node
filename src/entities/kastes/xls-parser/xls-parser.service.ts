@@ -13,6 +13,6 @@ export class XlsParserService {
     const ws: XLSX.WorkSheet = wb.Sheets[wsname];
 
     /* save data */
-    return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true }) as [][];
+    return XLSX.utils.sheet_to_json(ws, { header: 1, raw: true });
   }
 }

@@ -1,43 +1,31 @@
-import {
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Query,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
 import { Modules } from '../../login/index.js';
-import { JobQuery } from '../jobs/dto/job-query.js';
+import { JobFilterDto } from '../jobs/dto/job-query.js';
 import { Job, KastesJob } from '../jobs/entities/job.entity.js';
+import { JobId } from '../jobs/job-id.decorator.js';
 import { JobsService } from '../jobs/jobs.service.js';
 
 @Controller('kastes/jobs')
 @Modules('kastes')
-@UsePipes(new ValidationPipe({ transform: true }))
 export class KastesJobsController {
   constructor(private readonly jobsService: JobsService) {}
 
   @Get()
-  async getKastesJobs(@Query() query: JobQuery): Promise<KastesJob[]> {
-    query.category = 'perforated paper';
-    return this.jobsService.getAll(
-      query.toFilter(),
-      !!query.unwindProducts,
-    ) as Promise<KastesJob[]>;
+  async getKastesJobs(@Query() query: JobFilterDto): Promise<KastesJob[]> {
+    query.filter.category = 'perforated paper';
+    return this.jobsService.getAll(query);
   }
 
   @Get(':jobId')
-  async getKastesJob(
-    @Param('jobId', ParseIntPipe) jobId: number,
-  ): Promise<KastesJob | undefined> {
+  async getKastesJob(@JobId() jobId: number): Promise<KastesJob> {
     const job = await this.jobsService.getOne(jobId);
-    if (isKastesJob(job)) {
-      return job;
-    }
+    assertKastesJob(job);
+    return job;
   }
 }
 
-function isKastesJob(job: Job | null): job is KastesJob {
-  return job?.production?.category === 'perforated paper';
+function assertKastesJob(job: Job | null): asserts job is KastesJob {
+  if (job?.production?.category !== 'perforated paper') {
+    throw new NotFoundException();
+  }
 }

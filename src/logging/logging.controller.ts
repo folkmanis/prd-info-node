@@ -1,27 +1,25 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { Modules } from '../login/index.js';
-import { LogQuery } from './interfaces/log-query.class.js';
+import { DatesGroupSchema } from './interfaces/dates-group.schema.js';
+import { LogQueryDto } from './interfaces/log-query.schema.js';
+import { LogRecordDto } from './interfaces/log-record.schema.js';
 import { LoggerDaoService } from './logger-dao/logger-dao.service.js';
 
 @Controller('logging')
-@UsePipes(new ValidationPipe({ transform: true }))
 @Modules('admin')
 export class LoggingController {
   constructor(private logDao: LoggerDaoService) {}
 
   @Get('dates-groups')
-  async getDatesGroups(@Query() query: LogQuery) {
-    return this.logDao.datesGroup(query.toFilter());
+  @ZodResponse({ type: [createZodDto(DatesGroupSchema)] })
+  async getDatesGroups(@Query() query: LogQueryDto) {
+    return this.logDao.datesGroup(query.filter);
   }
 
   @Get()
-  async getEntries(@Query() query: LogQuery) {
-    return this.logDao.readAll(query.toFilter());
+  @ZodResponse({ type: [LogRecordDto] })
+  async getEntries(@Query() query: LogQueryDto) {
+    return this.logDao.readAll(query);
   }
 }

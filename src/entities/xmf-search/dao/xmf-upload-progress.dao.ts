@@ -10,7 +10,6 @@ export class XmfUploadProgressDao {
 
   constructor(dbService: DatabaseService) {
     this.collection = dbService.db().collection('xmf-upload-progress');
-
   }
 
   async insertOne(upload: XmfUploadProgress) {

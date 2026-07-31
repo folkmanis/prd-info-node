@@ -1,5 +1,5 @@
 import { LoggerService } from '@nestjs/common';
-import { LogRecord } from '../interfaces/log-record.interface.js';
+import { LogRecord } from '../interfaces/log-record.schema.js';
 import { LoggerDaoService } from '../logger-dao/logger-dao.service.js';
 import { AppLogLevels, LogLevel } from '../log-levels.factory.js';
 

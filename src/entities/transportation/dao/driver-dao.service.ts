@@ -9,9 +9,7 @@ import { UpdateDriverDto } from '../dto/update-driver.dto.js';
 import { flatten } from 'flat';
 
 @Injectable()
-export class TransportationDriverDaoService
-  implements EntityDao<TransportationDriver>
-{
+export class TransportationDriverDaoService implements EntityDao<TransportationDriver> {
   constructor(
     @Inject(TRANSPORTATION_DRIVER_COLLECTION)
     private collection: Collection<TransportationDriver>,

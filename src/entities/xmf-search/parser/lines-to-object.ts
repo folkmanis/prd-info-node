@@ -52,7 +52,7 @@ export function linesToObject(): OperatorFunction<string, ArchiveJob> {
 
 function lineValue(
   line: string,
-): { key: string; val: string | number | boolean; } | null {
+): { key: string; val: string | number | boolean } | null {
   line = removeBlanks(line);
 
   const k = line.indexOf(':');

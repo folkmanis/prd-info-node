@@ -18,7 +18,7 @@ export class ErrorLoggerFilter<T>
 
   catch(exception: T, host: ArgumentsHost) {
     if (exception instanceof HttpException) {
-      const req = host.switchToHttp().getRequest() as Request;
+      const req = host.switchToHttp().getRequest();
       this.logger.error(
         exception.message,
         exception.stack,

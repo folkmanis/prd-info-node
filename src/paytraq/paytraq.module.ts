@@ -8,4 +8,4 @@ import { PreferencesModule } from '../preferences/index.js';
   controllers: [PaytraqController],
   providers: [PaytraqDaoService],
 })
-export class PaytraqModule { }
+export class PaytraqModule {}

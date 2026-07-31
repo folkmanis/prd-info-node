@@ -7,15 +7,12 @@ export const MONGO_CLIENT = Symbol('Mongo Client');
 export const provideMongoConnection: FactoryProvider<Promise<MongoClient>> = {
   provide: MONGO_CLIENT,
   useFactory: async (conf: ConfigService) => {
-    return new MongoClient(
-      conf.get('DB_SRV') as string,
-      {
-        connectTimeoutMS: 10000,
-        writeConcern: {
-          wtimeout: 2500,
-        },
-      } as MongoClientOptions,
-    ).connect();
+    return new MongoClient(conf.get('DB_SRV') as string, {
+      connectTimeoutMS: 10000,
+      writeConcern: {
+        wtimeout: 2500,
+      },
+    }).connect();
   },
   inject: [ConfigService],
 };

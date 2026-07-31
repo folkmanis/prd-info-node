@@ -1,9 +1,9 @@
-import { Type } from 'class-transformer';
-import { Contains, IsBoolean } from 'class-validator';
+import { Contains } from 'class-validator';
+import { z } from 'zod';
 
-export const JOB_CATEGORIES = ['repro', 'perforated paper', 'print'] as const;
+export const JOB_CATEGORIES = z.enum(['repro', 'perforated paper', 'print']);
 
-export type JobCategories = (typeof JOB_CATEGORIES)[number];
+export type JobCategories = z.infer<typeof JOB_CATEGORIES>;
 
 export abstract class ProductionCategory {
   category: JobCategories;

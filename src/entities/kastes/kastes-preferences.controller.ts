@@ -6,7 +6,7 @@ import { ModuleUserPreferences, UsersService } from '../users/index.js';
 @Controller('kastes/preferences')
 @Modules('kastes')
 export class KastesPreferencesController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   async getPreferences(@Usr('username') username: string) {

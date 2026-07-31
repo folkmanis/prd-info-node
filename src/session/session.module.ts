@@ -8,4 +8,4 @@ import { SessionService } from './session.service.js';
   providers: [sessionProvider, SessionDaoService, SessionService],
   exports: [SessionService],
 })
-export class SessionModule { }
+export class SessionModule {}

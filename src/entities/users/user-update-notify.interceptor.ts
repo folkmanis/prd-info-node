@@ -20,12 +20,10 @@ export class UserUpdateNotifyInterceptor implements NestInterceptor {
   constructor(
     @Inject(forwardRef(() => NotificationsService))
     private notificationsService: NotificationsService,
-  ) { }
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const { instanceId, method } = context
-      .switchToHttp()
-      .getRequest() as Request;
+    const { instanceId, method } = context.switchToHttp().getRequest();
 
     if (!instanceId || method === 'GET' || method === 'DELETE') {
       return next.handle();

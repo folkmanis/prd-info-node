@@ -20,7 +20,8 @@ import { WsModulesGuard } from './ws-modules.guard.js';
 
 @WebSocketGateway({ path: '/ws-notifications' })
 export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect {
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   private readonly logger = new Logger(NotificationsGateway.name);
 
   @WebSocketServer() server: Server;
@@ -28,7 +29,7 @@ export class NotificationsGateway
   constructor(
     private readonly notificationService: NotificationsService,
     private readonly sessionService: SessionService,
-  ) { }
+  ) {}
 
   handleConnection(client: NotificationsWebSocket) {
     client.on('pong', () => (client.isAlive = true));
@@ -41,7 +42,6 @@ export class NotificationsGateway
           }
         }),
         switchMap(() =>
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this.sessionService.validateSession(client.authorized!.sessionId),
         ),
         tap((isSession) => {

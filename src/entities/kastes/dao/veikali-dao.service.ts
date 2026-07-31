@@ -9,7 +9,7 @@ import { VEIKALI } from './veikali.injector.js';
 export class VeikaliDaoService {
   constructor(
     @Inject(VEIKALI) private readonly collection: Collection<Veikals>,
-  ) { }
+  ) {}
 
   async pasutijums(pasutijums: number): Promise<Veikals[]> {
     return this.collection
@@ -51,7 +51,7 @@ export class VeikaliDaoService {
       },
     ];
     const result = await this.collection
-      .aggregate<{ total: number; }>(pipeline)
+      .aggregate<{ total: number }>(pipeline)
       .toArray();
     return result.map((total) => total.total);
   }

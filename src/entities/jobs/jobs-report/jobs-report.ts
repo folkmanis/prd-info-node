@@ -13,10 +13,10 @@ import {
   TDocumentInformation,
 } from 'pdfmake/interfaces.js';
 import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
-import { JobQuery } from '../dto/job-query.js';
+import { JobsSettings } from '../../../preferences/interfaces/module-settings/job-settings.js';
+import { JobFilter } from '../dto/job-query.js';
 import { JobsProductsTotals } from '../dto/jobs-products-totals.js';
 import { JobOneProduct } from '../entities/job-one-product.js';
-import { JobsSettings } from '../../../preferences/interfaces/module-settings/job-settings.js';
 
 const SMALL: Style = { fontSize: 8 };
 const MEDIUM: Style = { fontSize: 10, lineHeight: 1.2 };
@@ -79,8 +79,21 @@ function formatDate(d: Date | undefined): string {
   return d ? format(d, 'P', { locale }) : '-';
 }
 
+function statusDescriptions(
+  states: JobsSettings['jobStates'],
+  jobStatus: number[] | undefined,
+): string[] {
+  if (!jobStatus) {
+    return states.map((s) => s.description);
+  } else {
+    return jobStatus
+      .map((st) => states.find((s) => s.state === st)?.description)
+      .filter((s) => !!s) as string[];
+  }
+}
+
 export function jobsReport(
-  query: JobQuery,
+  query: JobFilter,
   jobs: JobOneProduct[],
   totals: JobsProductsTotals[],
   preferences: JobsSettings,
@@ -127,10 +140,11 @@ export function jobsReport(
 }
 
 function createHeaderLeftColumn(
-  query: JobQuery,
+  query: JobFilter,
   preferences: JobsSettings,
 ): Content[] {
-  const { fromDate, toDate, customer, jobsId, name, productsName } = query;
+  const { fromDate, toDate, customer, jobsId, name, productsName, jobStatus } =
+    query.description;
   const result = [] as Content[];
   result.push({
     text: [
@@ -157,7 +171,7 @@ function createHeaderLeftColumn(
   result.push({
     text: [
       'Stadija: ',
-      content(query.statusDescriptions(preferences.jobStates).join(', '))
+      content(statusDescriptions(preferences.jobStates, jobStatus).join(', '))
         .bold()
         .end(),
     ],

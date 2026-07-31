@@ -26,7 +26,7 @@ export class GoogleController {
     private loginService: LoginService,
     private oauth2Service: Oauth2Service,
     private usersService: UsersService,
-  ) { }
+  ) {}
 
   @PublicRoute()
   @Get()

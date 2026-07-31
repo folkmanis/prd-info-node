@@ -30,4 +30,4 @@ import { FirebaseModule } from '../../firebase/firebase.module.js';
   ],
   imports: [JobsModule, UsersModule, FirebaseModule],
 })
-export class KastesModule { }
+export class KastesModule {}

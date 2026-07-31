@@ -7,7 +7,7 @@ export class UploadProgressService {
   private _state = new XmfUploadProgress();
   private filenames: string[] = [];
 
-  constructor(private readonly progressDao: XmfUploadProgressDao) { }
+  constructor(private readonly progressDao: XmfUploadProgressDao) {}
 
   get state(): XmfUploadProgress {
     return {
@@ -35,6 +35,7 @@ export class UploadProgressService {
   }): XmfUploadProgress => {
     this._state.count.modified += modifiedCount;
     this._state.count.upserted += upsertedCount;
+    this._state.finished = new Date();
     return this.state;
   };
 

@@ -7,4 +7,4 @@ import { MessagesModule } from '../messages/index.js';
   providers: [FtpWatcherService],
   exports: [FtpWatcherService],
 })
-export class FtpWatcherModule { }
+export class FtpWatcherModule {}

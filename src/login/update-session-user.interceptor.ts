@@ -11,7 +11,7 @@ import { UsersService } from '../entities/users/index.js';
 
 @Injectable()
 export class UpdateSessionUserInterceptor implements NestInterceptor {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req: Request = context.switchToHttp().getRequest();

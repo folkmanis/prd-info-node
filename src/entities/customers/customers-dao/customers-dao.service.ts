@@ -54,7 +54,7 @@ export class CustomersDaoService {
       shippingAddress: 1,
     };
     const sort = {
-      customerName: 1 as 1,
+      customerName: 1 as const,
     };
 
     return this.collection

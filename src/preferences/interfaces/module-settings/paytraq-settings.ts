@@ -8,7 +8,9 @@ export const PaytraqConnectionParamsSchema = z.object({
   apiToken: z.string(),
   invoiceUrl: z.string(),
 });
-export type PaytraqConnectionParams = z.infer<typeof PaytraqConnectionParamsSchema>;
+export type PaytraqConnectionParams = z.infer<
+  typeof PaytraqConnectionParamsSchema
+>;
 
 export const PaytraqSettingsSchema = z.object({
   enabled: z.boolean(),

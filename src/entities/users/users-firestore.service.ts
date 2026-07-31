@@ -32,7 +32,6 @@ export class UsersFirestoreService {
     return this.firestore.collection(PERMISSIONS_COLLECTION);
   }
 
-  // eslint-disable-next-line prettier/prettier
   constructor(private usersDao: UsersDaoService) {}
 
   async setUser(username: string): Promise<number | null | undefined> {

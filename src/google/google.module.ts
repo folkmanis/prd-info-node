@@ -34,7 +34,6 @@ const googleConfig: ConfigFactory = async () => {
     FilesystemModule,
     HttpModule,
     JwtModule.register({
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       secretOrKeyProvider: () => process.env.JWT_SECRET!,
       signOptions: {
         expiresIn: '5m',

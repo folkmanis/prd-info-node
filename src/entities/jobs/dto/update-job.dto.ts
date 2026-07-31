@@ -4,4 +4,4 @@ import { Job } from '../entities/job.entity.js';
 export class UpdateJobDto extends IntersectionType(
   PickType(Job, ['jobId']),
   PartialType(Job),
-) { }
+) {}

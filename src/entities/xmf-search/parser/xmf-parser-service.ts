@@ -14,7 +14,7 @@ export class XmfParserService {
   constructor(
     private readonly progress: UploadProgressService,
     private readonly xmfDao: XmfSearchDao,
-  ) { }
+  ) {}
 
   parseRequest(req: Request): Observable<XmfUploadProgress> {
     this.progress.username = req.session.user?.username;
@@ -22,12 +22,12 @@ export class XmfParserService {
     return rxBusboy(req).pipe(
       tap(({ filename }) => this.progress.file(filename)),
       concatMap(({ file }) => lineReader(file, this.progress.bytes)),
-      tap(this.progress.line),
+      tap(() => this.progress.line()),
       linesToObject(),
-      tap(this.progress.record),
+      tap(() => this.progress.record()),
       toArray(),
       concatMap((job) => this.xmfDao.insertManyRx(job)),
-      map(this.progress.dbRecords),
+      map((result) => this.progress.dbRecords(result)),
       finalize(() => this.progress.finished()),
     );
   }

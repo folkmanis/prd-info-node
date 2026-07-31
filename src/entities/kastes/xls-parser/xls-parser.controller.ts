@@ -7,7 +7,7 @@ import { XlsParserService } from './xls-parser.service.js';
 @Controller('kastes')
 @Modules('kastes')
 export class XlsParserController {
-  constructor(private readonly parser: XlsParserService) { }
+  constructor(private readonly parser: XlsParserService) {}
 
   @Post('parseXlsx')
   async parseXlsx(@Req() req: Request) {

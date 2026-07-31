@@ -6,7 +6,7 @@ import { User } from '../../entities/users/index.js';
 
 @Injectable()
 export class SessionTokenService {
-  constructor(private readonly jwtService: JwtService) { }
+  constructor(private readonly jwtService: JwtService) {}
 
   token(session: Session, instanceId: string, user: User): string {
     const token: SessionTokenEntity = {

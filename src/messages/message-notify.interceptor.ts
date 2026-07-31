@@ -14,12 +14,10 @@ import {
 
 @Injectable()
 export class MessageNotifyInterceptor implements NestInterceptor {
-  constructor(private notificationsService: NotificationsService) { }
+  constructor(private notificationsService: NotificationsService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const { instanceId, method } = context
-      .switchToHttp()
-      .getRequest() as Request;
+    const { instanceId, method } = context.switchToHttp().getRequest();
 
     if (!instanceId || method === 'GET') {
       return next.handle();

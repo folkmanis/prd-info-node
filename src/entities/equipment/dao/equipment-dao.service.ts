@@ -15,9 +15,7 @@ export class EquipmentDaoService implements EntityDao<Equipment> {
   private readonly collection: Collection<Equipment>;
 
   constructor(private readonly dbService: DatabaseService) {
-    this.collection = this.dbService
-      .db()
-      .collection(EQUIPMENT_COLLECTION_NAME);
+    this.collection = this.dbService.db().collection(EQUIPMENT_COLLECTION_NAME);
 
     this.createIndexes();
   }

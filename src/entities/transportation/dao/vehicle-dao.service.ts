@@ -9,9 +9,7 @@ import { EntityDao } from '../../entityDao.interface.js';
 import { CreateVehicleDto } from '../dto/create-vehicle.dto.js';
 
 @Injectable()
-export class TransportationVehicleDaoService
-  implements EntityDao<TransportationVehicle>
-{
+export class TransportationVehicleDaoService implements EntityDao<TransportationVehicle> {
   constructor(
     @Inject(TRANSPORTATION_VEHICLE_COLLECTION)
     private collection: Collection<TransportationVehicle>,

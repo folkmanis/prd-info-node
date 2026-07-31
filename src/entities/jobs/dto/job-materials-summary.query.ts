@@ -54,7 +54,7 @@ export class JobMaterialsSummaryQuery extends StartLimitFilter<Job> {
     return {
       start,
       limit,
-      filter: pickNotNull(filter) as Filter<Job>,
+      filter: pickNotNull(filter),
     };
   }
 }

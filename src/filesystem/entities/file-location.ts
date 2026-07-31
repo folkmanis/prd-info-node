@@ -84,7 +84,7 @@ export class FileLocation {
         }
       }),
     );
-    return result.reduce((acc, res) => acc + res!, 0 as number);
+    return result.reduce((acc, res) => acc + res, 0 as number);
   }
 
   async rename(dest: FileLocation) {

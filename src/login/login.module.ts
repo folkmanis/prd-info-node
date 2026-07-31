@@ -34,4 +34,4 @@ import { NotificationsModule } from '../notifications/index.js';
     },
   ],
 })
-export class LoginModule { }
+export class LoginModule {}

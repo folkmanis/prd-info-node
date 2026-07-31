@@ -1,7 +1,7 @@
 import { formatISO } from 'date-fns';
 import { ObjectId } from 'mongodb';
 import { createZodDto } from 'nestjs-zod';
-import { z, ZodType } from 'zod';
+import { z } from 'zod';
 import { pickNotNull } from './pick-not-null.js';
 
 export const stringToInt = z.codec(
@@ -13,9 +13,11 @@ export const stringToInt = z.codec(
   },
 );
 
-export const stringToArray = <T>(schema: ZodType<T>) =>
+export const stringToArray = <T extends z.ZodType<unknown, string>>(
+  schema: T,
+) =>
   z.codec(z.string(), z.array(schema), {
-    decode: (str) => str.split(','),
+    decode: (str) => str.split(',') as z.input<T>[],
     encode: (arr) => arr.join(','),
   });
 

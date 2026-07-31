@@ -73,7 +73,7 @@ export class TransportationService {
       waypoints,
     );
 
-    return assertFirstRouteDistance(response)!;
+    return assertFirstRouteDistance(response);
   }
 
   async getDescriptions(count?: number): Promise<string[]> {

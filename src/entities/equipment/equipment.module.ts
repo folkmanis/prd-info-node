@@ -6,4 +6,4 @@ import { EquipmentDaoService } from './dao/equipment-dao.service.js';
   controllers: [EquipmentController],
   providers: [EquipmentDaoService],
 })
-export class EquipmentModule { }
+export class EquipmentModule {}

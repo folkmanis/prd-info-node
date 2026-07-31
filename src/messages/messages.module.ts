@@ -9,4 +9,4 @@ import { NotificationsModule } from '../notifications/index.js';
   providers: [MessagesService],
   exports: [MessagesService],
 })
-export class MessagesModule { }
+export class MessagesModule {}

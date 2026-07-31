@@ -20,7 +20,7 @@ export class KastesService {
   constructor(
     private kastesDao: KastesDaoService,
     private readonly jobsDao: JobsDao,
-  ) { }
+  ) {}
 
   async copyToFirestore(jobId: number) {
     const docRef = this.packagingJobsCollection.doc(jobId.toString());
@@ -81,7 +81,7 @@ export class KastesService {
     const snapshot = await collectionRef
       .select('document_id', 'box_sequence', 'completed')
       .get();
-    const updates: { _id: ObjectId; kaste: number; value: boolean; }[] =
+    const updates: { _id: ObjectId; kaste: number; value: boolean }[] =
       snapshot.docs
         .map((doc) => doc.data())
         .filter((data) => this.isDataDefined(data))

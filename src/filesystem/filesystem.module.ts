@@ -8,4 +8,4 @@ import { MessagesModule } from '../messages/index.js';
   providers: [FilesystemService],
   exports: [FilesystemService],
 })
-export class FilesystemModule { }
+export class FilesystemModule {}

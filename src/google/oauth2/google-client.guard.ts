@@ -11,7 +11,7 @@ import { Oauth2Service } from './oauth2.service.js';
 
 @Injectable()
 export class GoogleClientGuard implements CanActivate {
-  constructor(private oauth2Service: Oauth2Service) { }
+  constructor(private oauth2Service: Oauth2Service) {}
 
   canActivate(
     context: ExecutionContext,

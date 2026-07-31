@@ -15,7 +15,7 @@ import { MessagesService, XmfUploadMessage } from '../../messages/index.js';
 export class UploadMessageInterceptor implements NestInterceptor {
   private logger = new Logger(XmfUploadController.name);
 
-  constructor(private readonly messaging: MessagesService) { }
+  constructor(private readonly messaging: MessagesService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req: Request = context.switchToHttp().getRequest();

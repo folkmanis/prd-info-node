@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 
 @Injectable()
-export class ValidateObjectKeyPipe<T extends Record<string, any>>
-  implements PipeTransform
-{
+export class ValidateObjectKeyPipe<
+  T extends Record<string, any>,
+> implements PipeTransform {
   private keys: (keyof T)[];
 
   constructor(@Optional() ...keys: (keyof T)[]) {

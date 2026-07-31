@@ -9,8 +9,14 @@ import { UsersFirestoreService } from './users-firestore.service.js';
 
 @Module({
   imports: [NotificationsModule],
-  providers: [usersProvider, UsersService, UsersDaoService, SessionsDaoService, UsersFirestoreService],
+  providers: [
+    usersProvider,
+    UsersService,
+    UsersDaoService,
+    SessionsDaoService,
+    UsersFirestoreService,
+  ],
   exports: [UsersService],
   controllers: [UsersController],
 })
-export class UsersModule { }
+export class UsersModule {}

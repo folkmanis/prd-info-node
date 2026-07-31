@@ -7,7 +7,7 @@ import { JOBS_COLLECTION } from './jobs-collection.provider.js';
 export class KastesJobsDao {
   constructor(
     @Inject(JOBS_COLLECTION) private readonly collection: Collection<KastesJob>,
-  ) { }
+  ) {}
 
   async getKastesJobs(veikali = false) {
     const pipeline = [

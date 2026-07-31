@@ -18,14 +18,14 @@ export class LoggingService implements LoggerService {
     this.transports
       .map((transport) => transport.debug)
       .filter((debug) => !!debug)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      .forEach((debug) => debug!(message, ...meta));
+
+      .forEach((debug) => debug(message, ...meta));
   }
   verbose(message: any, ...meta: [...any, string?]) {
     this.transports
       .map((transport) => transport.verbose)
       .filter((verbose) => !!verbose)
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      .forEach((verbose) => verbose!(message, ...meta));
+
+      .forEach((verbose) => verbose(message, ...meta));
   }
 }

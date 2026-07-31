@@ -5,7 +5,7 @@ import { SessionDaoService } from './session-dao.service.js';
 
 @Injectable()
 export class SessionService {
-  constructor(private readonly sessionDao: SessionDaoService) { }
+  constructor(private readonly sessionDao: SessionDaoService) {}
 
   validateSession(id: string): Observable<boolean> {
     return from(this.sessionDao.findSession(id)).pipe(map((sess) => !!sess));
