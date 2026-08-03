@@ -36,7 +36,6 @@ export class PreferencesDao {
 
   async updatePreferences(pref: PreferencesDbModules[]): Promise<number> {
     const operations: BulkUpdateOne[] = pref.map((pr) => {
-      const updates = flatten({ settings: pr.settings }, { safe: true });
       const update: BulkUpdateOne = {
         updateOne: {
           filter: { module: pr.module },
@@ -44,6 +43,10 @@ export class PreferencesDao {
         },
       };
 
+      const updates = flatten(
+        { settings: pr.settings },
+        { safe: true },
+      ) as Record<string, any>;
       const $set = pickNotNull(updates);
       if (Object.keys($set).length > 0) {
         update.updateOne.update.$set = $set;
