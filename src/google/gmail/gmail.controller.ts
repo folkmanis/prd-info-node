@@ -82,7 +82,7 @@ export class GmailController {
       id,
       requestBody: changes,
     });
-    return result.data.id;
+    return { modifiedId: result.data.id };
   }
 
   @Get('message/:id')
