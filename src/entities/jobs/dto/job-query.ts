@@ -44,7 +44,6 @@ export const JobFilterSchema = z
     const {
       start,
       limit,
-      name,
       toDate,
       fromDate,
       invoice,
@@ -77,7 +76,7 @@ export const JobFilterSchema = z
       toDate,
       customer: params.customer,
       jobsId: jobsId?.$in,
-      name: name?.$regex,
+      name: query.name?.$regex,
       productsName: productsName?.$regex,
     });
 
