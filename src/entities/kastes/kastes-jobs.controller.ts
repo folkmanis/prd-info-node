@@ -12,7 +12,7 @@ export class KastesJobsController {
 
   @Get()
   async getKastesJobs(@Query() query: JobFilterDto): Promise<KastesJob[]> {
-    query.filter.category = 'perforated paper';
+    query.filter['production.category'] = 'perforated paper';
     return this.jobsService.getAll(query);
   }
 
