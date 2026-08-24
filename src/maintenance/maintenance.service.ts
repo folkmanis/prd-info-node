@@ -5,6 +5,7 @@ import { CustomersMaintenanceService } from './customers-maintenace.service.js';
 import { JobsMaintenanceService } from './jobs-maintenance.service.js';
 import { LogMaintenanceService } from './log-maintenance.service.js';
 import { MaterialsMaintenanceService } from './materials-maintenance.service.js';
+import { EquipmentMaintenanceService } from './equipment-maintenance.service.js';
 
 @Injectable()
 export class MaintenanceService {
@@ -16,6 +17,7 @@ export class MaintenanceService {
     private logMaintenance: LogMaintenanceService,
     private jobsMaintenance: JobsMaintenanceService,
     private materialsMaintenance: MaterialsMaintenanceService,
+    private equipmentMaintenance: EquipmentMaintenanceService,
   ) {}
 
   async performTasks() {
@@ -24,6 +26,7 @@ export class MaintenanceService {
     await this.customersMaintenance.performTasks();
     await this.logMaintenance.performTasks();
     await this.materialsMaintenance.performTasks();
+    await this.equipmentMaintenance.performTasks();
   }
 
   async close() {

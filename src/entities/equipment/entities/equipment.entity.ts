@@ -1,17 +1,13 @@
-import { Transform, Type } from 'class-transformer';
-import { IsObject, IsOptional, IsString } from 'class-validator';
-import { ObjectId } from 'mongodb';
+import { z } from 'zod';
 
-export class Equipment {
-  @Type(() => ObjectId)
-  @Transform(({ value }) => new ObjectId(value), { toClassOnly: true })
-  @IsObject()
-  _id: ObjectId;
+export const EquipmentSchema = z.object({
+  name: z.string(),
+  disabled: z.boolean(),
+  description: z.string().optional(),
+});
+export type Equipment = z.infer<typeof EquipmentSchema>;
 
-  @IsString()
-  name: string;
-
-  @IsString()
-  @IsOptional()
-  description?: string;
-}
+export const EquipmentListSchema = EquipmentSchema.omit({
+  description: true,
+});
+export type EquipmentList = z.infer<typeof EquipmentListSchema>;

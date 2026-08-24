@@ -11,6 +11,8 @@ import { LogMaintenanceService } from './log-maintenance.service.js';
 import { JobsMaintenanceService } from './jobs-maintenance.service.js';
 import { MaterialsMaintenanceService } from './materials-maintenance.service.js';
 import { provideMaterialsCollection } from '../entities/materials/dao/materials-collection.provider.js';
+import { provideEquipmentCollection } from '../entities/equipment/dao/equipment-provider.js';
+import { EquipmentMaintenanceService } from './equipment-maintenance.service.js';
 
 @Module({
   providers: [
@@ -19,11 +21,13 @@ import { provideMaterialsCollection } from '../entities/materials/dao/materials-
     provideCustomersCollection,
     provideLogCollection,
     provideMaterialsCollection,
+    provideEquipmentCollection,
     MaintenanceService,
     JobsMaintenanceService,
     CustomersMaintenanceService,
     LogMaintenanceService,
     MaterialsMaintenanceService,
+    EquipmentMaintenanceService,
   ],
   imports: [
     ConfigModule.forRoot({
