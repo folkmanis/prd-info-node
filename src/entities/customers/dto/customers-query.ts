@@ -1,14 +1,14 @@
 import { Filter } from 'mongodb';
 import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
-import { stringToInt } from '../../../lib/zod-validators.js';
+import { regexSearch, stringToInt } from '../../../lib/zod-validators.js';
 import { Customer } from '../entities/customer.entity.js';
 
 const CustomersQuerySchema = z
   .object({
     start: stringToInt,
     limit: stringToInt,
-    name: z.string(),
+    name: regexSearch,
     email: z.string(),
     disabled: z.stringbool(),
   })
@@ -19,7 +19,7 @@ const CustomersQuerySchema = z
       filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
     }
     if (query.name) {
-      filter.customerName = new RegExp(query.name, 'i');
+      filter.customerName = query.name;
     }
     if (query.email) {
       filter['contacts.email'] = query.email;

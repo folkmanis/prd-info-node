@@ -6,14 +6,10 @@ import {
   isoDatetimeToDate,
   stringToArray,
   stringToInt,
+  regexSearch,
 } from '../../../lib/zod-validators.js';
 import { JOB_CATEGORIES } from '../entities/job-categories.js';
 import { Job } from '../entities/job.entity.js';
-
-const regexSearchSchema = z.string().transform((value) => ({
-  $regex: value,
-  $options: 'i',
-}));
 
 const invoiceSchema = z
   .stringbool({ truthy: ['1'], falsy: ['0'] })
@@ -29,11 +25,11 @@ export const JobFilterSchema = z
     fromDate: isoDatetimeToDate,
     toDate: isoDatetimeToDate,
     customer: z.string(),
-    name: regexSearchSchema,
+    name: regexSearch,
     invoice: invoiceSchema,
     jobStatus: inArraySchema(stringToInt),
     jobsId: inArraySchema(stringToInt),
-    productsName: regexSearchSchema,
+    productsName: regexSearch,
     category: JOB_CATEGORIES,
     unwindProducts: z.stringbool({ truthy: ['1'], falsy: ['0'] }),
     start: stringToInt,
