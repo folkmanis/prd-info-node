@@ -13,6 +13,21 @@ export const stringToInt = z.codec(
   },
 );
 
+export const regexSearch = z.codec(
+  z.string(),
+  z.object({
+    $regex: z.string(),
+    $options: z.string(),
+  }),
+  {
+    decode: (str) => ({
+      $regex: str,
+      $options: 'i',
+    }),
+    encode: (val) => val.$regex,
+  },
+);
+
 export const stringToArray = <T extends z.ZodType<unknown, string>>(
   schema: T,
 ) =>
