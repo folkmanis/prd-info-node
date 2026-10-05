@@ -1,15 +1,9 @@
-import { IsNumber } from 'class-validator';
+import { z } from 'zod';
 
-export class HistoricalData {
-  @IsNumber()
-  lastMonth: number;
-
-  @IsNumber()
-  lastYear: number;
-
-  @IsNumber()
-  fuelRemaining: number;
-
-  @IsNumber()
-  lastOdometer: number;
-}
+export const HistoricalDataSchema = z.object({
+  lastMonth: z.number(),
+  lastYear: z.number(),
+  fuelRemaining: z.number(),
+  lastOdometer: z.number().nonnegative(),
+});
+export type HistoricalData = z.infer<typeof HistoricalDataSchema>;

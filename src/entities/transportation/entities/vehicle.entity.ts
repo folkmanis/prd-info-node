@@ -1,84 +1,39 @@
-import { Transform, Type } from 'class-transformer';
-import {
-  IsBoolean,
-  IsDate,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
-import { ObjectId } from 'mongodb';
+import { z } from 'zod';
+import { isoDatetimeToDate } from '../../../lib/zod-validators.js';
 
-export class FuelType {
-  @IsString()
-  @IsNotEmpty()
-  type: string;
+const FuelTypeSchema = z.object({
+  type: z.string().nonempty(),
+  units: z.string().nonempty(),
+  description: z.string(),
+});
 
-  @IsString()
-  description: string;
+const OdometerReadingSchema = z.object({
+  value: z.number().nonnegative(),
+  date: isoDatetimeToDate,
+});
 
-  @IsString()
-  @IsNotEmpty()
-  units: string;
-}
+export const TransportationVehicleSchema = z.object({
+  name: z.string().nonempty(),
+  disabled: z.boolean(),
+  licencePlate: z.string().toUpperCase(),
+  passportNumber: z.string().toUpperCase().nonempty().optional(),
+  vin: z.string().toUpperCase().nonempty().optional(),
+  consumption: z.number().positive(), // units
+  fuelType: FuelTypeSchema,
+  odometerReadings: OdometerReadingSchema.array(),
+  description: z.string().optional(),
+});
+export type TransportationVehicle = z.infer<typeof TransportationVehicleSchema>;
 
-export class OdometerReading {
-  @IsNumber()
-  @IsNotEmpty()
-  value: number;
-
-  @Type(() => Date)
-  @IsDate()
-  @IsNotEmpty()
-  date: Date;
-}
-
-export class TransportationVehicle {
-  @Type(() => ObjectId)
-  @Transform(
-    ({ value }) =>
-      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
-    {
-      toClassOnly: true,
-    },
-  )
-  @Transform(({ value }) => value.toString(), {
-    toPlainOnly: true,
-  })
-  @IsObject()
-  _id: ObjectId;
-
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  licencePlate: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  passportNumber: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  vin: string;
-
-  @IsNumber()
-  consumption: number; // units
-
-  @Type(() => FuelType)
-  @ValidateNested()
-  fuelType: FuelType;
-
-  @Type(() => OdometerReading)
-  @ValidateNested({ each: true })
-  odometerReadings: OdometerReading[];
-
-  @IsBoolean()
-  disabled = false;
-}
+export const TransportationVehicleListSchema = TransportationVehicleSchema.pick(
+  {
+    name: true,
+    disabled: true,
+    licencePlate: true,
+    fuelType: true,
+    consumption: true,
+  },
+);
+export type TransportationVehicleList = z.infer<
+  typeof TransportationVehicleListSchema
+>;

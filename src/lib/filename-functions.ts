@@ -1,10 +1,12 @@
-import { BadRequestException } from '@nestjs/common';
 import sanitize from 'sanitize-filename';
+import { z } from 'zod';
+
+export const sanitizedFileName = z.codec(z.string().trim(), z.string(), {
+  decode: (val) => sanitizeFileName(val),
+  encode: (val) => val,
+});
 
 export function sanitizeFileName(name: string): string {
-  if (typeof name !== 'string') {
-    throw new BadRequestException(`Invalid filename ${name}`);
-  }
   return sanitize(removeDiactrics(name.trim()));
 }
 

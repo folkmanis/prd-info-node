@@ -7,58 +7,65 @@ import {
   Patch,
   Put,
   Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
+import { Modules } from '../../login/index.js';
+import { DriverService } from './driver.service.js';
 import { CreateDriverDto } from './dto/create-driver.dto.js';
 import { UpdateDriverDto } from './dto/update-driver.dto.js';
 import { TransportationDriver } from './entities/driver.entity.js';
-import { DriverService } from './driver.service.js';
-import { Modules } from '../../login/index.js';
-import { ObjectId } from 'mongodb';
-
+import { ZodResponse } from 'nestjs-zod';
+import { DeletedCountDto } from '../../lib/delete-result.dto.js';
 import { ValidateObjectKeyPipe } from '../../lib/validate-object-key.pipe.js';
-import { ResponseWrapperInterceptor } from '../../lib/response-wrapper.interceptor.js';
-import { DriverFilterQuery } from './dto/driver-filter.query.js';
+import { ValidationResultDto } from '../../lib/validation-result.dto.js';
+import { ObjectIdDto } from '../../lib/zod-validators.js';
+import { DriverQueryDto } from './dto/driver-filter.query.js';
+import { DriverDto, DriverListDto } from './dto/driver.dto.js';
 
 @Controller('transportation/driver')
 @Modules('transportation')
-@UsePipes(new ValidationPipe({ transform: true }))
 export class DriverController {
   constructor(private driverService: DriverService) {}
 
+  @ZodResponse({ type: ValidationResultDto })
+  @Get('validate/:property')
+  async validate(
+    @Param('property', new ValidateObjectKeyPipe<TransportationDriver>('name'))
+    key: keyof TransportationDriver,
+    @Query('value') value: string,
+  ) {
+    return this.driverService.validate(key, value);
+  }
+
+  @ZodResponse({ type: DriverDto })
   @Get(':id')
-  findOne(@Param('id') id: ObjectId) {
+  findOne(@Param('id') id: ObjectIdDto) {
     return this.driverService.findOne(id);
   }
 
+  @ZodResponse({ type: DriverListDto })
   @Get()
-  findAll(@Query() query: DriverFilterQuery) {
-    return this.driverService.findAll(query);
+  findAll(@Query() { filter, start, limit }: DriverQueryDto) {
+    return this.driverService.findAll(filter, start, limit);
   }
 
+  @ZodResponse({ type: DriverDto })
   @Put()
   create(@Body() createDriverDto: CreateDriverDto) {
     return this.driverService.insertOne(createDriverDto);
   }
 
+  @ZodResponse({ type: DriverDto })
   @Patch(':id')
-  update(@Param('id') id: ObjectId, @Body() updateDriverDto: UpdateDriverDto) {
+  update(
+    @Param('id') id: ObjectIdDto,
+    @Body() updateDriverDto: UpdateDriverDto,
+  ) {
     return this.driverService.updateOne(id, updateDriverDto);
   }
 
+  @ZodResponse({ type: DeletedCountDto })
   @Delete(':id')
-  @UseInterceptors(new ResponseWrapperInterceptor('deletedCount'))
-  remove(@Param('id') id: ObjectId) {
+  remove(@Param('id') id: ObjectIdDto) {
     return this.driverService.deleteOne(id);
-  }
-
-  @Get('validate/:property')
-  async validate(
-    @Param('property', new ValidateObjectKeyPipe<TransportationDriver>('name'))
-    property: keyof TransportationDriver,
-  ) {
-    return this.driverService.validate(property);
   }
 }

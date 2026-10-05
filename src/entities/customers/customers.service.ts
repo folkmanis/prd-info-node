@@ -15,6 +15,7 @@ import { CustomerList } from './dto/customer-list.dto.js';
 import { CustomersQuery } from './dto/customers-query.js';
 import { UpdateCustomer } from './dto/update-customer.dto.js';
 import { Customer } from './entities/customer.entity.js';
+import { CustomerWithLocation } from './dto/customer-with-location.dto.js';
 
 @Injectable()
 export class CustomersService {
@@ -36,9 +37,7 @@ export class CustomersService {
     return this.customersDao.getCustomers(query);
   }
 
-  async getCustomersWithLocation(): Promise<
-    WithId<Pick<Customer, 'customerName' | 'shippingAddress'>>[]
-  > {
+  async getCustomersWithLocation(): Promise<WithId<CustomerWithLocation>[]> {
     return this.customersDao.getCustomersWithLocation();
   }
 

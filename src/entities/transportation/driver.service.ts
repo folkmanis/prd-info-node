@@ -1,43 +1,51 @@
 import { Injectable } from '@nestjs/common';
+import { Filter, ObjectId, WithId } from 'mongodb';
+import { isFound } from '../../lib/assertions.js';
+import { ValidationResult } from '../../lib/validation-result.dto.js';
 import { TransportationDriverDaoService } from './dao/driver-dao.service.js';
-import { TransportationDriver } from './entities/driver.entity.js';
-import { DriverFilterQuery } from './dto/driver-filter.query.js';
-import { ObjectId } from 'mongodb';
-import { CreateDriverDto } from './dto/create-driver.dto.js';
-import { UpdateDriverDto } from './dto/update-driver.dto.js';
+import { CreateDriver } from './dto/create-driver.dto.js';
+import { UpdateDriver } from './dto/update-driver.dto.js';
+import {
+  TransportationDriver,
+  TransportationDriverList,
+} from './entities/driver.entity.js';
 
 @Injectable()
 export class DriverService {
   constructor(private driverDao: TransportationDriverDaoService) {}
 
-  async findAll(query: DriverFilterQuery): Promise<TransportationDriver[]> {
-    return this.driverDao.findAll(query.toFilter());
+  findAll(
+    filter: Filter<TransportationDriver>,
+    start?: number,
+    limit?: number,
+  ): Promise<WithId<TransportationDriverList>[]> {
+    return this.driverDao.findAll(filter, start, limit);
   }
 
-  async findOne(id: ObjectId): Promise<TransportationDriver | null> {
-    return this.driverDao.getOneById(id);
+  findOne(id: ObjectId): Promise<WithId<TransportationDriver>> {
+    return isFound(this.driverDao.getOneById(id));
   }
 
-  async insertOne(
-    driver: CreateDriverDto,
-  ): Promise<TransportationDriver | null> {
-    return this.driverDao.insertOne(driver);
+  insertOne(driver: CreateDriver): Promise<WithId<TransportationDriver>> {
+    return isFound(this.driverDao.insertOne(driver));
   }
 
-  async updateOne(
+  updateOne(
     id: ObjectId,
-    driver: UpdateDriverDto,
-  ): Promise<TransportationDriver | null> {
-    return this.driverDao.updateOne(id, driver);
+    driver: UpdateDriver,
+  ): Promise<WithId<TransportationDriver>> {
+    return isFound(this.driverDao.updateOne(id, driver));
   }
 
-  async deleteOne(id: ObjectId): Promise<number> {
+  deleteOne(id: ObjectId): Promise<number> {
     return this.driverDao.deleteOneById(id);
   }
 
   async validate<K extends keyof TransportationDriver>(
     key: K,
-  ): Promise<TransportationDriver[K][]> {
-    return this.driverDao.validationData(key);
+    value: TransportationDriver[K],
+  ): Promise<ValidationResult> {
+    const result = await this.driverDao.validateProperty({ [key]: value });
+    return { valid: result === 0, property: key, value };
   }
 }

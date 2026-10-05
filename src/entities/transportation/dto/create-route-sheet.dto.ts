@@ -1,6 +1,11 @@
-import { TransportationRouteSheet } from '../entities/route-sheet.entity.js';
-import { OmitType } from '@nestjs/mapped-types';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { TransportationRouteSheetSchema } from '../entities/route-sheet.entity.js';
 
-export class CreateRouteSheetDto extends OmitType(TransportationRouteSheet, [
-  '_id',
-]) {}
+const CreateRouteSheetSchema = z.object({
+  ...TransportationRouteSheetSchema.shape,
+});
+export type CreateRouteSheet = z.infer<typeof CreateRouteSheetSchema>;
+export class CreateRouteSheetDto extends createZodDto(CreateRouteSheetSchema, {
+  codec: true,
+}) {}

@@ -1,104 +1,26 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { ObjectId } from 'mongodb';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Filter, ObjectId, WithId } from 'mongodb';
 import {
   CalculatedRoute,
   Location,
   RoutingService,
 } from '../../google/routing/routing.service.js';
+import { assertIsFound, assertNotNull, isFound } from '../../lib/assertions.js';
+import { ValidationResult } from '../../lib/validation-result.dto.js';
 import { TransportationRouteSheetDaoService } from './dao/route-sheet-dao.service.js';
-import { CreateRouteSheetDto } from './dto/create-route-sheet.dto.js';
+import { CalculatedDistance } from './dto/calculated-distance.dto.js';
+import { CreateRouteSheet } from './dto/create-route-sheet.dto.js';
 import {
-  DistanceRequestQuery,
+  DistanceRequest,
   RouteTripStopAddress,
-} from './dto/distance-request.query.js';
-import { RouteSheetFilterQuery } from './dto/route-sheet-filter.query.js';
-import { UpdateRouteSheetDto } from './dto/update-route-sheet.dto.js';
-import { TransportationRouteSheet } from './entities/route-sheet.entity.js';
-import { plainToInstance } from 'class-transformer';
+} from './dto/distance-request.dto.js';
+import { UpdateRouteSheet } from './dto/update-route-sheet.dto.js';
+import { RouteSheetValidationQuery } from './dto/validation-query.dto.js';
 import { HistoricalData } from './entities/historical-data.entity.js';
-
-@Injectable()
-export class TransportationService {
-  constructor(
-    private routeSheetDao: TransportationRouteSheetDaoService,
-    private routingService: RoutingService,
-  ) {}
-
-  async getAll(
-    query: RouteSheetFilterQuery,
-  ): Promise<Partial<TransportationRouteSheet>[]> {
-    return this.routeSheetDao.findAll(query.toFilter());
-  }
-
-  async getOne(id: ObjectId): Promise<TransportationRouteSheet> {
-    const data = await this.routeSheetDao.getOneById(id);
-    if (!data) {
-      throw new NotFoundException({ message: 'Route sheet not found', id });
-    }
-    return plainToInstance(TransportationRouteSheet, data);
-  }
-
-  async create(
-    driver: CreateRouteSheetDto,
-  ): Promise<TransportationRouteSheet | null | undefined> {
-    return this.routeSheetDao.insertOne(driver);
-  }
-
-  async update(
-    id: ObjectId,
-    routeSheet: UpdateRouteSheetDto,
-  ): Promise<TransportationRouteSheet | null> {
-    return this.routeSheetDao.updateOne(id, routeSheet);
-  }
-
-  async delete(id: ObjectId): Promise<number> {
-    return this.routeSheetDao.deleteOneById(id);
-  }
-
-  async calculateDistance(request: DistanceRequestQuery): Promise<number> {
-    const stops = request.tripStops.map(getLocation);
-    const destination = stops.pop();
-    if (!destination) {
-      throw new BadRequestException('No destination provided');
-    }
-    const [origin, ...waypoints] = stops;
-
-    const response = await this.routingService.calculateRoute(
-      origin,
-      destination,
-      waypoints,
-    );
-
-    return assertFirstRouteDistance(response);
-  }
-
-  async getDescriptions(count?: number): Promise<string[]> {
-    const result = await this.routeSheetDao.getDescriptions({
-      resultsLimit: count,
-    });
-    return result.map((r) => r._id);
-  }
-
-  async getHistoricalData(licencePlate: string): Promise<HistoricalData> {
-    const odometers =
-      await this.routeSheetDao.getLastMonthAndOdometer(licencePlate);
-    if (!odometers) {
-      throw new NotFoundException(
-        `No historical data for vehicle ${licencePlate}`,
-      );
-    }
-    const { fuelConsumed, fuelPurchased, fuelRemained } =
-      await this.routeSheetDao.getLastTripData(licencePlate);
-    return {
-      fuelRemaining: fuelRemained + fuelPurchased - fuelConsumed,
-      ...odometers,
-    };
-  }
-}
+import {
+  TransportationRouteSheet,
+  TransportationRouteSheetList,
+} from './entities/route-sheet.entity.js';
 
 function assertFirstRouteDistance(response: CalculatedRoute): number {
   if (
@@ -107,7 +29,7 @@ function assertFirstRouteDistance(response: CalculatedRoute): number {
     !response[0]?.routes[0] ||
     typeof response[0].routes[0].distanceMeters !== 'number'
   )
-    throw new Error('No route found');
+    throw new NotFoundException('No route found');
   return response[0].routes[0].distanceMeters;
 }
 
@@ -119,6 +41,100 @@ function getLocation(stop: RouteTripStopAddress): Location {
   } else {
     return {
       address: stop.address,
+    };
+  }
+}
+
+@Injectable()
+export class TransportationService {
+  constructor(
+    private routeSheetDao: TransportationRouteSheetDaoService,
+    private routingService: RoutingService,
+  ) {}
+
+  async getAll(
+    filter: Filter<TransportationRouteSheet>,
+    start = 0,
+    limit?: number,
+  ): Promise<WithId<TransportationRouteSheetList>[]> {
+    return this.routeSheetDao.findAll(filter, start, limit);
+  }
+
+  async getOne(id: ObjectId): Promise<WithId<TransportationRouteSheet>> {
+    return isFound(this.routeSheetDao.getOneById(id));
+  }
+
+  async create(
+    driver: CreateRouteSheet,
+  ): Promise<WithId<TransportationRouteSheet>> {
+    return isFound(this.routeSheetDao.insertOne(driver));
+  }
+
+  async update(
+    id: ObjectId,
+    routeSheet: UpdateRouteSheet,
+  ): Promise<WithId<TransportationRouteSheet>> {
+    return isFound(this.routeSheetDao.updateOne(id, routeSheet));
+  }
+
+  async delete(id: ObjectId): Promise<number> {
+    return this.routeSheetDao.deleteOneById(id);
+  }
+
+  async calculateDistance(
+    request: DistanceRequest,
+  ): Promise<CalculatedDistance> {
+    const stops = request.tripStops.map(getLocation);
+
+    const destination = stops.pop();
+    assertNotNull(destination, 'No destination provided');
+
+    const [origin, ...waypoints] = stops;
+
+    try {
+      const response = await this.routingService.calculateRoute(
+        origin,
+        destination,
+        waypoints,
+      );
+      const distance = assertFirstRouteDistance(response);
+      return { distance };
+    } catch (error) {
+      throw new NotFoundException('Route not found', { cause: error });
+    }
+  }
+
+  async getDescriptions(
+    includeDocumentsCount: number,
+    limit: number,
+  ): Promise<string[]> {
+    const result = await this.routeSheetDao.getDescriptions(
+      includeDocumentsCount,
+      limit,
+    );
+    return result.map((r) => r._id);
+  }
+
+  async getHistoricalData(licencePlate: string): Promise<HistoricalData> {
+    const odometers =
+      await this.routeSheetDao.getLastMonthAndOdometer(licencePlate);
+    assertIsFound(odometers, `No historical data for vehicle ${licencePlate}`);
+    const { fuelConsumed, fuelPurchased, fuelRemained } =
+      await this.routeSheetDao.getLastTripData(licencePlate);
+    return {
+      fuelRemaining: fuelRemained + fuelPurchased - fuelConsumed,
+      ...odometers,
+    };
+  }
+
+  async validateNewRouteSheet(
+    query: RouteSheetValidationQuery,
+  ): Promise<ValidationResult> {
+    const count = await this.routeSheetDao.countDocuments(query, 1);
+    return {
+      valid: count === 0,
+      value: query,
+      property: 'year,month,vehicle._id,driver._id',
     };
   }
 }

@@ -1,22 +1,30 @@
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { pickNotNull } from '../../../lib/pick-not-null.js';
+import { Filter } from 'mongodb';
+import { z } from 'zod';
+import { regexSearch, stringToInt } from '../../../lib/zod-validators.js';
+
 import { ProductionStage } from '../entities/production-stage.entity.js';
-import { IsString, IsOptional } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 
-export class ProductionStageQueryFilter extends StartLimitFilter<ProductionStage> {
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  toFilter(): FilterType<ProductionStage> {
-    const { limit, start } = this;
-    return {
-      limit,
-      start,
-      filter: pickNotNull({
-        name: this.name && { $regex: this.name, $options: 'i' },
-      }),
-    };
-  }
-}
+export const ProductionStageQuerySchema = z
+  .object({
+    start: stringToInt,
+    limit: stringToInt,
+    name: regexSearch,
+    disabled: z.stringbool(),
+  })
+  .partial()
+  .transform(({ start, limit, ...query }) => {
+    const filter: Filter<ProductionStage> = {};
+    if (!query.disabled) {
+      filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
+    }
+    if (query.name) {
+      filter.name = query.name;
+    }
+    return { start: start ?? 0, limit, filter };
+  });
+export type ProductionStageQuery = z.infer<typeof ProductionStageQuerySchema>;
+export class ProductionStageQueryDto extends createZodDto(
+  ProductionStageQuerySchema,
+  { codec: true },
+) {}

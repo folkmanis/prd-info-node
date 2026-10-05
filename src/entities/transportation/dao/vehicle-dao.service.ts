@@ -1,25 +1,26 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Collection, ObjectId } from 'mongodb';
-import { TransportationVehicle } from '../entities/vehicle.entity.js';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { CreateVehicle } from '../dto/create-vehicle.dto.js';
+import { UpdateVehicle } from '../dto/update-vehicle.dto.js';
+import { VehicleQuery } from '../dto/vehicle-filter.query.js';
+import {
+  TransportationVehicle,
+  TransportationVehicleList,
+} from '../entities/vehicle.entity.js';
 import { TRANSPORTATION_VEHICLE_COLLECTION } from './vehicle-provider.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { UpdateVehicleDto } from '../dto/update-vehicle.dto.js';
-import { flatten } from 'flat';
-import { EntityDao } from '../../entityDao.interface.js';
-import { CreateVehicleDto } from '../dto/create-vehicle.dto.js';
 
 @Injectable()
-export class TransportationVehicleDaoService implements EntityDao<TransportationVehicle> {
+export class TransportationVehicleDaoService {
   constructor(
     @Inject(TRANSPORTATION_VEHICLE_COLLECTION)
     private collection: Collection<TransportationVehicle>,
   ) {}
 
-  async findAll({
-    start,
-    limit,
-    filter,
-  }: FilterType<TransportationVehicle>): Promise<TransportationVehicle[]> {
+  findAll(
+    filter: Filter<TransportationVehicle>,
+    start?: number,
+    limit?: number,
+  ): Promise<WithId<TransportationVehicleList>[]> {
     return this.collection
       .find(filter, {
         sort: {
@@ -27,55 +28,47 @@ export class TransportationVehicleDaoService implements EntityDao<Transportation
         },
         skip: start,
         limit: limit,
+        projection: {
+          name: 1,
+          disabled: 1,
+          licencePlate: 1,
+          fuelType: 1,
+          consumption: 1,
+        },
       })
       .toArray();
   }
 
-  async getOneById(id: ObjectId): Promise<TransportationVehicle | null> {
+  getOneById(id: ObjectId): Promise<WithId<TransportationVehicle> | null> {
     return this.collection.findOne({ _id: id });
   }
 
-  async insertOne(
-    vehicle: CreateVehicleDto,
-  ): Promise<TransportationVehicle | null> {
+  insertOne(
+    vehicle: CreateVehicle,
+  ): Promise<WithId<TransportationVehicle> | null> {
     return this.collection.findOneAndReplace({ name: vehicle.name }, vehicle, {
       returnDocument: 'after',
       upsert: true,
     });
   }
 
-  async updateOne(
+  updateOne(
     id: ObjectId,
-    vehicle: UpdateVehicleDto,
-  ): Promise<TransportationVehicle | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: id },
-      { $set: flatten(vehicle, { safe: true }) },
-      { returnDocument: 'after' },
-    );
+    updateOperations: UpdateVehicle,
+  ): Promise<WithId<TransportationVehicle> | null> {
+    return this.collection.findOneAndUpdate({ _id: id }, updateOperations, {
+      returnDocument: 'after',
+    });
   }
 
   async deleteOneById(id: ObjectId): Promise<number> {
     const { deletedCount } = await this.collection.deleteOne({ _id: id });
-    return deletedCount || 0;
+    return deletedCount;
   }
 
-  async validationData<K extends keyof TransportationVehicle>(
-    key: K,
-  ): Promise<TransportationVehicle[K][]> {
-    return this.collection
-      .find(
-        {
-          [key]: { $ne: null },
-        },
-        {
-          projection: {
-            [key]: 1,
-            _id: 0,
-          },
-        },
-      )
-      .map((value) => value[key])
-      .toArray();
+  validateProperty(filter: Filter<TransportationVehicle>): Promise<0 | 1> {
+    return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
+      0 | 1
+    >;
   }
 }

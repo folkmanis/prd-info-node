@@ -1,6 +1,14 @@
-import { OmitType } from '@nestjs/mapped-types';
-import { ProductionStage } from '../entities/production-stage.entity.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { ProductionStageSchema } from '../entities/production-stage.entity.js';
 
-export class CreateProductionStageDto extends OmitType(ProductionStage, [
-  '_id',
-]) {}
+const CreateProductionStageSchema = z.object({
+  ...ProductionStageSchema.shape,
+  disabled: z.boolean().default(false),
+});
+export type CreateProductionStage = z.infer<typeof CreateProductionStageSchema>;
+
+export class CreateProductionStageDto extends createZodDto(
+  CreateProductionStageSchema,
+  { codec: true },
+) {}

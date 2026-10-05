@@ -1,15 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ObjectId, Collection } from 'mongodb';
-import { EntityDao } from '../../entityDao.interface.js';
-import { ProductionStage } from '../entities/production-stage.entity.js';
-import { CreateProductionStageDto } from '../dto/create-production-stage.dto.js';
-import { UpdateProductionStageDto } from '../dto/update-production-stage.dto.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { CreateProductionStage } from '../dto/create-production-stage.dto.js';
+import { ProductionStageQuery } from '../dto/production-stage-query-filter.js';
+import { UpdateProductionStage } from '../dto/update-production-stage.dto.js';
+import {
+  ProductionStage,
+  ProductionStageList,
+} from '../entities/production-stage.entity.js';
 import { PRODUCTION_STAGES_COLLECTION } from './production-stages.provider.js';
-import { flatten } from 'flat';
 
 @Injectable()
-export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
+export class ProductionStagesDaoService {
   constructor(
     @Inject(PRODUCTION_STAGES_COLLECTION)
     private readonly collection: Collection<ProductionStage>,
@@ -19,13 +20,13 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
     limit,
     start,
     filter,
-  }: FilterType<ProductionStage>): Promise<Partial<ProductionStage>[]> {
+  }: ProductionStageQuery): Promise<WithId<ProductionStageList>[]> {
     return this.collection
       .find(filter, {
         projection: {
-          _id: 1,
           name: 1,
           equipmentIds: 1,
+          disabled: 1,
         },
         sort: {
           name: 1,
@@ -36,43 +37,36 @@ export class ProductionStagesDaoService implements EntityDao<ProductionStage> {
       .toArray();
   }
 
-  async getOneById(id: ObjectId): Promise<ProductionStage | null> {
-    return this.collection.findOne({ _id: id });
+  async getOneById(_id: ObjectId): Promise<WithId<ProductionStage> | null> {
+    return this.collection.findOne({ _id });
   }
 
   async insertOne(
-    productionStage: CreateProductionStageDto,
-  ): Promise<ProductionStage | null> {
-    return this.collection.findOneAndReplace(
-      { name: productionStage.name },
-      productionStage,
-      { upsert: true, returnDocument: 'after' },
-    );
+    data: CreateProductionStage,
+  ): Promise<WithId<ProductionStage> | null> {
+    return this.collection.findOneAndReplace({ name: data.name }, data, {
+      upsert: true,
+      returnDocument: 'after',
+    });
   }
 
   async updateOne(
-    id: ObjectId,
-    update: UpdateProductionStageDto,
-  ): Promise<ProductionStage | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: id },
-      { $set: flatten(update, { safe: true }) },
-      { returnDocument: 'after' },
-    );
+    _id: ObjectId,
+    operations: UpdateProductionStage,
+  ): Promise<WithId<ProductionStage> | null> {
+    return this.collection.findOneAndUpdate({ _id }, operations, {
+      returnDocument: 'after',
+    });
   }
 
-  async deleteOneById(id: ObjectId): Promise<number> {
-    const { deletedCount } = await this.collection.deleteOne({ _id: id });
-    return deletedCount || 0;
+  async deleteOneById(_id: ObjectId): Promise<number> {
+    const { deletedCount } = await this.collection.deleteOne({ _id });
+    return deletedCount;
   }
 
-  async validationData<K extends keyof ProductionStage>(
-    key: K,
-  ): Promise<ProductionStage[K][]> {
-    return this.collection
-      .find()
-      .project({ _id: 0, [key]: 1 })
-      .map((data) => data[key])
-      .toArray();
+  async validateProperty(filter: Filter<ProductionStage>): Promise<0 | 1> {
+    return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
+      0 | 1
+    >;
   }
 }

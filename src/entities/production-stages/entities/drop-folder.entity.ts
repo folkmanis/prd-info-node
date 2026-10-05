@@ -1,14 +1,8 @@
-import { Transform } from 'class-transformer';
-import { IsArray, IsString } from 'class-validator';
-import { sanitizeFileName } from '../../../lib/filename-functions.js';
+import { z } from 'zod';
+import { sanitizedFileName } from '../../../lib/filename-functions.js';
 
-export class DropFolder {
-  @IsString({ each: true })
-  @Transform(({ value }) => [...value].map(sanitizeFileName), {
-    toClassOnly: true,
-  })
-  path: string[];
-
-  @IsArray()
-  customers: string[];
-}
+export const DropFolderSchema = z.object({
+  path: sanitizedFileName.array(),
+  customers: z.string().array(),
+});
+export type DropFolder = z.infer<typeof DropFolderSchema>;

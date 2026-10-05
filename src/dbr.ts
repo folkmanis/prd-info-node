@@ -9,7 +9,6 @@ async function bootstrap() {
   const service = app.get(MaintenanceService);
   await service.performTasks();
 
-  await service.close();
   await app.close();
 }
 bootstrap();

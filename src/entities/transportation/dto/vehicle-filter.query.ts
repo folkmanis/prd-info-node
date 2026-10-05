@@ -1,44 +1,39 @@
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
 import { Filter } from 'mongodb/mongodb.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import {
+  regexSearch,
+  stringToArray,
+  stringToInt,
+} from '../../../lib/zod-validators.js';
 import { TransportationVehicle } from '../entities/vehicle.entity.js';
 
-export class VehicleFilterQuery extends StartLimitFilter<TransportationVehicle> {
-  @IsString()
-  @IsOptional()
-  name?: string;
-
-  @IsOptional()
-  @Transform(({ value }) => !!JSON.parse(value))
-  @IsBoolean()
-  disabled = true;
-
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',') : undefined,
-  )
-  @IsOptional()
-  @IsString({ each: true })
-  fuelTypes?: string[];
-
-  toFilter(): FilterType<TransportationVehicle> {
-    const { start, limit } = this;
-    const filter: Filter<any> = {};
-    if (this.name) {
-      filter.name = new RegExp(this.name, 'i');
+export const VehicleQuerySchema = z
+  .object({
+    start: stringToInt,
+    limit: stringToInt,
+    name: regexSearch,
+    disabled: z.stringbool(),
+    licencePlate: z.string(),
+    fuelTypes: stringToArray(z.string()),
+  })
+  .partial()
+  .transform(({ start, limit, disabled, fuelTypes, ...query }) => {
+    const filter: Filter<TransportationVehicle> = { ...query };
+    if (!disabled) {
+      filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
     }
-    if (this.fuelTypes?.length) {
-      filter['fuelType.type'] = { $in: this.fuelTypes };
-    }
-    if (!this.disabled) {
-      filter['$or'] = [{ disabled: null }, { disabled: false }];
+    if (fuelTypes && fuelTypes.length > 0) {
+      filter['fuelType.type'] = { $in: fuelTypes };
     }
 
     return {
-      start,
+      start: start ?? 0,
       limit,
       filter,
     };
-  }
-}
+  });
+export type VehicleQuery = z.infer<typeof VehicleQuerySchema>;
+export class VehicleQueryDto extends createZodDto(VehicleQuerySchema, {
+  codec: true,
+}) {}

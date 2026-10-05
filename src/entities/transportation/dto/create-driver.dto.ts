@@ -1,4 +1,13 @@
-import { TransportationDriver } from '../entities/driver.entity.js';
-import { OmitType } from '@nestjs/mapped-types';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import { TransportationDriverSchema } from '../entities/driver.entity.js';
 
-export class CreateDriverDto extends OmitType(TransportationDriver, ['_id']) {}
+const CreateDriverSchema = z.object({
+  ...TransportationDriverSchema.shape,
+  disabled: z.boolean().default(false),
+});
+export type CreateDriver = z.infer<typeof CreateDriverSchema>;
+
+export class CreateDriverDto extends createZodDto(CreateDriverSchema, {
+  codec: true,
+}) {}

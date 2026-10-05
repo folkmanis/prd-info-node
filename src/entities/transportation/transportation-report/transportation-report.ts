@@ -1,3 +1,4 @@
+import { round } from 'lodash-es';
 import { format, Locale } from 'date-fns';
 import { lv } from 'date-fns/locale';
 import {
@@ -10,16 +11,60 @@ import {
 } from 'pdfmake/interfaces.js';
 import { pdfmakeConfigured } from '../../../lib/pdf-make-configured.js';
 import {
+  FuelPurchase,
   RouteTrip,
   TransportationRouteSheet,
 } from '../entities/route-sheet.entity.js';
+import { WithId } from 'mongodb';
 
 function pluck<T extends object, K extends keyof T>(key: K) {
   return (obj: T) => obj[key];
 }
 
+function totalFuelPurchased(fuelPurchases: FuelPurchase[]): number {
+  return round(
+    fuelPurchases.reduce((prev, curr) => prev + curr.amount, 0) ?? 0,
+    2,
+  );
+}
+
+function fuelUnits(fuelPurchases: FuelPurchase[]): string {
+  if (!fuelPurchases) return '';
+  return [
+    ...new Set(fuelPurchases.map((fuelPurchase) => fuelPurchase.units)),
+  ].join(',');
+}
+
+function totalFuelConsumed(trips: RouteTrip[]) {
+  return round(
+    trips.reduce((prev, curr) => prev + curr.fuelConsumed, 0) ?? 0,
+    2,
+  );
+}
+
+function fuelRemaining(routeSheet: TransportationRouteSheet): number {
+  return (
+    routeSheet.fuelRemainingStartLitres +
+    totalFuelPurchased(routeSheet.fuelPurchases) -
+    totalFuelConsumed(routeSheet.trips)
+  );
+}
+
+function totalTripsLength(trips: RouteTrip[]): number {
+  return trips.reduce((acc, trip) => acc + trip.tripLengthKm, 0) ?? 0;
+}
+
+function averageConsumption(trips: RouteTrip[]): number {
+  const totalLength = totalTripsLength(trips);
+  if (totalLength === 0) {
+    return 0;
+  } else {
+    return totalFuelConsumed(trips) / totalLength;
+  }
+}
+
 export function transportationReport(
-  routeSheet: TransportationRouteSheet,
+  routeSheet: WithId<TransportationRouteSheet>,
   locale: Locale = lv,
 ) {
   const title = `Maršruta lapa ${routeSheet._id}`;
@@ -109,20 +154,26 @@ function createHeaderRightColumn(
   const fuelReceivedRow: Content = {
     text: [
       'Saņemta degviela: ',
-      { text: `${routeSheet.totalFuelPurchased()} ${fuelUnits}`, bold: true },
+      {
+        text: `${totalFuelPurchased(routeSheet.fuelPurchases)} ${fuelUnits}`,
+        bold: true,
+      },
     ],
   };
   const fuelConsumedRow: Content = {
     text: [
       'Iztērēta degviela: ',
-      { text: `${routeSheet.totalFuelConsumed()} ${fuelUnits}`, bold: true },
+      {
+        text: `${totalFuelConsumed(routeSheet.trips)} ${fuelUnits}`,
+        bold: true,
+      },
     ],
   };
   const fuelRemainingRow: Content = {
     text: [
       'Degvielas atlikums beigās: ',
       {
-        text: `${routeSheet.fuelRemaining().toFixed(2)} ${fuelUnits}`,
+        text: `${fuelRemaining(routeSheet).toFixed(2)} ${fuelUnits}`,
         bold: true,
       },
     ],
@@ -136,10 +187,10 @@ function createHeaderRightColumn(
 }
 
 function createRouteTripsTableRows(
-  routeSheet: TransportationRouteSheet,
+  { trips, vehicle }: TransportationRouteSheet,
   locale: Locale,
 ): TableCell[][] {
-  const fuelUnits = routeSheet.vehicle.fuelType.units;
+  const fuelUnits = vehicle.fuelType.units;
 
   const tableHeader: TableCell[] = [
     { text: 'Datums', bold: true },
@@ -152,7 +203,7 @@ function createRouteTripsTableRows(
     },
   ];
 
-  const tableRows: TableCell[][] = routeSheet.trips.map((trip) =>
+  const tableRows: TableCell[][] = trips.map((trip) =>
     createRouteTripRow(trip, fuelUnits, locale),
   );
 
@@ -160,12 +211,12 @@ function createRouteTripsTableRows(
     { text: 'Kopā/vidēji', bold: true, alignment: 'right', colSpan: 2 },
     {},
     {
-      text: routeSheet.totalTripsLength().toFixed(0),
+      text: totalTripsLength(trips).toFixed(0),
       bold: true,
       alignment: 'right',
     },
     {
-      text: `${(routeSheet.averageConsumption() * 100).toFixed(1)} ${fuelUnits}/100km`,
+      text: `${(averageConsumption(trips) * 100).toFixed(1)} ${fuelUnits}/100km`,
       bold: true,
       alignment: 'right',
     },

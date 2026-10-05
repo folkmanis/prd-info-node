@@ -1,15 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { classToPlain, instanceToPlain } from 'class-transformer';
-import { Collection, Filter, ObjectId, WithId, WithoutId } from 'mongodb';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import {
-  CreateEquipment,
-  CreateEquipmentDto,
-} from '../dto/create-equipment.dto.js';
-import {
-  UpdateEquipment,
-  UpdateEquipmentDto,
-} from '../dto/update-equipment.dto.js';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
+import { CreateEquipment } from '../dto/create-equipment.dto.js';
+import { UpdateEquipment } from '../dto/update-equipment.dto.js';
 import { Equipment, EquipmentList } from '../entities/equipment.entity.js';
 import { EQUIPMENT_COLLECTION } from './equipment-provider.js';
 
@@ -68,22 +60,5 @@ export class EquipmentDaoService {
     return this.collection.countDocuments(filter, { limit: 1 }) as Promise<
       0 | 1
     >;
-  }
-
-  async validationData<K extends keyof Equipment>(
-    key: K,
-  ): Promise<Array<Equipment[K]>> {
-    const result = await this.collection
-      .find(
-        {},
-        {
-          projection: {
-            [key]: 1,
-            _id: 0,
-          },
-        },
-      )
-      .toArray();
-    return result.map((obj) => obj[key]);
   }
 }

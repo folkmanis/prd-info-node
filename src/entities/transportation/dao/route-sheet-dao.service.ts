@@ -2,34 +2,31 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { instanceToPlain } from 'class-transformer';
 import { flatten } from 'flat';
 import { defaults } from 'lodash-es';
-import { Collection, ObjectId } from 'mongodb';
+import { Collection, Filter, ObjectId, WithId } from 'mongodb';
 import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { CreateRouteSheetDto } from '../dto/create-route-sheet.dto.js';
-import { TransportationRouteSheet } from '../entities/route-sheet.entity.js';
+import {
+  CreateRouteSheet,
+  CreateRouteSheetDto,
+} from '../dto/create-route-sheet.dto.js';
+import {
+  TransportationRouteSheet,
+  TransportationRouteSheetList,
+} from '../entities/route-sheet.entity.js';
 import { TRANSPORTATION_ROUTE_SHEET_COLLECTION } from './route-sheet-provider.js';
+import { UpdateRouteSheetDto } from '../dto/update-route-sheet.dto.js';
 
-export interface DescriptionsAggregationParams {
-  includeDocumentsCount?: number;
-  resultsLimit?: number;
-}
-
-export interface DescriptionsAggregation {
+interface DescriptionsAggregation {
   _id: string;
   count: number;
 }
 
-const DEFAULT_DESCRIPTIONS_AGGREGATION_PARAMS: DescriptionsAggregationParams = {
-  includeDocumentsCount: 100,
-  resultsLimit: 10,
-};
-
-export interface LastMonthAndOdometer {
+interface LastMonthAndOdometer {
   lastYear: number;
   lastMonth: number;
   lastOdometer: number;
 }
 
-export interface LastTripData {
+interface LastTripData {
   fuelPurchased: number;
   fuelRemained: number;
   fuelConsumed: number;
@@ -42,13 +39,11 @@ export class TransportationRouteSheetDaoService {
     private collection: Collection<TransportationRouteSheet>,
   ) {}
 
-  async findAll({
-    start,
-    limit,
-    filter,
-  }: FilterType<TransportationRouteSheet>): Promise<
-    Partial<TransportationRouteSheet>[]
-  > {
+  async findAll(
+    filter: Filter<TransportationRouteSheet>,
+    start = 0,
+    limit?: number,
+  ): Promise<WithId<TransportationRouteSheetList>[]> {
     return this.collection
       .find(filter, {
         sort: {
@@ -57,46 +52,65 @@ export class TransportationRouteSheetDaoService {
         },
         skip: start,
         limit,
+        projection: {
+          year: 1,
+          month: 1,
+          'driver._id': 1,
+          'driver.name': 1,
+          'vehicle._id': 1,
+          'vehicle.name': 1,
+          'vehicle.licencePlate': 1,
+        },
       })
       .toArray();
   }
 
-  async getOneById(id: ObjectId): Promise<TransportationRouteSheet | null> {
+  async getOneById(
+    id: ObjectId,
+  ): Promise<WithId<TransportationRouteSheet> | null> {
     return this.collection.findOne({ _id: id });
   }
 
   async insertOne(
-    obj: CreateRouteSheetDto,
-  ): Promise<TransportationRouteSheet | null | undefined> {
-    const { insertedId } = await this.collection.insertOne(
-      obj as TransportationRouteSheet,
+    create: CreateRouteSheet,
+  ): Promise<WithId<TransportationRouteSheet> | null> {
+    return this.collection.findOneAndReplace(
+      {
+        year: create.year,
+        month: create.month,
+        'vehicle.licencePlate': create.vehicle.licencePlate,
+        'driver._id': create.driver._id,
+      },
+      create,
+      { upsert: true, returnDocument: 'after' },
     );
-    return { ...obj, _id: insertedId };
+  }
+
+  countDocuments(
+    filter: Filter<TransportationRouteSheet>,
+    limit?: number,
+  ): Promise<number> {
+    return this.collection.countDocuments(filter, { limit });
   }
 
   async updateOne(
     id: ObjectId,
-    obj: Partial<TransportationRouteSheet>,
-  ): Promise<TransportationRouteSheet | null> {
-    return this.collection.findOneAndUpdate(
-      { _id: id },
-      { $set: flatten(instanceToPlain(obj), { safe: true }) },
-      { returnDocument: 'after' },
-    );
+    updateOperations: UpdateRouteSheetDto,
+  ): Promise<WithId<TransportationRouteSheet> | null> {
+    return this.collection.findOneAndUpdate({ _id: id }, updateOperations, {
+      returnDocument: 'after',
+    });
   }
 
   async deleteOneById(id: ObjectId): Promise<number> {
-    const response = await this.collection.deleteOne({ _id: id });
-    return response.deletedCount;
+    const { deletedCount } = await this.collection.deleteOne({ _id: id });
+    return deletedCount;
   }
 
   async getDescriptions(
-    params: DescriptionsAggregationParams = {},
+    includeDocumentsCount: number,
+    resultsLimit: number,
   ): Promise<DescriptionsAggregation[]> {
-    const { includeDocumentsCount, resultsLimit } = defaults(
-      params,
-      DEFAULT_DESCRIPTIONS_AGGREGATION_PARAMS,
-    );
     const pipeline = [
       {
         $sort: {
@@ -143,7 +157,7 @@ export class TransportationRouteSheetDaoService {
 
   async getLastMonthAndOdometer(
     licencePlate: string,
-  ): Promise<LastMonthAndOdometer> {
+  ): Promise<LastMonthAndOdometer | undefined> {
     const pipeline = [
       {
         $match: {

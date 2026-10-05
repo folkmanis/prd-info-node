@@ -1,28 +1,16 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database/index.js';
+import { MongoClient } from 'mongodb';
+import { MONGO_CLIENT } from '../../../database/mongo-connection.provider.js';
 
-export const TRANSPORTATION_VEHICLE_COLLECTION =
-  'TRANSPORTATION_VEHICLE_COLLECTION';
+export const TRANSPORTATION_VEHICLE_COLLECTION = Symbol(
+  'TRANSPORTATION_VEHICLE_COLLECTION',
+);
 
-export const transportationVehicleCollectionProvider: FactoryProvider = {
+export const provideTransportationVehicleCollection: FactoryProvider = {
   provide: TRANSPORTATION_VEHICLE_COLLECTION,
-  useFactory: async (dbService: DatabaseService) => {
-    const collection = dbService.db().collection('transportationVehicles');
-    await collection.createIndexes([
-      {
-        key: {
-          name: 1,
-        },
-        unique: true,
-      },
-      {
-        key: {
-          licencePlate: 1,
-        },
-        unique: true,
-      },
-    ]);
+  useFactory: (client: MongoClient) => {
+    const collection = client.db().collection('transportationVehicles');
     return collection;
   },
-  inject: [DatabaseService],
+  inject: [MONGO_CLIENT],
 };

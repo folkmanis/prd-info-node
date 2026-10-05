@@ -1,172 +1,79 @@
-import { Transform, Type } from 'class-transformer';
+import z from 'zod';
 import {
-  IsDate,
-  IsNotEmpty,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-  ValidateNested,
-} from 'class-validator';
-import { ObjectId } from 'mongodb';
-import { TransportationVehicle } from './vehicle.entity.js';
-import { TransportationDriver } from './driver.entity.js';
-import { round } from 'lodash-es';
+  idToObjectId,
+  isoDateToDate,
+  withIdSchema,
+} from '../../../lib/zod-validators.js';
+import { TransportationDriverSchema } from './driver.entity.js';
+import { TransportationVehicleSchema } from './vehicle.entity.js';
 
-export class TransportationRouteSheet {
-  @Type(() => ObjectId)
-  @Transform(
-    ({ value }) =>
-      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
-    {
-      toClassOnly: true,
-    },
-  )
-  @Transform(({ value }) => value.toString(), {
-    toPlainOnly: true,
-  })
-  @IsObject()
-  _id: ObjectId;
+export const RouteTripStopSchema = z.object({
+  customerId: idToObjectId.optional(),
+  name: z.string().nonempty(),
+  address: z.string().nonempty(),
+  googleLocationId: z.string().optional(),
+});
 
-  @IsNumber()
-  @Min(1990)
-  year: number;
+const FuelPurchaseSchema = z.object({
+  date: isoDateToDate,
+  type: z.string().nonempty(),
+  units: z.string().nonempty(),
+  amount: z.number(),
+  price: z.number(),
+  total: z.number(),
+  invoiceId: z.string().optional(),
+});
+export type FuelPurchase = z.infer<typeof FuelPurchaseSchema>;
 
-  @IsNumber()
-  @Min(1)
-  @Max(12)
-  month: number;
+const RouteTripSchema = z.object({
+  date: isoDateToDate,
+  tripLengthKm: z.number().nonnegative(),
+  fuelConsumed: z.number().nonnegative(),
+  odoStartKm: z.number().nonnegative(),
+  odoStopKm: z.number().nonnegative(),
+  description: z.string().max(255),
+  stops: RouteTripStopSchema.array(),
+});
+export type RouteTrip = z.infer<typeof RouteTripSchema>;
 
-  @IsNumber()
-  fuelRemainingStartLitres: number;
+export const TransportationRouteSheetSchema = z.object({
+  year: z.number().min(1990),
+  month: z.number().min(1).max(12),
+  fuelRemainingStartLitres: z.number(),
+  driver: withIdSchema(TransportationDriverSchema).pick({
+    _id: true,
+    name: true,
+  }),
+  vehicle: withIdSchema(TransportationVehicleSchema).pick({
+    _id: true,
+    name: true,
+    consumption: true,
+    fuelType: true,
+    licencePlate: true,
+  }),
+  description: z.string().optional(),
+  trips: RouteTripSchema.array(),
+  fuelPurchases: FuelPurchaseSchema.array(),
+});
+export type TransportationRouteSheet = z.infer<
+  typeof TransportationRouteSheetSchema
+>;
 
-  @Type(() => TransportationDriver)
-  @ValidateNested()
-  driver: TransportationDriver;
-
-  @Type(() => TransportationVehicle)
-  @ValidateNested()
-  vehicle: TransportationVehicle;
-
-  @Type(() => RouteTrip)
-  @ValidateNested({ each: true })
-  trips: RouteTrip[];
-
-  @Type(() => FuelPurchase)
-  @ValidateNested({ each: true })
-  fuelPurchases: FuelPurchase[];
-
-  totalFuelPurchased = () =>
-    round(
-      this.fuelPurchases?.reduce((prev, curr) => prev + curr.amount, 0) ?? 0,
-      2,
-    );
-
-  fuelUnits = () => {
-    if (!this.fuelPurchases) return '';
-    return [
-      ...new Set(this.fuelPurchases.map((fuelPurchase) => fuelPurchase.units)),
-    ].join(',');
-  };
-
-  totalFuelConsumed = () =>
-    round(
-      this.trips?.reduce((prev, curr) => prev + curr.fuelConsumed, 0) ?? 0,
-      2,
-    );
-
-  fuelRemaining = () =>
-    this.fuelRemainingStartLitres +
-    this.totalFuelPurchased() -
-    this.totalFuelConsumed();
-
-  totalTripsLength = () =>
-    this.trips?.reduce((acc, trip) => acc + trip.tripLengthKm, 0) ?? 0;
-
-  averageConsumption = () => {
-    const totalLength = this.totalTripsLength();
-    if (totalLength === 0) {
-      return 0;
-    } else {
-      return this.totalFuelConsumed() / totalLength;
-    }
-  };
-}
-
-export class RouteTrip {
-  @IsDate()
-  @Type(() => Date)
-  date: Date;
-
-  @IsNumber()
-  tripLengthKm: number;
-
-  @IsNumber()
-  fuelConsumed: number;
-
-  @IsNumber()
-  odoStartKm: number;
-
-  @IsNumber()
-  odoStopKm: number;
-
-  @IsString()
-  @MaxLength(255)
-  description: string;
-
-  @Type(() => RouteTripStop)
-  @ValidateNested({ each: true })
-  stops: RouteTripStop[];
-}
-
-export class RouteTripStop {
-  @Type(() => ObjectId)
-  @Transform(({ value }) => value && ObjectId.createFromHexString(value), {
-    toClassOnly: true,
-  })
-  @Transform(({ value }) => value && value.toString(), {
-    toPlainOnly: true,
-  })
-  @IsObject()
-  @IsOptional()
-  customerId: ObjectId;
-
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsString()
-  address: string;
-
-  @IsString()
-  @IsOptional()
-  googleLocationId?: string;
-}
-
-export class FuelPurchase {
-  @Type(() => Date)
-  @IsDate()
-  date: Date;
-
-  @IsString()
-  type: string;
-
-  @IsString()
-  units: string;
-
-  @IsNumber()
-  amount: number;
-
-  @IsNumber()
-  price: number;
-
-  @IsNumber()
-  total: number;
-
-  @IsString()
-  @IsOptional()
-  invoiceId?: string;
-}
+export const TransportationRouteSheetListSchema =
+  TransportationRouteSheetSchema.pick({
+    year: true,
+    month: true,
+  }).extend({
+    driver: TransportationRouteSheetSchema.shape.driver.pick({
+      name: true,
+      _id: true,
+    }),
+    vehicle: TransportationRouteSheetSchema.shape.vehicle.pick({
+      name: true,
+      licencePlate: true,
+      _id: true,
+    }),
+  });
+export type TransportationRouteSheetList = z.infer<
+  typeof TransportationRouteSheetSchema
+>;

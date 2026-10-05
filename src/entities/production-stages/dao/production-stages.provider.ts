@@ -1,29 +1,19 @@
 import { FactoryProvider } from '@nestjs/common';
-import { DatabaseService } from '../../../database/index.js';
-import { Collection } from 'mongodb';
+import { MongoClient } from 'mongodb';
+import { MONGO_CLIENT } from '../../../database/mongo-connection.provider.js';
 
-export const PRODUCTION_STAGES_COLLECTION = 'PRODUCTION_STAGES_COLLECTION';
+export const PRODUCTION_STAGES_COLLECTION = Symbol(
+  'PRODUCTION_STAGES_COLLECTION',
+);
+export const PRODUCTION_STAGES_COLLECTION_NAME = 'productionStages';
 
-export const productionStagesProvidder: FactoryProvider = {
+export const provideProductionStagesCollection: FactoryProvider = {
   provide: PRODUCTION_STAGES_COLLECTION,
-  useFactory: (dbService: DatabaseService) => {
-    try {
-      const collection = dbService.db().collection('productionStages');
-      createIndexes(collection);
-      return collection;
-    } catch (error) {
-      console.error(error);
-      process.exit(1);
-    }
+  useFactory: (client: MongoClient) => {
+    const collection = client
+      .db()
+      .collection(PRODUCTION_STAGES_COLLECTION_NAME);
+    return collection;
   },
-  inject: [DatabaseService],
+  inject: [MONGO_CLIENT],
 };
-
-function createIndexes(collection: Collection): void {
-  collection.createIndexes([
-    {
-      key: { name: 1 },
-      unique: true,
-    },
-  ]);
-}

@@ -18,6 +18,7 @@ import { CustomersQuery } from '../dto/customers-query.js';
 import { UpdateCustomer } from '../dto/update-customer.dto.js';
 import { Customer } from '../entities/customer.entity.js';
 import { CUSTOMERS_COLLECTION } from './customers-provider.js';
+import { CustomerWithLocation } from '../dto/customer-with-location.dto.js';
 
 @Injectable()
 export class CustomersDaoService {
@@ -42,9 +43,7 @@ export class CustomersDaoService {
       .toArray();
   }
 
-  async getCustomersWithLocation(): Promise<
-    WithId<Pick<Customer, 'customerName' | 'shippingAddress'>>[]
-  > {
+  async getCustomersWithLocation(): Promise<WithId<CustomerWithLocation>[]> {
     const filter = {
       'shippingAddress.googleId': { $ne: null },
       disabled: false,

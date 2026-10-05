@@ -1,26 +1,16 @@
-import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsObject, IsString } from 'class-validator';
-import { ObjectId } from 'mongodb';
+import { z } from 'zod';
 
-export class TransportationDriver {
-  @Type(() => ObjectId)
-  @Transform(
-    ({ value }) =>
-      typeof value === 'string' ? ObjectId.createFromHexString(value) : value,
-    {
-      toClassOnly: true,
-    },
-  )
-  @Transform(({ value }) => value.toString(), {
-    toPlainOnly: true,
-  })
-  @IsObject()
-  _id: ObjectId;
+export const TransportationDriverSchema = z.object({
+  name: z.string().nonempty(),
+  disabled: z.boolean(),
+  description: z.string().optional(),
+});
+export type TransportationDriver = z.infer<typeof TransportationDriverSchema>;
 
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @IsBoolean()
-  disabled = false;
-}
+export const TransportationDriverListSchema = TransportationDriverSchema.pick({
+  name: true,
+  disabled: true,
+});
+export type TransportationDriverList = z.infer<
+  typeof TransportationDriverListSchema
+>;

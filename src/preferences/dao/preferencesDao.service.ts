@@ -43,10 +43,7 @@ export class PreferencesDao {
         },
       };
 
-      const updates = flatten(
-        { settings: pr.settings },
-        { safe: true },
-      ) as Record<string, any>;
+      const updates = flatten({ settings: pr.settings }, { safe: true });
       const $set = pickNotNull(updates);
       if (Object.keys($set).length > 0) {
         update.updateOne.update.$set = $set;

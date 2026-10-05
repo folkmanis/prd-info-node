@@ -2,9 +2,9 @@ import { Module } from '@nestjs/common';
 import { TransportationController } from './transportation.controller.js';
 import { TransportationService } from './transportation.service.js';
 import { TransportationRouteSheetDaoService } from './dao/route-sheet-dao.service.js';
-import { transportationRouteSheetCollectionProvider } from './dao/route-sheet-provider.js';
-import { transportationDriverCollectionProvider } from './dao/driver-provider.js';
-import { transportationVehicleCollectionProvider } from './dao/vehicle-provider.js';
+import { provideTransportationRouteSheetCollection } from './dao/route-sheet-provider.js';
+import { provideTransportationDriverCollection } from './dao/driver-provider.js';
+import { provideTransportationVehicleCollection } from './dao/vehicle-provider.js';
 import { TransportationDriverDaoService } from './dao/driver-dao.service.js';
 import { TransportationVehicleDaoService } from './dao/vehicle-dao.service.js';
 import { VehicleService } from './vehicle.service.js';
@@ -23,9 +23,9 @@ import { GoogleModule } from '../../google/google.module.js';
     VehicleService,
     TransportationDriverDaoService,
     TransportationVehicleDaoService,
-    transportationRouteSheetCollectionProvider,
-    transportationDriverCollectionProvider,
-    transportationVehicleCollectionProvider,
+    provideTransportationRouteSheetCollection,
+    provideTransportationDriverCollection,
+    provideTransportationVehicleCollection,
   ],
   imports: [CustomersModule, GoogleModule],
 })

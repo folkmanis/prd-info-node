@@ -1,55 +1,45 @@
-import { Transform, Type } from 'class-transformer';
-import { IsNumber, IsObject, IsOptional, IsString } from 'class-validator';
-import { pickNotNull } from '../../../lib/pick-not-null.js';
-import { FilterType } from '../../../lib/start-limit-filter/filter-type.interface.js';
-import { StartLimitFilter } from '../../../lib/start-limit-filter/start-limit-filter.class.js';
+import { Filter } from 'mongodb/mongodb.js';
+import { createZodDto } from 'nestjs-zod';
+import { z } from 'zod';
+import {
+  idToObjectId,
+  regexSearch,
+  stringToArray,
+  stringToInt,
+} from '../../../lib/zod-validators.js';
 import { TransportationRouteSheet } from '../entities/route-sheet.entity.js';
-import { ObjectId, WithId } from 'mongodb';
 
-export class RouteSheetFilterQuery extends StartLimitFilter<TransportationRouteSheet> {
-  @IsString()
-  @IsOptional()
-  name?: string;
+export const RouteSheetQuerySchema = z
+  .object({
+    start: stringToInt,
+    limit: stringToInt,
+    name: regexSearch,
+    disabled: z.stringbool(),
+    fuelTypes: stringToArray(z.string()),
+    vehicleId: idToObjectId,
+    year: stringToInt,
+    month: stringToInt,
+  })
+  .partial()
+  .transform(({ start, limit, disabled, fuelTypes, vehicleId, ...query }) => {
+    const filter: Filter<TransportationRouteSheet> = { ...query };
+    if (!disabled) {
+      filter.$or = [{ disabled: { $exists: false } }, { disabled: false }];
+    }
+    if (fuelTypes && fuelTypes.length > 0) {
+      filter['vehicle.fuelType.type'] = { $in: fuelTypes };
+    }
+    if (vehicleId) {
+      filter['vehicle._id'] = vehicleId;
+    }
 
-  @Transform(({ value }) =>
-    typeof value === 'string' ? value.split(',') : undefined,
-  )
-  @IsOptional()
-  @IsString({ each: true })
-  fuelTypes?: string[];
-
-  @Transform(({ value }) => (!isNaN(Number(value)) ? Number(value) : undefined))
-  @IsOptional()
-  @IsNumber()
-  year?: number;
-
-  @Transform(({ value }) => (!isNaN(Number(value)) ? Number(value) : undefined))
-  @IsOptional()
-  @IsNumber()
-  month?: number;
-
-  @IsOptional()
-  @Type(() => ObjectId)
-  @Transform(({ value }) =>
-    typeof value === 'string' ? ObjectId.createFromHexString(value) : undefined,
-  )
-  @IsObject()
-  vehicleId?: ObjectId;
-
-  toFilter(): FilterType<WithId<TransportationRouteSheet>> {
-    const { start, limit } = this;
     return {
-      start,
+      start: start ?? 0,
       limit,
-      filter: pickNotNull({
-        name: this.name && { $regex: this.name, $options: 'i' },
-        'vehicle.fuelType.type': this.fuelTypes?.length
-          ? { $in: this.fuelTypes }
-          : undefined,
-        year: this.year ? { $eq: this.year } : undefined,
-        month: this.month ? { $eq: this.month } : undefined,
-        'vehicle._id': this.vehicleId,
-      }),
+      filter,
     };
-  }
-}
+  });
+export type RouteSheetQuery = z.infer<typeof RouteSheetQuerySchema>;
+export class RouteSheetQueryDto extends createZodDto(RouteSheetQuerySchema, {
+  codec: true,
+}) {}
